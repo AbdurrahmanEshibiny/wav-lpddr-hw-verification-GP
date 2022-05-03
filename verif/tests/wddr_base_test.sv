@@ -71,7 +71,7 @@ class wddr_base_test extends uvm_test;
         `endif
 
         // Enable transaction recording for everything
-        uvm_config_db#(string)::set(uvm_root::get(), "*", "recording_detail", UVM_FULL);
+        uvm_config_db#(int)::set(uvm_root::get(), "*", "recording_detail", UVM_FULL);
 
         // Create a specific depth printer for printing the created topology
         printer = new();

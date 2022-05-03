@@ -24,9 +24,10 @@ class wddr_bringup_seq extends wddr_base_seq;
     `uvm_object_utils(wddr_bringup_seq)
 
     virtual task body();
+        int err;
         super.body();
 
-        phy_bringup;
+        phy_bringup(err);
 
         `uvm_info(get_type_name(), $sformatf("DFI sequence completed!!!!!!!!"),UVM_LOW)
 
@@ -60,10 +61,11 @@ class wddr_mcu_freqsw_seq extends wddr_base_seq;
     `uvm_object_utils(wddr_mcu_freqsw_seq)
 
     virtual task body();
+        int err;
         super.body();
 
         config_vips(vcoFreq1,freqRatio);
-        mcu_freqsw;
+        mcu_freqsw(err);
 
         `uvm_info(get_type_name(), $sformatf("wddr_mcu_freqsw_seq sequence completed!!!!!!!!"),UVM_LOW)
 
@@ -79,10 +81,11 @@ class wddr_mcu_dfiupdate_seq extends wddr_base_seq;
     `uvm_object_utils(wddr_mcu_dfiupdate_seq)
 
     virtual task body();
+        int err;
         super.body();
 
         config_vips(vcoFreq1,freqRatio);
-        mcu_dfiupdate;
+        mcu_dfiupdate(err);
 
         `uvm_info(get_type_name(), $sformatf("wddr_mcu_dfiupdate_seq sequence completed!!!!!!!!"),UVM_LOW)
 
@@ -98,10 +101,11 @@ class wddr_mcu_dfiphymas_seq extends wddr_base_seq;
     `uvm_object_utils(wddr_mcu_dfiphymas_seq)
 
     virtual task body();
+        int err;
         super.body();
 
         config_vips(vcoFreq1,freqRatio);
-        mcu_dfiphymas;
+        mcu_dfiphymas(err);
 
         `uvm_info(get_type_name(), $sformatf("wddr_mcu_dfiphymas_seq sequence completed!!!!!!!!"),UVM_LOW)
 
@@ -117,10 +121,11 @@ class wddr_mcu_dfilp_seq extends wddr_base_seq;
     `uvm_object_utils(wddr_mcu_dfilp_seq)
 
     virtual task body();
+        int err;
         super.body();
 
         config_vips(vcoFreq1,freqRatio);
-        mcu_dfilp;
+        mcu_dfilp(err);
 
         `uvm_info(get_type_name(), $sformatf("wddr_mcu_dfilp_seq sequence completed!!!!!!!!"),UVM_LOW)
 

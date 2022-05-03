@@ -231,7 +231,7 @@ class wddr_config extends uvm_object;
     function pre_randomoze;
     endfunction
 
-    function post_randomize;
+    function void post_randomize;
         if (freq > 1000)
             this.gap_rdwr = (((rl + $ceil(tdqsck/tck) + (bl/2) + $floor(tprst) - odtlon - $floor(todton/tck) +1 )/2) + 2);
         else

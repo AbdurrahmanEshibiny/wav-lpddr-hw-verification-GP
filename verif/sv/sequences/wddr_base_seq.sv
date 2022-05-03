@@ -403,7 +403,7 @@ endtask
 //-----------------------------------------------------------------------
 
 task automatic check_mcu_exec_status ;
-    output logic err;
+    output logic err = 0;
     logic [31:0] data3 = 0;
     string str;
     begin

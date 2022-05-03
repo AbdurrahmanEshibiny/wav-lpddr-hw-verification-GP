@@ -1619,6 +1619,7 @@ task phy_bringup;
     int err_cnt;
     int bl;
     string s, r;
+    int garbage; //This was added by Shibiny for compilation purposes
     begin
         `ifdef LPDDR4
             d = "lp4";
@@ -1643,13 +1644,12 @@ task phy_bringup;
         err = 0;
         err_temp = 0;
         err_cnt  = 0;
-
         set_dfi_buf_clken(1'b0);
         /*Added for GLS*/`CSR_WRF1(DDR_FSW_OFFSET,DDR_FSW_CSP_1_CFG, DIV_RST_OVR_VAL, 1'b1 );
         if (pllfull)
             pll_full;
         else
-            pll_short;
+            pll_short(garbage);
 
         set_phy_ch1_disable();
         //set_pi_cfg (.freq_MHz(vcoFreq1), .msr(0));

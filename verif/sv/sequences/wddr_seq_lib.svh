@@ -18,6 +18,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import wddr_pkg::*;
 import ddr_global_pkg::*;
 
+
+//************Added for compilation purposes*********************
+import uvm_pkg::*;
+import wav_APB_pkg::*;
+
+`include "uvm_macros.svh"
+
+`include "ddr_global_define.vh"
+`include "ddr_cmn_csr_defs.vh"
+`include "ddr_fsw_csr_defs.vh"
+`include "ddr_cmn_wrapper_define.vh"
+`include "wav_reg_model_mvp_pll.svh"
+`include "ddr_ctrl_csr_defs.vh"
+`include "ddr_ca_csr_defs.vh"
+`include "ddr_dfi_csr_defs.vh"
+`include "ddr_dfich_csr_defs.vh"
+`include "ddr_dq_csr_defs.vh"
+`include "wav_mcu_csr_defs.vh"
+`include "wav_mcuintf_csr_defs.vh"
+`include "wav_mcutop_csr_defs.vh"
+
+//--REGISTER MODEL FOR ddr_phy TOP
+`include "register/wddr_reg_model.svh"
+`include "register/wddr_reg_model.sv"
+
+//--ENV INCLUDES
+`include "tb_top/wddr_tb.sv"
+//***************************************************************
+
+
 `include "sv/sequences/wddr_config.sv"
 `include "sv/sequences/wddr_base_seq.sv"
 `include "sv/sequences/wddr_bringup_seq.sv"

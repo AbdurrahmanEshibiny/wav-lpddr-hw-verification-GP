@@ -87,7 +87,7 @@ class wddr_mcu_load_mem extends wddr_base_seq;
       end
 
       set_mcu_en ( .fetch_en(1'b1), .debug_en(1'b0));
-      check_mcu_exec_status ;
+      check_mcu_exec_status(err_cnt) ;
       por();
       #2000us;
       set_mcu_en ( .fetch_en(1'b1), .debug_en(1'b0));
@@ -95,7 +95,7 @@ class wddr_mcu_load_mem extends wddr_base_seq;
       por();
       set_mcu_en ( .fetch_en(1'b1), .debug_en(1'b0));
       #2000us;
-      check_mcu_exec_status ;
+      check_mcu_exec_status(err_cnt) ;
 
     end
 
