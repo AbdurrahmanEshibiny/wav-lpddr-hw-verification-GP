@@ -4,8 +4,8 @@ Requirements:
 
 Steps:
 In a windows terminal (or powershell) write the following commands:
-1- >cd <repo path>/verif
-2- >compile.bat
-3- >vsim +UVM_TESTNAME=<required test name> work.wddr_tb_top
+1- >> cd <repo path>/verif
+2- >> compile.bat
+3- >> vsim +UVM_TESTNAME=<required test name> work.wddr_tb_top
 
 Hint: You can add the option [-c] to the third step to start questa in CLI mode for faster startup
