@@ -1,6 +1,7 @@
 set RTL=../rtl
 set VERIF=.
 set APB_PKG=${VERIF}/sv/agents/APB/wav_APB_pkg.sv
+set DFI_PKG=${VERIF}/sv/agents/DFI/wav_DFI_pkg.sv
 set WDDR_PKG=${VERIF}/sv/wddr_pkg.sv
 
 
