@@ -39,11 +39,11 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
 
         case(trans.tr_type)
             lp: begin
-                $cast(trans, lp_trans);
+                $cast(lp_trans, trans);
                 drive_lp(lp_trans);
             end 
             update: begin     
-                $cast(trans, update_trans);
+                $cast(update_trans, trans);
                 drive_ctrlupd(update_trans); 
             end
         endcase    

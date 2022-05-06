@@ -23,8 +23,8 @@ class wav_DFI_control_transfer extends wav_DFI_transfer;
     bit ack; 
     
     `uvm_object_utils_begin(wav_DFI_control_transfer)
-        `uvm_field_int(req, UVM_DEFAULT)
-        `uvm_field_int(ack, UVM_DEFAULT)
+        `uvm_field_int(req, UVM_DEFAULT | UVM_NOCOMPARE)
+        `uvm_field_int(ack, UVM_DEFAULT | UVM_NOCOMPARE)
     `uvm_object_utils_end
     
     function new(string name=" wav_DFI_control_transfer"); 
