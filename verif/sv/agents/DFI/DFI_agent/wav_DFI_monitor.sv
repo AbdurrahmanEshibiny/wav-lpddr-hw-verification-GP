@@ -1,6 +1,6 @@
 class wav_DFI_monitor extends uvm_monitor;
 
-    virtual wav_DFI_if vif;
+    wav_DFI_vif vif;
 
     uvm_analysis_port #( wav_DFI_transfer) item_collected_port; 
 

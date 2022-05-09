@@ -1,7 +1,7 @@
 
 class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer); 
 
-    virtual wav_DFI_if vif;
+    wav_DFI_vif vif;
 
     `uvm_component_utils_begin(wav_DFI_driver)
     `uvm_component_utils_end

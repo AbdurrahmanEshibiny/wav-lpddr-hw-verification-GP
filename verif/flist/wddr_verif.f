@@ -8,6 +8,7 @@
 +incdir+${VERIF}/sv/sequences
 +incdir+${VERIF}/sv/sequences/dt
 +incdir+${VERIF}/sv/sequences/regs
++incdir+${VERIF}/sv/sequences/dfi
 
 $APB_PKG
 $DFI_PKG

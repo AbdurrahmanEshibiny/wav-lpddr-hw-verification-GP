@@ -1,4 +1,7 @@
-typedef enum{DFI, control, lp, phymstr, update, status} type_e; 
+`ifndef WAV_DFI_TRANSFER_H_
+`define WAV_DFI_TRANSFER_H_
+
+typedef enum{DFI, control, lp, phymstr, update, status_freq} type_e; 
 
 
 // Base class for all DFI transactions
@@ -85,3 +88,5 @@ class wav_DFI_update_transfer extends wav_DFI_control_transfer;
         super.tr_type = update; 
     endfunction
 endclass
+
+`endif
