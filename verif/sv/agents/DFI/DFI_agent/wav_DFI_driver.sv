@@ -6,16 +6,20 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
     `uvm_component_utils_begin(wav_DFI_driver)
     `uvm_component_utils_end
 
+    function new (string name = "wav_DFI_driver", uvm_component parent=null);
+        super.new(name, parent);
+    endfunction
+
     //drive lp interface according to the specified transaction
     task drive_lp(wav_DFI_lp_transfer trans);  
         @(posedge vif.mp_drv.cb_drv) 
         if (trans.is_ctrl) begin 
-            vif.mp_drv.cb.lp_ctrl_req <= trans.req; 
-            vif.mp_drv.cb.lp_ctrl_wakeup <= trans.wakeup; 
+            vif.mp_drv.cb_drv.lp_ctrl_req <= trans.req; 
+            vif.mp_drv.cb_drv.lp_ctrl_wakeup <= trans.wakeup; 
         end 
         else begin         
-            vif.mp_drv.cb.lp_data_req <= trans.req;         
-            vif.mp_drv.cb.lp_data_wakeup <= trans.wakeup; 
+            vif.mp_drv.cb_drv.lp_data_req <= trans.req;         
+            vif.mp_drv.cb_drv.lp_data_wakeup <= trans.wakeup; 
         end
     endtask                        
         
@@ -23,7 +27,7 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
     task drive_ctrlupd(wav_DFI_update_transfer trans);         
     @(posedge vif.mp_drv.cb_drv)         
     if (trans.is_ctrl)         
-        vif.mp_drv.cb.ctrlupd_req <= trans.req;         
+        vif.mp_drv.cb_drv.ctrlupd_req <= trans.req;         
     else begin     
         // `CSR_WRF1(DDR_DFI_OFFSET,DDR_DFI_STATUS_IF_CFG, SW_ACK_OVR, 1'b0);
         // write to register phyupd_req <= trans.req;         

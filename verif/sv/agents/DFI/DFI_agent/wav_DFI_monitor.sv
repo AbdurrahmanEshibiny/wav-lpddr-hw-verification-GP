@@ -9,7 +9,7 @@ class wav_DFI_monitor extends uvm_monitor;
     `uvm_component_utils_begin(wav_DFI_monitor)
     `uvm_component_utils_end
 
-    function new (string name, uvm_component parent);
+    function new (string name = "wav_DFI_monitor", uvm_component parent = null);
         super.new(name, parent);
     endfunction
 
