@@ -22,6 +22,16 @@ interface wav_DFI_if(input clock, input reset);
     logic                      lp_data_req;
     logic [5:0]                lp_data_wakeup;
 
+	//command
+
+	//write 
+
+	//wck
+
+	//read
+
+	//status
+
     clocking cb_drv @(posedge clock);
         default input #2ns output #2ns;
         output ctrlupd_req, 
@@ -29,9 +39,10 @@ interface wav_DFI_if(input clock, input reset);
                 phyupd_ack,
                 lp_ctrl_req, lp_ctrl_wakeup, 
                 lp_data_req, lp_data_wakeup;
-
+		//define the remaining interface singnals
         input lp_data_ack, lp_ctrl_ack, ctrlupd_ack, phyupd_req, phyupd_type,
             phymstr_cs_state, phymstr_req, phymstr_state_sel, phymstr_type;
+		//define the remaining interface singnals
     endclocking // cb_drv
 
     clocking cb_mon @(posedge clock);
@@ -41,6 +52,7 @@ interface wav_DFI_if(input clock, input reset);
         phymstr_ack, phymstr_cs_state, phymstr_req, phymstr_state_sel, phymstr_type,
         lp_ctrl_req, lp_ctrl_wakeup, lp_ctrl_ack,
         lp_data_req, lp_data_wakeup, lp_data_ack;
+	//define the remaining interface singnals
     endclocking // cb_mon
 
     modport mp_drv (input reset, clocking cb_drv);

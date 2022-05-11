@@ -89,4 +89,5 @@ class wav_DFI_update_transfer extends wav_DFI_control_transfer;
     endfunction
 endclass
 
+//extend the base class to implement remaining interfaces 
 `endif

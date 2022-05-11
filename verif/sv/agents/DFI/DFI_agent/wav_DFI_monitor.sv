@@ -12,7 +12,7 @@ class wav_DFI_monitor extends uvm_monitor;
     function new (string name = "wav_DFI_monitor", uvm_component parent = null);
         super.new(name, parent);
     endfunction
-
+	/*add collect for remaining interface signals*/
     //each task samples a single packet from the corresponding sub-interface 
     task collect_lp_ctrl(ref wav_DFI_lp_transfer trans); 
         trans.req = vif.mp_mon.cb_mon.lp_ctrl_req; 
@@ -47,7 +47,7 @@ class wav_DFI_monitor extends uvm_monitor;
         trans.ack = vif.mp_mon.cb_mon.ctrlupd_ack; 
     endtask
 
-
+/* add handles for the remaining interface signals*/
     //Handles a single request and performs any required checking throughout the transaction
     task handle_lp_ctrl();
         wav_DFI_lp_transfer trans;
@@ -176,7 +176,7 @@ class wav_DFI_monitor extends uvm_monitor;
             @(vif.mp_mon.cb_mon);
         end
     endtask
-
+/*add monitor functions to the remaining interface signals*/
     //each task goes in a forever loop that monitors a specific sub-interface, collects 
     //a packet whenever it detects a change, and then it write the packet in the analysis 
     //port for the scoreboard to perform its checks 
@@ -227,7 +227,8 @@ class wav_DFI_monitor extends uvm_monitor;
             monitor_lp_ctrl();         
             monitor_lp_data();         
             monitor_phyupd();         
-            monitor_ctrlupd();       
+            monitor_ctrlupd();
+/*add monitor function to the remaining interface signals*/       
         join_none
     endtask
 endclass
