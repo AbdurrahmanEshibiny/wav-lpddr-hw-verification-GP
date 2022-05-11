@@ -108,3 +108,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 `include "tests/mcu/wddr_mcu_dfilp_test.sv"
 `include "tests/mcu/wddr_mcu_load_mem_test.sv"
 `endif
+
+
+
+////////// DFI testcases
+`include "DFI/sequences/wav_DFI_seq_lib.svh"
+`include "tests/dfi/wddr_DFI_phymstr_test.sv"
+`include "tests/dfi/wddr_DFI_phyupd_test.sv"
+`include "tests/dfi/wddr_DFI_ctrlupd_test.sv"
+`include "tests/dfi/wddr_DFI_lp_ctrl_test.sv"
+`include "tests/dfi/wddr_DFI_lp_data_test.sv"

@@ -518,12 +518,14 @@ wire [31:0]   s_ahb_hrdata;
 logic [1:0] o_irq;
 
 wav_APB_if APB_if (.reset(i_prst), .clock (i_ahb_clk));
+wav_DFI_if DFI_if (.reset(dfi_reset_sig), .clock(o_dfi_clk));
 
 initial begin
     $timeformat(-9, 0, " ns", 10);
     //uvm_config_db #(virtual wav_AHB_if)::set(uvm_root::get(), "*tb.AHB_agent*" , "AHB_vif", AHB_if);
     //uvm_config_db #(virtual ahb_if)::set(uvm_root::get(), "*tb.ahb_agent*" , "ahb_if", AHB_if);
     uvm_config_db#(virtual wav_APB_if)::set(uvm_root::get(), "*", "APB_vif", APB_if);
+    uvm_config_db#(virtual wav_DFI_if)::set(uvm_root::get(), "*", "DFI_vif", DFI_if);
     run_test();
 end
 

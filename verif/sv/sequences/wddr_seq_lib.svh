@@ -63,3 +63,7 @@ import wav_APB_pkg::*;
 `include "sv/sequences/dt/wddr_dt_mcu_seq.sv"
 `include "sv/sequences/dt/wddr_dt_freqsw_seq.sv"
 //`include "sv/sequences/dfimc/dfiSeqlib.sv"
+
+
+`include "sv/sequences/dfi/wddr_DFI_phymstr_seq.sv"
+`include "sv/sequences/dfi/wddr_DFI_phyupd_seq.sv"

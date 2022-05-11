@@ -8,9 +8,10 @@
 +incdir+${VERIF}/sv/sequences
 +incdir+${VERIF}/sv/sequences/dt
 +incdir+${VERIF}/sv/sequences/regs
-
++incdir+${VERIF}/sv/sequences/dfi
 
 $APB_PKG
+$DFI_PKG
 $WDDR_PKG
 ${VERIF}/sv/agents/mm/wav_mm.sv
 ${VERIF}/sv/agents/APB/apb_to_ahb.v

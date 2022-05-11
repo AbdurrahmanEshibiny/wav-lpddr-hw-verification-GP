@@ -1,0 +1,1 @@
+typedef virtual wav_DFI_if wav_DFI_vif;
