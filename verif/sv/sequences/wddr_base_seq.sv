@@ -483,6 +483,7 @@ endtask
 `include "ddr_sw_tasks.sv"
 `include "wddr_dt_tasks.sv"
 `include "wddr_bringup_tasks.sv"
+`include "./dfi/wddr_DFI_tasks.sv"
 
 function void print_prepost_fixes();
     `uvm_info(get_type_name(), $psprintf(" ALL PRE-POST-IN FIXES  - \n "), UVM_MEDIUM);
