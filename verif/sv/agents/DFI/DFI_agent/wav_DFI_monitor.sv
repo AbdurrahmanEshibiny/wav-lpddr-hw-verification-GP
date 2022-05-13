@@ -5,6 +5,8 @@ class wav_DFI_monitor extends uvm_monitor;
     uvm_analysis_port #( wav_DFI_transfer) item_collected_port; 
 
     const int wakeup_times[20] = '{1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144,-1};
+    const int phyupd_types[4] = '{`tphyupd_type0, `tphyupd_type1, `tphyupd_type2, `tphyupd_type3};
+    const int phymstr_types[4] = '{`tphymstr_type0, `tphymstr_type1, `tphymstr_type2, `tphymstr_type3};
 
     `uvm_component_utils_begin(wav_DFI_monitor)
     `uvm_component_utils_end
@@ -49,36 +51,29 @@ class wav_DFI_monitor extends uvm_monitor;
 
 /* add handles for the remaining interface signals*/
     //Handles a single request and performs any required checking throughout the transaction
-    task handle_lp_ctrl();
+    task handle_lp(bit is_ctrl);
         wav_DFI_lp_transfer trans;
         int wakeup = -1;
-        int counter = 0;
+        int counter = 0, steadyCounter = 0;
         trans = new();
         forever begin
-            collect_lp_ctrl(trans);
-            if (trans.req)
-                wakeup = trans.wakeup;
-            else if (trans.ack)
-                ++counter;
-            else 
-                break;
-            @(vif.mp_mon.cb_mon);
-        end
-
-        if (wakeup != 19 && counter > wakeup_times[wakeup]) begin
-            `uvm_error(get_name(), $psprintf("PHY stayed asleep more than the wakeup time, it should stay %d, but it stayed %d", wakeup_times[wakeup], counter));
-        end
-    endtask
-
-    task handle_lp_data();
-        wav_DFI_lp_transfer trans;
-        int wakeup = -1;
-        int counter = 0;
-        trans = new();
-        forever begin
-            collect_lp_data(trans);
-            if (trans.req)
-                wakeup = trans.wakeup;
+            if (is_ctrl) collect_lp_ctrl(trans); else collect_lp_data(trans);
+            if (trans.req) begin
+                if (wakeup > trans.wakeup) begin
+                    `uvm_error(get_name(), $psprintf("wakeup time has been DECREASED from %0d to %0d", wakeup, trans.wakeup));
+                end
+                else if ((wakeup != trans.wakeup) && !trans.ack) begin
+                    `uvm_error(get_name(), $psprintf("wakeup time has been changed from %0d to %0d while ack was not high", wakeup, trans.wakeup));
+                end
+                else if ((wakeup != trans.wakeup) && steadyCounter < `tlp_resp) begin
+                    `uvm_error(get_name(), $psprintf("wakeup time has been changed from %0d to %0d so early in %0d cycles", wakeup, trans.wakeup, steadyCounter));
+                end
+                else begin
+                    `uvm_info(get_name(), $psprintf("wakeup time has been INCREASED from %0d to %0d", wakeup, trans.wakeup), UVM_MEDIUM);                    
+                    wakeup = trans.wakeup;
+                end
+                ++steadyCounter;
+            end
             else if (trans.ack)
                 ++counter;
             else 
@@ -93,33 +88,48 @@ class wav_DFI_monitor extends uvm_monitor;
 
     task handle_phyupd();
         wav_DFI_update_transfer trans, original;
-        int counter = 0;
+        int counter = 0, steadyCounter = 0;
         bit next_should_be_idle = 0, count = 0;
         trans = new();
         original = new();
         collect_phyupd(original);
         forever begin
             collect_phyupd(trans);
-            if (!trans.req & !trans.ack) begin
-                `uvm_info(get_name(), $psprintf("phyupd_req stayed HIGH for %d", counter), UVM_MEDIUM);
-                break;
+            if (trans.req) begin
+                ++steadyCounter;
+                if (trans.ack)
+                    count = 1'b1;
             end
-            else if (!trans.req & trans.ack) begin
-                if (next_should_be_idle) begin
-                    `uvm_error(get_name(), "phyupd_ack stayed HIGH for more than 1 cycle after phyupd_req became LOW"); 
+            else begin
+                if (steadyCounter > `tphyupd_resp) begin
+                    `uvm_error(get_name(), $psprintf("phyupd req stayed high for %0d more than %0d", steadyCounter, `tphyupd_resp));
                 end
-                else
-                    next_should_be_idle = 1'b1;
-            end
-            else if (trans.req & trans.ack) begin
-                count = 1'b1;
+
+                if (!trans.ack) begin
+                    if (counter > phyupd_types[original._type]) begin
+                        `uvm_error(get_name(), $psprintf("phyupd req stayed high for %0d more than %0d", counter, phyupd_types[original._type]));
+                    end 
+                    else begin
+                        `uvm_info(get_name(), $psprintf("phyupd_req stayed HIGH for %d", counter), UVM_MEDIUM);
+                    end
+                    break;
+                end
+                else begin
+                    if (next_should_be_idle) begin
+                        `uvm_error(get_name(), "phyupd_ack stayed HIGH for more than 1 cycle after phyupd_req became LOW"); 
+                    end
+                    else
+                        next_should_be_idle = 1'b1;
+                end
+                
             end
 
             if (count & trans.req)
                 ++counter;
 
-            if (original.compare(trans))
-                `uvm_error(get_name(), "Some of the phyupd signals are not the stable during the transaction");
+            if (original.compare(trans)) begin  // type should be constant
+                `uvm_error(get_name(), $psprintf("phyupd type is not stable but changed from %0d to %0d", original._type, trans._type));
+            end
 
             @(vif.mp_mon.cb_mon);
         end
@@ -127,12 +137,27 @@ class wav_DFI_monitor extends uvm_monitor;
 
     task handle_ctrlupd();
         wav_DFI_update_transfer trans;
-        int counter = 0;
+        int counter = 0, steadyCounter = 0;
         forever begin
             collect_ctrlupd(trans);
-            if (!trans.req) begin
-                if (trans.ack)
+            if (trans.req) begin
+                ++steadyCounter;
+            end
+            else begin
+                // For how many cycles was ctrlupd req stable ?
+                if (steadyCounter < `tctrlupd_min) begin
+                    `uvm_error(get_name(), $psprintf("ctrlupd req stayed high for only %0d instead of %0d", steadyCounter, `tctrlupd_min));
+                end
+                else if (steadyCounter > `tctrlupd_max) begin
+                    `uvm_error(get_name(), $psprintf("ctrlupd req stayed high for %0d more than %0d", steadyCounter, `tctrlupd_max));
+                end
+                else begin
+                    `uvm_info(get_name(), $psprintf("ctrlupd req stayed high for only %0d", steadyCounter), UVM_MEDIUM);                    
+                end
+
+                if (trans.ack) begin
                     `uvm_error(get_name(), "ctrlupd_req is LOW while ctrlupd_ack is HIGH");
+                end
                 `uvm_info(get_name(), $psprintf("ctrlupd_ack stayed HIGH for %d", counter), UVM_MEDIUM);
                 break;
             end
@@ -145,33 +170,44 @@ class wav_DFI_monitor extends uvm_monitor;
 
     task handle_phymstr();
         wav_DFI_phymstr_transfer trans, original;
-        int counter = 0;
+        int counter = 0, steadyCounter = 0;
         bit next_should_be_idle = 0, count = 0;
         trans = new();
         original = new();
         collect_phymstr(original);
         forever begin
             collect_phymstr(trans);
-            if (!trans.req & !trans.ack) begin
-                `uvm_info(get_name(), $psprintf("phymstr_req stayed HIGH for %d", counter), UVM_MEDIUM);
-                break;
-            end
-            else if (!trans.req & trans.ack) begin
-                if (next_should_be_idle) begin
-                    `uvm_error(get_name(), "phymstr_ack stayed HIGH for more than 1 cycle after phymstr_req became LOW"); 
-                end
+            if (trans.req) begin
+                if (trans.ack)
+                    count = 1'b1;
                 else
-                    next_should_be_idle = 1'b1;
+                    ++steadyCounter;
             end
-            else if (trans.req & trans.ack) begin
-                count = 1'b1;
+            else begin
+                if (!trans.ack) begin
+                    if (counter > phymstr_types[original._type]) begin
+                        `uvm_error(get_name(), $psprintf("phymstr req is asserted in %0d instead of %0d", counter, phymstr_types[original._type]));
+                    end
+                    else begin
+                        `uvm_info(get_name(), $psprintf("phymstr_req stayed HIGH for %d", counter), UVM_MEDIUM);
+                    end 
+                    break;
+                end
+                else begin
+                    if (next_should_be_idle) begin
+                        `uvm_error(get_name(), "phymstr_ack stayed HIGH for more than 1 cycle after phymstr_req became LOW"); 
+                    end
+                    else
+                        next_should_be_idle = 1'b1;
+                end
             end
 
             if (count & trans.req)
                 ++counter;
 
-            if (original.compare(trans))
+            if (original.compare(trans)) begin
                 `uvm_error(get_name(), "Some of the phymstr signals are not the stable during the transaction");
+            end
 
             @(vif.mp_mon.cb_mon);
         end
@@ -183,40 +219,50 @@ class wav_DFI_monitor extends uvm_monitor;
     task monitor_lp_ctrl(); 
         forever begin 
             @(vif.mp_mon.cb_mon) 
-            if (vif.mp_mon.cb_mon.lp_ctrl_req)
-                handle_lp_ctrl();
+            if (vif.mp_mon.cb_mon.lp_ctrl_req) begin
+                `uvm_info(get_name(), "lp_ctrl transaction is detected", UVM_MEDIUM);                
+                handle_lp(1);
+            end
         end      
     endtask          
         
     task monitor_lp_data();         
         forever begin                 
             @(vif.mp_mon.cb_mon) 
-            if (vif.mp_mon.cb_mon.lp_data_req)
-                handle_lp_data();
+            if (vif.mp_mon.cb_mon.lp_data_req) begin
+                `uvm_info(get_name(), "lp_data transaction is detected", UVM_MEDIUM);
+                handle_lp(0);
+            end
         end
     endtask
 
     task monitor_phyupd ();           
         forever begin                
             @(vif.mp_mon.cb_mon)     
-            if (vif.mp_mon.cb_mon.phyupd_req) 
+            if (vif.mp_mon.cb_mon.phyupd_req) begin
+                `uvm_info(get_name(), "phyupd transaction is detected", UVM_MEDIUM);
                 handle_phyupd();  
+            end
         end     
     endtask
     
     task monitor_ctrlupd ();                 
         forever begin            
             @(vif.mp_mon.cb_mon) 
-            if (vif.mp_mon.cb_mon.ctrlupd_req)
+            if (vif.mp_mon.cb_mon.ctrlupd_req) begin
+                `uvm_info(get_name(), "ctrlupd transaction is detected", UVM_MEDIUM);
                 handle_ctrlupd();
+            end
         end 
     endtask  
     
     task monitor_phymstr();                 
         forever begin         
             @(vif.mp_mon.cb_mon)       
-            if (vif.mp_mon.cb_mon.phymstr_req)
+            if (vif.mp_mon.cb_mon.phymstr_req) begin
+                `uvm_info(get_name(), "phymstr transaction is detected", UVM_MEDIUM);
                 handle_phymstr();
+            end
         end    
     endtask
 
