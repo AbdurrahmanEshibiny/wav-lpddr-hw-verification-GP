@@ -55,6 +55,7 @@ class wav_DFI_monitor extends uvm_monitor;
         wav_DFI_lp_transfer trans;
         int wakeup = -1;
         int counter = 0, steadyCounter = 0;
+        bit isAcked = 0;
         trans = new();
         forever begin
             if (is_ctrl) collect_lp_ctrl(trans); else collect_lp_data(trans);
@@ -74,8 +75,13 @@ class wav_DFI_monitor extends uvm_monitor;
                 end
                 ++steadyCounter;
             end
-            else if (trans.ack)
+            else if (trans.ack) begin
+                if (steadyCounter < `tlp_resp && !isAcked) begin
+                    `uvm_error(get_name(), $psprintf("lp req has been activated only for %0d instead of %0d", steadyCounter, `tlp_resp));
+                end
+                isAcked = 1;
                 ++counter;
+            end
             else 
                 break;
             @(vif.mp_mon.cb_mon);
@@ -138,6 +144,7 @@ class wav_DFI_monitor extends uvm_monitor;
     task handle_ctrlupd();
         wav_DFI_update_transfer trans;
         int counter = 0, steadyCounter = 0;
+        bit isAcked = 0;
         forever begin
             collect_ctrlupd(trans);
             if (trans.req) begin
@@ -161,9 +168,15 @@ class wav_DFI_monitor extends uvm_monitor;
                 `uvm_info(get_name(), $psprintf("ctrlupd_ack stayed HIGH for %d", counter), UVM_MEDIUM);
                 break;
             end
+
             if (trans.ack) begin
+                if (~isAcked & steadyCounter > `tctrlupd_min) begin
+                    `uvm_error(get_name(), $psprintf("ctrlupd req is acked at %0d more than %0d", steadyCounter, `tctrlupd_min));
+                end
                 ++counter;
+                isAcked = 1;
             end
+
             @(vif.mp_mon.cb_mon);
         end
     endtask
@@ -266,9 +279,50 @@ class wav_DFI_monitor extends uvm_monitor;
         end    
     endtask
 
+    task monitor_initiailization();
+        wav_DFI_lp_transfer lp_ctrl = new(), lp_data = new();
+        wav_DFI_phymstr_transfer phymstr = new();
+        wav_DFI_update_transfer ctrlupd = new(), phyupd = new();
+
+        @(vif.mp_mon.cb_mon) 
+        // Collect initial transaction at the first cycle
+        collect_ctrlupd(ctrlupd);
+        collect_phyupd(phyupd);
+        collect_lp_ctrl(lp_ctrl);
+        collect_lp_data(lp_data);
+        collect_phymstr(phymstr);
+
+        if (ctrlupd.req || ctrlupd.ack) begin
+            `uvm_error(get_name(), "ctrlupd interface is not zero at initialization");
+            ctrlupd.print();
+        end
+
+        if (phyupd.req || phyupd.ack || phyupd._type) begin
+            `uvm_error(get_name(), "phyupd interface is not zero at initialization");
+            phyupd.print();
+        end
+
+        if (phymstr.req || phymstr.ack || phymstr._type || phymstr.state_sel || phymstr.cs_state) begin
+            `uvm_error(get_name(), "phymstr interface is not zero at initialization");
+            phyupd.print();
+        end
+
+        if (lp_ctrl.req || lp_ctrl.ack || lp_ctrl.wakeup) begin
+            `uvm_error(get_name(), "lp_ctrl interface is not zero at initialization");
+            lp_ctrl.print();
+        end
+
+        if (lp_data.req || lp_data.ack || lp_data.wakeup) begin
+            `uvm_error(get_name(), "lp_data interface is not zero at initialization");
+            lp_data.print();
+        end
+
+    endtask
+
     //A task to call all the monitoring tasks created earlier to work in parallel 
     task collect_transfers(); 
-        fork        
+        fork      
+            monitor_initiailization();  
             monitor_phymstr();         
             monitor_lp_ctrl();         
             monitor_lp_data();         

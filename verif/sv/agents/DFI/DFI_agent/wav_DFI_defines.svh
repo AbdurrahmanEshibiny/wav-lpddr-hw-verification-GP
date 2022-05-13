@@ -13,7 +13,7 @@
 `define tphyupd_type3 20
 
 // lp time constraints
-`define tlp_resp 4
+`define tlp_resp 5
 
 // phymstr time constraints
 `define tphymstr_resp
