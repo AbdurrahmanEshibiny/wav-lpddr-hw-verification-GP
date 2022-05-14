@@ -22,5 +22,18 @@
 `define tphymstr_type2 15
 `define tphymstr_type3 20
 
+// signal widths for command interface
+`define WAV_DFI_BANK_WIDTH 8 
+`define WAV_DFI_BG_WIDTH 8 
+`define WAV_DFI_CID_WIDTH 8 
+`define WAV_DFI_CKE_WIDTH 8 
+`define WAV_DFI_CS_WIDTH 8 
+`define WAV_DFI_DRAM_CLK_DISABLE_WIDTH 8 
+`define WAV_DFI_ODT_WIDTH 8 
+`define WAV_DFI_RESET_WIDTH 8 
+`define WAV_DFI_DATA_WIDTH 8 
+`define WAV_DFI_PHYSICAL_RANK_WIDTH 8 
+`define WAV_DFI_DBI_WIDTH WAV_DFI_DATA_WIDTH/8 
+
 
 `endif 
