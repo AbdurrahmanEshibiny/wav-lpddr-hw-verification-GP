@@ -10,6 +10,8 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
         super.new(name, parent);
     endfunction
 
+	/*should we drive the signal through sequencer*/
+
     //drive lp interface according to the specified transaction
     task drive_lp(wav_DFI_lp_transfer trans);  
         @(posedge vif.mp_drv.cb_drv) 
@@ -40,7 +42,7 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
     task drive_transaction(wav_DFI_transfer trans);
         wav_DFI_lp_transfer lp_trans;
         wav_DFI_update_transfer update_trans;
-
+	//add the remaining interface cases
         case(trans.tr_type)
             lp: begin
                 $cast(lp_trans, trans);
