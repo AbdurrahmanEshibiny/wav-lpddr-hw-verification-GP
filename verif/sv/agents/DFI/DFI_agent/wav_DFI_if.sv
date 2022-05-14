@@ -27,117 +27,65 @@ interface wav_DFI_if(input clock, input reset);
     logic                      lp_data_req = 0;
     logic [5:0]                lp_data_wakeup = 0;
 
+
 	//command
-    logic                      reset_n_p0=0,              // DDR/3/4/5 and LPDDR4/5
-    logic                      reset_n_p1=0,              // DDR/3/4/5 and LPDDR4/5
-    logic                      reset_n_p2=0,              // DDR/3/4/5 and LPDDR4/5
-    logic                      reset_n_p3=0,              // DDR/3/4/5 and LPDDR4/5
-    logic                      reset_n_p4=0,              // DDR/3/4/5 and LPDDR4/5
-    logic                      reset_n_p5=0,              // DDR/3/4/5 and LPDDR4/5
-    logic                      reset_n_p6=0,              // DDR/3/4/5 and LPDDR4/5
-    logic                      reset_n_p7=0,              // DDR/3/4/5 and LPDDR4/5
-    logic [6:0]                address_p0=0,              // For DDR4 bits[16:14] are not used
-    logic [6:0]                address_p1=0,              // For DDR4 bits[16:14] are not used
-    logic [6:0]                address_p2=0,              // For DDR4 bits[16:14] are not used
-    logic [6:0]                address_p3=0,              // For DDR4 bits[16:14] are not used
-    logic [6:0]                address_p4=0,              // For DDR4 bits[16:14] are not used
-    logic [6:0]                address_p5=0,              // For DDR4 bits[16:14] are not used
-    logic [6:0]                address_p6=0,              // For DDR4 bits[16:14] are not used
-    logic [6:0]                address_p7=0,              // For DDR4 bits[16:14] are not used
-    logic [1:0]                cke_p0=0,                  // DDR1/2/3/4 and LPDDR3/4
-    logic [1:0]                cke_p1=0,                  // DDR1/2/3/4 and LPDDR3/4
-    logic [1:0]                cke_p2=0,                  // DDR1/2/3/4 and LPDDR3/4
-    logic [1:0]                cke_p3=0,                  // DDR1/2/3/4 and LPDDR3/4
-    logic [1:0]                cke_p4=0,                  // DDR1/2/3/4 and LPDDR3/4
-    logic [1:0]                cke_p5=0,                  // DDR1/2/3/4 and LPDDR3/4
-    logic [1:0]                cke_p6=0,                  // DDR1/2/3/4 and LPDDR3/4
-    logic [1:0]                cke_p7=0,                  // DDR1/2/3/4 and LPDDR3/4
+    logic                      reset_n_p0=0,
+    logic                      reset_n_p1=0,
+    logic                      reset_n_p2=0,
+    logic                      reset_n_p3=0,
+    logic [13:0]               address_p0=0,
+    logic [13:0]               address_p1=0,
+    logic [13:0]               address_p2=0,
+    logic [13:0]               address_p3=0,
+    logic [1:0]                cke_p0=0,
+    logic [1:0]                cke_p1=0,
+    logic [1:0]                cke_p2=0,
+    logic [1:0]                cke_p3=0,
     logic [1:0]                cs_p0=0,
     logic [1:0]                cs_p1=0,
     logic [1:0]                cs_p2=0,
     logic [1:0]                cs_p3=0,
-    logic [1:0]                cs_p4=0,
-    logic [1:0]                cs_p5=0,
-    logic [1:0]                cs_p6=0,
-    logic [1:0]                cs_p7=0,
-    logic                      clk_disable_p0=0,
-    logic                      clk_disable_p1=0,
-    logic                      clk_disable_p2=0,
-    logic                      clk_disable_p3=0,
-    logic                      clk_disable_p4=0,
-    logic                      clk_disable_p5=0,
-    logic                      clk_disable_p6=0,
-    logic                      clk_disable_p7=0,
+    logic                      dram_clk_disable_p0=0,
+    logic                      dram_clk_disable_p1=0,
+    logic                      dram_clk_disable_p2=0,
+    logic                      dram_clk_disable_p3=0,
 
 
 	//write 
+    logic [63:0]               wrdata_p0=0,
+    logic [63:0]               wrdata_p1=0,
+    logic [63:0]               wrdata_p2=0,
+    logic [63:0]               wrdata_p3=0,
     logic                      parity_in_p0=0,
     logic                      parity_in_p1=0,
     logic                      parity_in_p2=0,
     logic                      parity_in_p3=0,
-    logic                      parity_in_p4=0,
-    logic                      parity_in_p5=0,
-    logic                      parity_in_p6=0,
-    logic                      parity_in_p7=0,
-    logic [31:0]               wrdata_p0=0,
-    logic [31:0]               wrdata_p1=0,
-    logic [31:0]               wrdata_p2=0,
-    logic [31:0]               wrdata_p3=0,
-    logic [31:0]               wrdata_p4=0,
-    logic [31:0]               wrdata_p5=0,
-    logic [31:0]               wrdata_p6=0,
-    logic [31:0]               wrdata_p7=0,
     logic [1:0]                wrdata_cs_p0=0,
     logic [1:0]                wrdata_cs_p1=0,
     logic [1:0]                wrdata_cs_p2=0,
     logic [1:0]                wrdata_cs_p3=0,
-    logic [1:0]                wrdata_cs_p4=0,
-    logic [1:0]                wrdata_cs_p5=0,
-    logic [1:0]                wrdata_cs_p6=0,
-    logic [1:0]                wrdata_cs_p7=0,
+    logic [7:0]                wrdata_mask_p0=0,
+    logic [7:0]                wrdata_mask_p1=0,
+    logic [7:0]                wrdata_mask_p2=0,
+    logic [7:0]                wrdata_mask_p3=0,
     logic                      wrdata_en_p0=0,
     logic                      wrdata_en_p1=0,
     logic                      wrdata_en_p2=0,
     logic                      wrdata_en_p3=0,
-    logic                      wrdata_en_p4=0,
-    logic                      wrdata_en_p5=0,
-    logic                      wrdata_en_p6=0,
-    logic                      wrdata_en_p7=0,
-    logic [3:0]                wrdata_mask_p0=0,
-    logic [3:0]                wrdata_mask_p1=0,
-    logic [3:0]                wrdata_mask_p2=0,
-    logic [3:0]                wrdata_mask_p3=0,
-    logic [3:0]                wrdata_mask_p4=0,
-    logic [3:0]                wrdata_mask_p5=0,
-    logic [3:0]                wrdata_mask_p6=0,
-    logic [3:0]                wrdata_mask_p7=0,
-
-
+    
 	//wck
     logic [1:0]                wck_cs_p0=0,
     logic [1:0]                wck_cs_p1=0,
     logic [1:0]                wck_cs_p2=0,
     logic [1:0]                wck_cs_p3=0,
-    logic [1:0]                wck_cs_p4=0,
-    logic [1:0]                wck_cs_p5=0,
-    logic [1:0]                wck_cs_p6=0,
-    logic [1:0]                wck_cs_p7=0,
     logic                      wck_en_p0=0,
     logic                      wck_en_p1=0,
     logic                      wck_en_p2=0,
     logic                      wck_en_p3=0,
-    logic                      wck_en_p4=0,
-    logic                      wck_en_p5=0,
-    logic                      wck_en_p6=0,
-    logic                      wck_en_p7=0,
     logic [1:0]                wck_toggle_p0=0,
     logic [1:0]                wck_toggle_p1=0,
     logic [1:0]                wck_toggle_p2=0,
     logic [1:0]                wck_toggle_p3=0,
-    logic [1:0]                wck_toggle_p4=0,
-    logic [1:0]                wck_toggle_p5=0,
-    logic [1:0]                wck_toggle_p6=0,
-    logic [1:0]                wck_toggle_p7=0,
 	
     
     //read
@@ -151,19 +99,19 @@ interface wav_DFI_if(input clock, input reset);
                 phyupd_ack,
                 lp_ctrl_req, lp_ctrl_wakeup, 
                 lp_data_req, lp_data_wakeup,
-                parity_in_p0,parity_in_p1,parity_in_p2,parity_in_p3,parity_in_p4,parity_in_p5,parity_in_p6,parity_in_p7,
-                wrdata_p0,wrdata_p1,wrdata_p2,wrdata_p3,wrdata_p4,wrdata_p5,wrdata_p6,wrdata_p7,
-                wrdata_cs_p0,wrdata_cs_p1,wrdata_cs_p2,wrdata_cs_p3,wrdata_cs_p4,wrdata_cs_p5,wrdata_cs_p6,wrdata_cs_p7,
-                wrdata_en_p0,wrdata_en_p1,wrdata_en_p2,wrdata_en_p3,wrdata_en_p4,wrdata_en_p5,wrdata_en_p6,wrdata_en_p7,
-                wrdata_mask_p0,wrdata_mask_p1,wrdata_mask_p2,wrdata_mask_p3,wrdata_mask_p4,wrdata_mask_p5,wrdata_mask_p6,wrdata_mask_p7,
-                wck_cs_p0,wck_cs_p1,wck_cs_p2,wck_cs_p3,wck_cs_p4,wck_cs_p5,wck_cs_p6,wck_cs_p7,
-                wck_en_p0,wck_en_p1,wck_en_p2,wck_en_p3,wck_en_p4,wck_en_p5,wck_en_p6,wck_en_p7,
-                wck_toggle_p0,wck_toggle_p1,wck_toggle_p2,wck_toggle_p3,wck_toggle_p4,wck_toggle_p5,wck_toggle_p6,wck_toggle_p7,
-                reset_n_p0,reset_n_p1,reset_n_p2,reset_n_p3,reset_n_p4,reset_n_p5,reset_n_p6,reset_n_p7,    
-                address_p0,address_p1,address_p2,address_p3,address_p4,address_p5,address_p6,address_p7,             
-                cke_p0,cke_p1,cke_p2,cke_p3,cke_p4,cke_p5,cke_p6,cke_p7,            
-                cs_p0,cs_p1,cs_p2,cs_p3,cs_p4,cs_p5,cs_p6,cs_p7,
-                clk_disable_p0,clk_disable_p1,clk_disable_p2,clk_disable_p3,clk_disable_p4,clk_disable_p5,clk_disable_p6,clk_disable_p7;
+                reset_n_p0,reset_n_p1,reset_n_p2,reset_n_p3,
+                address_p0,address_p1,address_p2,address_p3,
+                cke_p0,cke_p1,cke_p2,cke_p3,
+                cs_p0,cs_p1,cs_p2,cs_p3,
+                dram_clk_disable_p0,dram_clk_disable_p1,dram_clk_disable_p2,dram_clk_disable_p3,
+                wrdata_p0,wrdata_p1,wrdata_p2,wrdata_p3,
+                parity_in_p0,parity_in_p1,parity_in_p2,parity_in_p3,
+                wrdata_cs_p0,wrdata_cs_p1,wrdata_cs_p2,wrdata_cs_p3,
+                wrdata_mask_p0,wrdata_mask_p1,wrdata_mask_p2,wrdata_mask_p3,
+                wrdata_en_p0,wrdata_en_p1,wrdata_en_p2,wrdata_en_p3,
+                wck_cs_p0,wck_cs_p1,wck_cs_p2,wck_cs_p3,
+                wck_en_p0,wck_en_p1,wck_en_p2,wck_en_p3,
+                wck_toggle_p0,wck_toggle_p1,wck_toggle_p2,wck_toggle_p3;
                 /*read*/
                 /*status*/
         input lp_data_ack, lp_ctrl_ack, ctrlupd_ack, phyupd_req, phyupd_type,
@@ -179,21 +127,19 @@ interface wav_DFI_if(input clock, input reset);
         phymstr_ack, phymstr_cs_state, phymstr_req, phymstr_state_sel, phymstr_type,
         lp_ctrl_req, lp_ctrl_wakeup, lp_ctrl_ack,
         lp_data_req, lp_data_wakeup, lp_data_ack,
-        parity_in_p0,parity_in_p1,parity_in_p2,parity_in_p3,parity_in_p4,parity_in_p5,parity_in_p6,parity_in_p7,
-        wrdata_p0,wrdata_p1,wrdata_p2,wrdata_p3,wrdata_p4,wrdata_p5,wrdata_p6,wrdata_p7,
-        wrdata_cs_p0,wrdata_cs_p1,wrdata_cs_p2,wrdata_cs_p3,wrdata_cs_p4,wrdata_cs_p5,wrdata_cs_p6,wrdata_cs_p7,
-        wrdata_en_p0,wrdata_en_p1,wrdata_en_p2,wrdata_en_p3,wrdata_en_p4,wrdata_en_p5,wrdata_en_p6,wrdata_en_p7,
-        wrdata_mask_p0,wrdata_mask_p1,wrdata_mask_p2,wrdata_mask_p3,wrdata_mask_p4,wrdata_mask_p5,wrdata_mask_p6,wrdata_mask_p7,
-        wck_cs_p0,wck_cs_p1,wck_cs_p2,wck_cs_p3,wck_cs_p4,wck_cs_p5,wck_cs_p6,wck_cs_p7,
-        wck_en_p0,wck_en_p1,wck_en_p2,wck_en_p3,wck_en_p4,wck_en_p5,wck_en_p6,wck_en_p7,
-        wck_toggle_p0,wck_toggle_p1,wck_toggle_p2,wck_toggle_p3,wck_toggle_p4,wck_toggle_p5,wck_toggle_p6,wck_toggle_p7,
-        reset_n_p0,reset_n_p1,reset_n_p2,reset_n_p3,reset_n_p4,reset_n_p5,reset_n_p6,reset_n_p7,    
-        address_p0,address_p1,address_p2,address_p3,address_p4,address_p5,address_p6,address_p7,             
-        cke_p0,cke_p1,cke_p2,cke_p3,cke_p4,cke_p5,cke_p6,cke_p7,            
-        cs_p0,cs_p1,cs_p2,cs_p3,cs_p4,cs_p5,cs_p6,cs_p7,
-        clk_disable_p0,clk_disable_p1,clk_disable_p2,clk_disable_p3,clk_disable_p4,clk_disable_p5,clk_disable_p6,clk_disable_p7;
-
-	    
+        reset_n_p0,reset_n_p1,reset_n_p2,reset_n_p3,
+        address_p0,address_p1,address_p2,address_p3,
+        cke_p0,cke_p1,cke_p2,cke_p3,
+        cs_p0,cs_p1,cs_p2,cs_p3,
+        dram_clk_disable_p0,dram_clk_disable_p1,dram_clk_disable_p2,dram_clk_disable_p3,
+        wrdata_p0,wrdata_p1,wrdata_p2,wrdata_p3,
+        parity_in_p0,parity_in_p1,parity_in_p2,parity_in_p3,
+        wrdata_cs_p0,wrdata_cs_p1,wrdata_cs_p2,wrdata_cs_p3,
+        wrdata_mask_p0,wrdata_mask_p1,wrdata_mask_p2,wrdata_mask_p3,
+        wrdata_en_p0,wrdata_en_p1,wrdata_en_p2,wrdata_en_p3,
+        wck_cs_p0,wck_cs_p1,wck_cs_p2,wck_cs_p3,
+        wck_en_p0,wck_en_p1,wck_en_p2,wck_en_p3,
+        wck_toggle_p0,wck_toggle_p1,wck_toggle_p2,wck_toggle_p3;
         /*read*/
         /*status*/
     endclocking // cb_mon
