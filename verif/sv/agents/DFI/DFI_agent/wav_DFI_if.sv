@@ -25,7 +25,6 @@ interface wav_DFI_if(input clock, input reset);
 
 
 	//command
-<<<<<<< HEAD
     logic                      reset_n [0:3] = 0;
     logic [13:0]               address [0:3] = 0;
     logic [1:0]                cke [0:3] = 0;
