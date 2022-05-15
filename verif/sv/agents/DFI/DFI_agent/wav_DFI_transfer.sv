@@ -24,7 +24,6 @@ typedef struct {
     bit [`WAV_DFI_RESET_WIDTH-1:0]dfi_reset_n;
     bit dfi_we_n;
 } cmd_t; // this struct will be used for both read and write
-
 */
 
 // Base class for all DFI transactions
