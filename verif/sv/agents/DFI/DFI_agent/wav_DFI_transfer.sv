@@ -175,17 +175,17 @@ virtual class rw extends wav_DFI_transfer;
 endclass
 */
 
-class read extends wav_DFI_transfer;
-    bit [`WAV_DFI_DATA_WIDTH-1:0] dfi_rddata;
-    bit [`WAV_DFI_PHYSICAL_RANK_WIDTH-1:0] dfi_rddata_cs;
-    bit [`WAV_DFI_DBI_WIDTH-1:0] dfi_rddata_dbi;
-    bit [(`WAV_DFI_DATA_WIDTH/8)-1:0] dfi_rddata_dnv;
-    bit [`WAV_DFI_DATA_EN_WIDTH-1:0] dfi_rddata_en;
-    bit [`WAV_READ_DATA_VALID_WIDTH-1:0] dfi_rddata_valid;
+class rd_seq_item extends wav_DFI_transfer;
+    bit [63:0] dfi_rddata [0:3];
+    bit [1:0] dfi_rddata_cs [0:3];
+    bit [7:0] dfi_rddata_dbi [0:3];
+    bit [7:0] dfi_rddata_dnv [0:3];
+    bit dfi_rddata_en [0:3];
+    bit dfi_rddata_valid [0:3];
     
 
     // modify the factory appropriately
-    `uvm_object_utils(read);
+    `uvm_object_utils(rd_seq_item);
 
     function new(string name="read_seq_item");
         super.new(name);
