@@ -46,66 +46,7 @@ interface wav_DFI_if(input clock, input reset);
     logic                      wck_en [0:3] = 0;
     logic [1:0]                wck_toggle [0:3] = 0;
     
-=======
-    logic                      reset_n_p0=0;
-    logic                      reset_n_p1=0;
-    logic                      reset_n_p2=0;
-    logic                      reset_n_p3=0;
-    logic [13:0]               address_p0=0;
-    logic [13:0]               address_p1=0;
-    logic [13:0]               address_p2=0;
-    logic [13:0]               address_p3=0;
-    logic [1:0]                cke_p0=0;
-    logic [1:0]                cke_p1=0;
-    logic [1:0]                cke_p2=0;
-    logic [1:0]                cke_p3=0;
-    logic [1:0]                cs_p0=0;
-    logic [1:0]                cs_p1=0;
-    logic [1:0]                cs_p2=0;
-    logic [1:0]                cs_p3=0;
-    logic                      dram_clk_disable_p0=0;
-    logic                      dram_clk_disable_p1=0;
-    logic                      dram_clk_disable_p2=0;
-    logic                      dram_clk_disable_p3=0;
 
-
-	// write 
-    logic [63:0]               wrdata_p0=0;
-    logic [63:0]               wrdata_p1=0;
-    logic [63:0]               wrdata_p2=0;
-    logic [63:0]               wrdata_p3=0;
-    logic                      parity_in_p0=0;
-    logic                      parity_in_p1=0;
-    logic                      parity_in_p2=0;
-    logic                      parity_in_p3=0;
-    logic [1:0]                wrdata_cs_p0=0;
-    logic [1:0]                wrdata_cs_p1=0;
-    logic [1:0]                wrdata_cs_p2=0;
-    logic [1:0]                wrdata_cs_p3=0;
-    logic [7:0]                wrdata_mask_p0=0;
-    logic [7:0]                wrdata_mask_p1=0;
-    logic [7:0]                wrdata_mask_p2=0;
-    logic [7:0]                wrdata_mask_p3=0;
-    logic                      wrdata_en_p0=0;
-    logic                      wrdata_en_p1=0;
-    logic                      wrdata_en_p2=0;
-    logic                      wrdata_en_p3=0;
-    
-	// wck
-    logic [1:0]                wck_cs_p0=0;
-    logic [1:0]                wck_cs_p1=0;
-    logic [1:0]                wck_cs_p2=0;
-    logic [1:0]                wck_cs_p3=0;
-    logic                      wck_en_p0=0;
-    logic                      wck_en_p1=0;
-    logic                      wck_en_p2=0;
-    logic                      wck_en_p3=0;
-    logic [1:0]                wck_toggle_p0=0;
-    logic [1:0]                wck_toggle_p1=0;
-    logic [1:0]                wck_toggle_p2=0;
-    logic [1:0]                wck_toggle_p3=0;
->>>>>>> c91c548868f0265d2cee7250a9b3285345f3d1a2
-	
     // NOT NEEDED FOR NOW: `include "wav_DFI_defines.svh"
     // read
     logic [63:0]               rddata [0:3] = '{default:0};
@@ -175,31 +116,6 @@ interface wav_DFI_if(input clock, input reset);
 
     clocking cb_mon @(posedge clock);
         default input #2ns;
-<<<<<<< HEAD
-        input ctrlupd_req, ctrlupd_ack,
-        phyupd_ack, phyupd_req, phyupd_type,
-        phymstr_ack, phymstr_cs_state, phymstr_req, phymstr_state_sel, phymstr_type,
-        lp_ctrl_req, lp_ctrl_wakeup, lp_ctrl_ack,
-        lp_data_req, lp_data_wakeup, lp_data_ack,
-        /*command*/
-        reset_n,
-        address,
-        cke,
-        cs,
-        dram_clk_disable,
-        /*write*/
-        wrdata,
-        parity_in,
-        wrdata_cs,
-        wrdata_mask,
-        wrdata_en,
-        /*wck*/
-        wck_cs,
-        wck_en,
-        wck_toggle;
-        /*read*/
-        /*status*/
-=======
                 // update
         input   ctrlupd_req, ctrlupd_ack,
                 phyupd_ack, phyupd_req, phyupd_type,
@@ -237,7 +153,6 @@ interface wav_DFI_if(input clock, input reset);
                 freq_fsp,
                 freq_ratio,
                 frequency;
->>>>>>> c91c548868f0265d2cee7250a9b3285345f3d1a2
     endclocking // cb_mon
 
     modport mp_drv(input reset, clocking cb_drv);
