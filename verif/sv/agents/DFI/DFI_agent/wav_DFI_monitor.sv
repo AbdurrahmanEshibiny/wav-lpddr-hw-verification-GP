@@ -16,6 +16,21 @@ class wav_DFI_monitor extends uvm_monitor;
     endfunction
 	/*add collect for remaining interface signals*/
     //each task samples a single packet from the corresponding sub-interface 
+    task collect_write(ref wav_DFI_write_transfer trans); 
+        trans.wrdata = vif.mp_mon.cb_mon.wrdata; 
+        trans.parity_in = vif.mp_mon.cb_mon.parity_in; 
+        trans.wrdata_cs = vif.mp_mon.cb_mon.wrdata_cs; 
+        trans.wrdata_mask = vif.mp_mon.cb_mon.wrdata_mask;
+        trans.wrdata_en = vif.mp_mon.cb_mon.wrdata_en;
+        trans.address = vif.mp_mon.cb_mon.address;
+    endtask
+
+    task collect_wck(ref wav_DFI_wck_transfer trans); 
+        trans.wck_cs = vif.mp_mon.cb_mon.wck_cs;
+        trans.wck_en = vif.mp_mon.cb_mon.wck_en;
+        trans.wck_toggle = vif.mp_mon.cb_mon.wck_toggle;
+    endtask
+
     task collect_lp_ctrl(ref wav_DFI_lp_transfer trans); 
         trans.req = vif.mp_mon.cb_mon.lp_ctrl_req; 
         trans.ack = vif.mp_mon.cb_mon.lp_ctrl_ack; 
@@ -50,6 +65,25 @@ class wav_DFI_monitor extends uvm_monitor;
     endtask
 
 /* add handles for the remaining interface signals*/
+    
+    task handle_write();
+        wav_DFI_write_transfer trans;
+        trans = new();
+        forever begin
+            /*checks*/
+        end
+
+    endtask
+
+    task handle_wck();
+        wav_DFI_wck_transfer trans;
+        trans = new();
+        forever begin
+            /*checks*/
+        end
+
+    endtask
+
     //Handles a single request and performs any required checking throughout the transaction
     task handle_lp(bit is_ctrl);
         wav_DFI_lp_transfer trans;
@@ -279,11 +313,32 @@ class wav_DFI_monitor extends uvm_monitor;
         end    
     endtask
 
+    task monitor_write();                 
+        forever begin         
+            @(vif.mp_mon.cb_mon)       
+            if (vif.mp_mon.cb_mon.wrdata_en) begin
+                `uvm_info(get_name(), "write transaction is detected", UVM_MEDIUM);
+                handle_write();
+            end
+        end    
+    endtask
+
+    task monitor_wck();                 
+        forever begin         
+            @(vif.mp_mon.cb_mon)       
+            if (vif.mp_mon.cb_mon.wck_en) begin
+                `uvm_info(get_name(), "wck transaction is detected", UVM_MEDIUM);
+                handle_wck();
+            end
+        end    
+    endtask
+
     task monitor_initiailization();
         wav_DFI_lp_transfer lp_ctrl = new(), lp_data = new();
         wav_DFI_phymstr_transfer phymstr = new();
         wav_DFI_update_transfer ctrlupd = new(), phyupd = new();
-
+        wav_DFI_write_transfer write = new()
+        wav_DFI_wck_transfer wck = new()
         @(vif.mp_mon.cb_mon) 
         // Collect initial transaction at the first cycle
         collect_ctrlupd(ctrlupd);
@@ -291,6 +346,8 @@ class wav_DFI_monitor extends uvm_monitor;
         collect_lp_ctrl(lp_ctrl);
         collect_lp_data(lp_data);
         collect_phymstr(phymstr);
+        collect_write(write);
+        collect_wck(wck);
 
         if (ctrlupd.req || ctrlupd.ack) begin
             `uvm_error(get_name(), "ctrlupd interface is not zero at initialization");
@@ -328,6 +385,8 @@ class wav_DFI_monitor extends uvm_monitor;
             monitor_lp_data();         
             monitor_phyupd();         
             monitor_ctrlupd();
+            monitor_write();
+            monitor_wck();
 /*add monitor function to the remaining interface signals*/       
         join_none
     endtask

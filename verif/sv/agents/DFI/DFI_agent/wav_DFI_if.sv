@@ -29,63 +29,26 @@ interface wav_DFI_if(input clock, input reset);
 
 
 	//command
-    logic                      reset_n_p0=0,
-    logic                      reset_n_p1=0,
-    logic                      reset_n_p2=0,
-    logic                      reset_n_p3=0,
-    logic [13:0]               address_p0=0,
-    logic [13:0]               address_p1=0,
-    logic [13:0]               address_p2=0,
-    logic [13:0]               address_p3=0,
-    logic [1:0]                cke_p0=0,
-    logic [1:0]                cke_p1=0,
-    logic [1:0]                cke_p2=0,
-    logic [1:0]                cke_p3=0,
-    logic [1:0]                cs_p0=0,
-    logic [1:0]                cs_p1=0,
-    logic [1:0]                cs_p2=0,
-    logic [1:0]                cs_p3=0,
-    logic                      dram_clk_disable_p0=0,
-    logic                      dram_clk_disable_p1=0,
-    logic                      dram_clk_disable_p2=0,
-    logic                      dram_clk_disable_p3=0,
-
+    logic                      reset_n [0:3] = 0;
+    logic [13:0]               address [0:3] = 0;
+    logic [1:0]                cke [0:3] = 0;
+    logic [1:0]                cs [0:3] = 0;
+    logic                      dram_clk_disable [0:3] = 0;
+    logic                      parity_in [0:3] = 0;
+    
 
 	//write 
-    logic [63:0]               wrdata_p0=0,
-    logic [63:0]               wrdata_p1=0,
-    logic [63:0]               wrdata_p2=0,
-    logic [63:0]               wrdata_p3=0,
-    logic                      parity_in_p0=0,
-    logic                      parity_in_p1=0,
-    logic                      parity_in_p2=0,
-    logic                      parity_in_p3=0,
-    logic [1:0]                wrdata_cs_p0=0,
-    logic [1:0]                wrdata_cs_p1=0,
-    logic [1:0]                wrdata_cs_p2=0,
-    logic [1:0]                wrdata_cs_p3=0,
-    logic [7:0]                wrdata_mask_p0=0,
-    logic [7:0]                wrdata_mask_p1=0,
-    logic [7:0]                wrdata_mask_p2=0,
-    logic [7:0]                wrdata_mask_p3=0,
-    logic                      wrdata_en_p0=0,
-    logic                      wrdata_en_p1=0,
-    logic                      wrdata_en_p2=0,
-    logic                      wrdata_en_p3=0,
+    logic [63:0]               wrdata [0:3] = 0;
+    logic [1:0]                wrdata_cs [0:3] = 0;
+    logic [7:0]                wrdata_mask [0:3] = 0;
+    logic                      wrdata_en [0:3] = 0;
     
+
 	//wck
-    logic [1:0]                wck_cs_p0=0;
-    logic [1:0]                wck_cs_p1=0;
-    logic [1:0]                wck_cs_p2=0;
-    logic [1:0]                wck_cs_p3=0;
-    logic                      wck_en_p0=0;
-    logic                      wck_en_p1=0;
-    logic                      wck_en_p2=0;
-    logic                      wck_en_p3=0;
-    logic [1:0]                wck_toggle_p0=0;
-    logic [1:0]                wck_toggle_p1=0;
-    logic [1:0]                wck_toggle_p2=0;
-    logic [1:0]                wck_toggle_p3=0;
+    logic [1:0]                wck_cs [0:3] = 0;
+    logic                      wck_en [0:3] = 0;
+    logic [1:0]                wck_toggle [0:3] = 0;
+    
 	
     // NOT NEEDED FOR NOW: `include "wav_DFI_defines.svh"
     //read
@@ -113,21 +76,21 @@ interface wav_DFI_if(input clock, input reset);
                 lp_ctrl_req, lp_ctrl_wakeup, 
                 lp_data_req, lp_data_wakeup,
                 // command
-                reset_n_p0,reset_n_p1,reset_n_p2,reset_n_p3,
-                address_p0,address_p1,address_p2,address_p3,
-                cke_p0,cke_p1,cke_p2,cke_p3,
-                cs_p0,cs_p1,cs_p2,cs_p3,
-                dram_clk_disable_p0,dram_clk_disable_p1,dram_clk_disable_p2,dram_clk_disable_p3,
-                parity_in_p0,parity_in_p1,parity_in_p2,parity_in_p3,
+                reset_n,
+                address,
+                cke,
+                cs,
+                dram_clk_disable,
+                parity_in,
                 // write
-                wrdata_p0,wrdata_p1,wrdata_p2,wrdata_p3,
-                wrdata_cs_p0,wrdata_cs_p1,wrdata_cs_p2,wrdata_cs_p3,
-                wrdata_mask_p0,wrdata_mask_p1,wrdata_mask_p2,wrdata_mask_p3,
-                wrdata_en_p0,wrdata_en_p1,wrdata_en_p2,wrdata_en_p3,
+                wrdata,
+                wrdata_cs,
+                wrdata_mask,
+                wrdata_en,
                 // write clk
-                wck_cs_p0,wck_cs_p1,wck_cs_p2,wck_cs_p3,
-                wck_en_p0,wck_en_p1,wck_en_p2,wck_en_p3,
-                wck_toggle_p0,wck_toggle_p1,wck_toggle_p2,wck_toggle_p3,
+                wck_cs,
+                wck_en,
+                wck_toggle,
                 // read
                 rddata_cs,
                 rddata_en,
@@ -155,19 +118,22 @@ interface wav_DFI_if(input clock, input reset);
         phymstr_ack, phymstr_cs_state, phymstr_req, phymstr_state_sel, phymstr_type,
         lp_ctrl_req, lp_ctrl_wakeup, lp_ctrl_ack,
         lp_data_req, lp_data_wakeup, lp_data_ack,
-        reset_n_p0,reset_n_p1,reset_n_p2,reset_n_p3,
-        address_p0,address_p1,address_p2,address_p3,
-        cke_p0,cke_p1,cke_p2,cke_p3,
-        cs_p0,cs_p1,cs_p2,cs_p3,
-        dram_clk_disable_p0,dram_clk_disable_p1,dram_clk_disable_p2,dram_clk_disable_p3,
-        wrdata_p0,wrdata_p1,wrdata_p2,wrdata_p3,
-        parity_in_p0,parity_in_p1,parity_in_p2,parity_in_p3,
-        wrdata_cs_p0,wrdata_cs_p1,wrdata_cs_p2,wrdata_cs_p3,
-        wrdata_mask_p0,wrdata_mask_p1,wrdata_mask_p2,wrdata_mask_p3,
-        wrdata_en_p0,wrdata_en_p1,wrdata_en_p2,wrdata_en_p3,
-        wck_cs_p0,wck_cs_p1,wck_cs_p2,wck_cs_p3,
-        wck_en_p0,wck_en_p1,wck_en_p2,wck_en_p3,
-        wck_toggle_p0,wck_toggle_p1,wck_toggle_p2,wck_toggle_p3;
+        /*command*/
+        reset_n,
+        address,
+        cke,
+        cs,
+        dram_clk_disable,
+        /*write*/
+        wrdata,
+        parity_in,
+        wrdata_cs,
+        wrdata_mask,
+        wrdata_en,
+        /*wck*/
+        wck_cs,
+        wck_en,
+        wck_toggle;
         /*read*/
         /*status*/
     endclocking // cb_mon

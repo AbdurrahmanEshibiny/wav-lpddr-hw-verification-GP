@@ -36,11 +36,28 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
     end
     endtask
 
+    task drive_write(wav_DFI_write_transfer trans);         
+    @(posedge vif.mp_drv.cb_drv)
+        vif.mp_drv.cb_drv.wrdata <= trans.wrdata;         
+        vif.mp_drv.cb_drv.wrdata_cs <= trans.wrdata_cs;  
+        vif.mp_drv.cb_drv.wrdata_en <= trans.wrdata_en;         
+        vif.mp_drv.cb_drv.wrdata_mask <= trans.wrdata_mask;  
+    endtask
+
+    task drive_wck(wav_DFI_wck_transfer trans);         
+    @(posedge vif.mp_drv.cb_drv)         
+        vif.mp_drv.cb_drv.wck_cs <= trans.wck_cs;         
+        vif.mp_drv.cb_drv.wck_en <= trans.wck_en;  
+        vif.mp_drv.cb_drv.wck_toggle <= trans.wck_toggle;        
+    endtask
+
     //there are different types of DFI transactions 
     //this task checks the tr_type in the transaction and call the corresponding task 
     task drive_transaction(wav_DFI_transfer trans);
         wav_DFI_lp_transfer lp_trans;
         wav_DFI_update_transfer update_trans;
+        wav_DFI_write_transfer write_trans;
+        wav_DFI_wck_transfer wck_trans;
 	//add the remaining interface cases
         case(trans.tr_type)
             lp: begin
@@ -50,6 +67,14 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
             update: begin     
                 $cast(update_trans, trans);
                 drive_ctrlupd(update_trans); 
+            end
+            write: begin     
+                $cast(write_trans, trans);
+                drive_write(write_trans); 
+            end
+            wck: begin     
+                $cast(wck_trans, trans);
+                drive_write(wck_trans); 
             end
         endcase    
     endtask
@@ -75,4 +100,5 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
                 vif.mp_drv.cb_drv.phymstr_ack <= 1'b0;
         end
     endtask
+
 endclass
