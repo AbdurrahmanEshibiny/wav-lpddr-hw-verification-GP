@@ -1,10 +1,6 @@
 `include "DFI/DFI_agent/wav_DFI_defines.svh"
 
 interface wav_DFI_if(input clock, input reset);
-
-    //status, not entirely implemented 
-    logic                     init_start = 0;
-
     // Update
     logic                     ctrlupd_ack = 0;
     logic                     ctrlupd_req = 0;
@@ -89,12 +85,12 @@ interface wav_DFI_if(input clock, input reset);
 	
     // NOT NEEDED FOR NOW: `include "wav_DFI_defines.svh"
     // read
-    logic [63:0]               rddata [0:3] = 0;
-    logic [1:0]                rddata_cs [0:3] = 0;
-    logic [7:0]                rddata_dbi [0:3] = 0;
-    logic [7:0]                rddata_dnv [0:3] = 0;
-    logic                      rddata_en [0:3] = 0;
-    logic                      rddata_valid [0:3] = 0;
+    logic [63:0]               rddata [0:3] = '{default:0};
+    logic [1:0]                rddata_cs [0:3] = '{default:0};
+    logic [7:0]                rddata_dbi [0:3] = '{default:0};
+    logic [7:0]                rddata_dnv [0:3] = '{default:0};
+    logic                      rddata_en [0:3] = '{default:0};
+    logic                      rddata_valid [0:3] = '{default:0};
 
 	// status
     logic                      init_complete = 0;
@@ -138,8 +134,13 @@ interface wav_DFI_if(input clock, input reset);
                 freq_ratio,
                 frequency;
 
-        input   lp_data_ack, lp_ctrl_ack, ctrlupd_ack, phyupd_req, phyupd_type,
-                phymstr_cs_state, phymstr_req, phymstr_state_sel, phymstr_type;
+                // low power
+        input   lp_data_ack, lp_ctrl_ack,
+                // update
+                ctrlupd_ack, phyupd_req, phyupd_type,
+                // phy master
+                phymstr_cs_state, phymstr_req,
+                phymstr_state_sel, phymstr_type,
                 // read
                 rddata,
                 rddata_dbi,
