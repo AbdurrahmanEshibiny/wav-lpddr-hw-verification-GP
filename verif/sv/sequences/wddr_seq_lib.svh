@@ -22,6 +22,7 @@ import ddr_global_pkg::*;
 //************Added for compilation purposes*********************
 import uvm_pkg::*;
 import wav_APB_pkg::*;
+import wav_DFI_pkg::*;
 
 `include "uvm_macros.svh"
 
