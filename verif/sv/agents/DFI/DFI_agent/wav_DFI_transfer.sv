@@ -5,7 +5,7 @@
 `include "wav_DFI_defines.svh"
 
 /// ask samuel about this
-typedef enum{DFI, control, lp, phymstr, update, status_freq, read, write} type_e;
+typedef enum{DFI, control, lp, phymstr, update, status_freq, read, write, wck} type_e;
 
 /*
 typedef struct {
@@ -51,13 +51,13 @@ class wav_DFI_write_transfer extends wav_DFI_transfer;
     bit                      wrdata_en [0:3];
     bit [13:0]               address [0:3];
 
-    `uvm_object_utils_begin(wav_DFI_control_transfer)
-        `uvm_field_int(wrdata, UVM_DEFAULT | UVM_NOCOMPARE)
-        `uvm_field_int(parity_in, UVM_DEFAULT | UVM_NOCOMPARE)
-        `uvm_field_int(wrdata_cs, UVM_DEFAULT | UVM_NOCOMPARE)
-        `uvm_field_int(wrdata_mask, UVM_DEFAULT | UVM_NOCOMPARE)
-        `uvm_field_int(wrdata_en, UVM_DEFAULT | UVM_NOCOMPARE)
-        `uvm_field_int(address, UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_object_utils_begin(wav_DFI_write_transfer)
+        `uvm_field_sarray_int(wrdata, UVM_DEFAULT | UVM_NOCOMPARE)
+        `uvm_field_sarray_int(parity_in, UVM_DEFAULT | UVM_NOCOMPARE)
+        `uvm_field_sarray_int(wrdata_cs, UVM_DEFAULT | UVM_NOCOMPARE)
+        `uvm_field_sarray_int(wrdata_mask, UVM_DEFAULT | UVM_NOCOMPARE)
+        `uvm_field_sarray_int(wrdata_en, UVM_DEFAULT | UVM_NOCOMPARE)
+        `uvm_field_sarray_int(address, UVM_DEFAULT | UVM_NOCOMPARE)
     `uvm_object_utils_end
     
     function new(string name=" wav_DFI_write_transfer"); 
@@ -67,15 +67,15 @@ class wav_DFI_write_transfer extends wav_DFI_transfer;
 endclass
 
 // Base class for DFI wck transactions 
-class wav_DFI_wck_transfer extends wav_wck_transfer; 
+class wav_DFI_wck_transfer extends wav_DFI_transfer; 
     bit [1:0]                wck_cs [0:3];
     bit                      wck_en [0:3];
     bit [1:0]                wck_toggle [0:3];
 
-    `uvm_object_utils_begin(wav_DFI_control_transfer)
-        `uvm_field_int(wck_cs, UVM_DEFAULT | UVM_NOCOMPARE)
-        `uvm_field_int(wck_en, UVM_DEFAULT | UVM_NOCOMPARE)
-        `uvm_field_int(wck_toggle, UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_object_utils_begin(wav_DFI_wck_transfer)
+        `uvm_field_sarray_int(wck_cs, UVM_DEFAULT | UVM_NOCOMPARE)
+        `uvm_field_sarray_int(wck_en, UVM_DEFAULT | UVM_NOCOMPARE)
+        `uvm_field_sarray_int(wck_toggle, UVM_DEFAULT | UVM_NOCOMPARE)
     `uvm_object_utils_end
     
     function new(string name=" wav_DFI_wck_transfer"); 

@@ -17,18 +17,27 @@ class wav_DFI_monitor extends uvm_monitor;
 	/*add collect for remaining interface signals*/
     //each task samples a single packet from the corresponding sub-interface 
     task collect_write(ref wav_DFI_write_transfer trans); 
-        trans.wrdata = vif.mp_mon.cb_mon.wrdata; 
-        trans.parity_in = vif.mp_mon.cb_mon.parity_in; 
-        trans.wrdata_cs = vif.mp_mon.cb_mon.wrdata_cs; 
-        trans.wrdata_mask = vif.mp_mon.cb_mon.wrdata_mask;
-        trans.wrdata_en = vif.mp_mon.cb_mon.wrdata_en;
-        trans.address = vif.mp_mon.cb_mon.address;
+        foreach(vif.mp_mon.cb_mon.wrdata[i])
+            trans.wrdata[i] = vif.mp_mon.cb_mon.wrdata[i];
+        foreach(vif.mp_mon.cb_mon.parity_in[i]) 
+            trans.parity_in[i] = vif.mp_mon.cb_mon.parity_in[i]; 
+        foreach(vif.mp_mon.cb_mon.wrdata_cs[i])
+            trans.wrdata_cs[i] = vif.mp_mon.cb_mon.wrdata_cs[i]; 
+        foreach(vif.mp_mon.cb_mon.wrdata_mask[i])
+            trans.wrdata_mask[i] = vif.mp_mon.cb_mon.wrdata_mask[i];
+        foreach(vif.mp_mon.cb_mon.wrdata_en[i])
+            trans.wrdata_en[i] = vif.mp_mon.cb_mon.wrdata_en[i];
+        foreach(vif.mp_mon.cb_mon.address[i])        
+            trans.address[i] = vif.mp_mon.cb_mon.address[i];
     endtask
 
     task collect_wck(ref wav_DFI_wck_transfer trans); 
-        trans.wck_cs = vif.mp_mon.cb_mon.wck_cs;
-        trans.wck_en = vif.mp_mon.cb_mon.wck_en;
-        trans.wck_toggle = vif.mp_mon.cb_mon.wck_toggle;
+        foreach(vif.mp_mon.cb_mon.wck_cs[i])
+            trans.wck_cs[i] = vif.mp_mon.cb_mon.wck_cs[i];
+        foreach(vif.mp_mon.cb_mon.wck_en[i])
+            trans.wck_en[i] =  vif.mp_mon.cb_mon.wck_en[i];
+        foreach(vif.mp_mon.cb_mon.wck_toggle[i])
+            trans.wck_toggle[i] = vif.mp_mon.cb_mon.wck_toggle[i];
     endtask
 
     task collect_lp_ctrl(ref wav_DFI_lp_transfer trans); 
@@ -337,8 +346,8 @@ class wav_DFI_monitor extends uvm_monitor;
         wav_DFI_lp_transfer lp_ctrl = new(), lp_data = new();
         wav_DFI_phymstr_transfer phymstr = new();
         wav_DFI_update_transfer ctrlupd = new(), phyupd = new();
-        wav_DFI_write_transfer write = new()
-        wav_DFI_wck_transfer wck = new()
+        wav_DFI_write_transfer write = new();
+        wav_DFI_wck_transfer wck = new();
         @(vif.mp_mon.cb_mon) 
         // Collect initial transaction at the first cycle
         collect_ctrlupd(ctrlupd);

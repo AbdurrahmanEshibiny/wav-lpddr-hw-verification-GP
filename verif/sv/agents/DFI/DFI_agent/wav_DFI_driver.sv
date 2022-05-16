@@ -37,18 +37,27 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
     endtask
 
     task drive_write(wav_DFI_write_transfer trans);         
-    @(posedge vif.mp_drv.cb_drv)
-        vif.mp_drv.cb_drv.wrdata <= trans.wrdata;         
-        vif.mp_drv.cb_drv.wrdata_cs <= trans.wrdata_cs;  
-        vif.mp_drv.cb_drv.wrdata_en <= trans.wrdata_en;         
-        vif.mp_drv.cb_drv.wrdata_mask <= trans.wrdata_mask;  
+        @(posedge vif.mp_drv.cb_drv);
+        // For arrays
+        foreach(trans.wrdata[i])
+            vif.mp_drv.cb_drv.wrdata[i] <= trans.wrdata[i];  
+        foreach(trans.wrdata_cs[i])
+            vif.mp_drv.cb_drv.wrdata_cs[i] <= trans.wrdata_cs[i]; 
+        foreach(trans.wrdata_en[i])
+            vif.mp_drv.cb_drv.wrdata_en[i] <= trans.wrdata_en[i];   
+        foreach(trans.wrdata_mask[i])              
+            vif.mp_drv.cb_drv.wrdata_mask[i] <= trans.wrdata_mask[i];  
     endtask
 
     task drive_wck(wav_DFI_wck_transfer trans);         
-    @(posedge vif.mp_drv.cb_drv)         
-        vif.mp_drv.cb_drv.wck_cs <= trans.wck_cs;         
-        vif.mp_drv.cb_drv.wck_en <= trans.wck_en;  
-        vif.mp_drv.cb_drv.wck_toggle <= trans.wck_toggle;        
+        @(posedge vif.mp_drv.cb_drv);
+        // For arrays
+        foreach(trans.wck_cs[i])
+            vif.mp_drv.cb_drv.wck_cs[i] <= trans.wck_cs[i];  
+        foreach(trans.wck_en[i])
+            vif.mp_drv.cb_drv.wck_en[i] <= trans.wck_en[i]; 
+        foreach(trans.wck_toggle[i])        
+            vif.mp_drv.cb_drv.wck_toggle[i] <= trans.wck_toggle[i];        
     endtask
 
     //there are different types of DFI transactions 
@@ -74,7 +83,7 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
             end
             wck: begin     
                 $cast(wck_trans, trans);
-                drive_write(wck_trans); 
+                drive_wck(wck_trans); 
             end
         endcase    
     endtask
