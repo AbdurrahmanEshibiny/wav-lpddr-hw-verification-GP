@@ -1,6 +1,7 @@
 class wav_DFI_monitor extends uvm_monitor;
 
     wav_DFI_vif vif;
+    uvm_phase monitor_run_phase;
 
     uvm_analysis_port #( wav_DFI_transfer) item_collected_port; 
 
@@ -161,6 +162,7 @@ class wav_DFI_monitor extends uvm_monitor;
                     else begin
                         `uvm_info(get_name(), $psprintf("phyupd_req stayed HIGH for %d", counter), UVM_MEDIUM);
                     end
+                    `uvm_info(get_name(), "Ending phyupd transaction", UVM_MEDIUM);                    
                     break;
                 end
                 else begin
@@ -176,8 +178,8 @@ class wav_DFI_monitor extends uvm_monitor;
             if (count & trans.req)
                 ++counter;
 
-            if (original.compare(trans)) begin  // type should be constant
-                `uvm_error(get_name(), $psprintf("phyupd type is not stable but changed from %0d to %0d", original._type, trans._type));
+            if (original._type != trans._type) begin  // type should be constant
+                `uvm_error(get_name(), $psprintf("phyupd._type is not stable but changed from %0d to %0d", original._type, trans._type));
             end
 
             @(vif.mp_mon.cb_mon);
@@ -185,7 +187,7 @@ class wav_DFI_monitor extends uvm_monitor;
     endtask
 
     task handle_ctrlupd();
-        wav_DFI_update_transfer trans;
+        wav_DFI_update_transfer trans = new();
         int counter = 0, steadyCounter = 0;
         bit isAcked = 0;
         forever begin
@@ -277,7 +279,9 @@ class wav_DFI_monitor extends uvm_monitor;
             @(vif.mp_mon.cb_mon) 
             if (vif.mp_mon.cb_mon.lp_ctrl_req) begin
                 `uvm_info(get_name(), "lp_ctrl transaction is detected", UVM_MEDIUM);                
+                monitor_run_phase.raise_objection(this, "handle_lp ctrl started");
                 handle_lp(1);
+                monitor_run_phase.drop_objection(this, "handle_lp ctrl finished");
             end
         end      
     endtask          
@@ -287,7 +291,9 @@ class wav_DFI_monitor extends uvm_monitor;
             @(vif.mp_mon.cb_mon) 
             if (vif.mp_mon.cb_mon.lp_data_req) begin
                 `uvm_info(get_name(), "lp_data transaction is detected", UVM_MEDIUM);
+                monitor_run_phase.raise_objection(this, "handle_lp data started");
                 handle_lp(0);
+                monitor_run_phase.drop_objection(this, "handle_lp data started");
             end
         end
     endtask
@@ -297,7 +303,9 @@ class wav_DFI_monitor extends uvm_monitor;
             @(vif.mp_mon.cb_mon)     
             if (vif.mp_mon.cb_mon.phyupd_req) begin
                 `uvm_info(get_name(), "phyupd transaction is detected", UVM_MEDIUM);
-                handle_phyupd();  
+                monitor_run_phase.raise_objection(this, "handle_phyupd started");
+                handle_phyupd(); 
+                monitor_run_phase.drop_objection(this, "handle_phyupd finished"); 
             end
         end     
     endtask
@@ -307,7 +315,9 @@ class wav_DFI_monitor extends uvm_monitor;
             @(vif.mp_mon.cb_mon) 
             if (vif.mp_mon.cb_mon.ctrlupd_req) begin
                 `uvm_info(get_name(), "ctrlupd transaction is detected", UVM_MEDIUM);
+                monitor_run_phase.raise_objection(this, "handle_ctrlupd started");
                 handle_ctrlupd();
+                monitor_run_phase.drop_objection(this, "handle_ctrlupd finished"); 
             end
         end 
     endtask  
@@ -317,7 +327,9 @@ class wav_DFI_monitor extends uvm_monitor;
             @(vif.mp_mon.cb_mon)       
             if (vif.mp_mon.cb_mon.phymstr_req) begin
                 `uvm_info(get_name(), "phymstr transaction is detected", UVM_MEDIUM);
+                monitor_run_phase.raise_objection(this, "handle_phymstr started");
                 handle_phymstr();
+                monitor_run_phase.drop_objection(this, "handle_phymstr finished"); 
             end
         end    
     endtask
@@ -386,7 +398,8 @@ class wav_DFI_monitor extends uvm_monitor;
     endtask
 
     //A task to call all the monitoring tasks created earlier to work in parallel 
-    task collect_transfers(); 
+    virtual task run_phase(uvm_phase phase);
+        monitor_run_phase = phase;
         fork      
             monitor_initiailization();  
             monitor_phymstr();         
@@ -397,6 +410,6 @@ class wav_DFI_monitor extends uvm_monitor;
             monitor_write();
             monitor_wck();
 /*add monitor function to the remaining interface signals*/       
-        join_none
+        join
     endtask
 endclass

@@ -6,11 +6,11 @@
 `define tctrlupd_max 10
 
 // phyupd time constraints
-`define tphyupd_resp 3
-`define tphyupd_type0 5
-`define tphyupd_type1 10
-`define tphyupd_type2 15
-`define tphyupd_type3 20
+`define tphyupd_resp 200
+`define tphyupd_type0 500
+`define tphyupd_type1 1000
+`define tphyupd_type2 1500
+`define tphyupd_type3 2000
 
 // lp time constraints
 `define tlp_resp 5
