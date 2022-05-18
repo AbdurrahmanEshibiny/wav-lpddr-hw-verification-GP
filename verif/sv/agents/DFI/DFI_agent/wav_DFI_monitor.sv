@@ -75,21 +75,38 @@ class wav_DFI_monitor extends uvm_monitor;
     endtask
 
 /* add handles for the remaining interface signals*/
-    
     task handle_write();
         wav_DFI_write_transfer trans;
+        int clkticks = 0;
         trans = new();
+        
         forever begin
             /*checks*/
-        end
+            foreach(trans.address[i])
+            begin 
+                @(trans.address[i]) begin
+                @(vif.mp_mon.cb_mon) ++clkticks; 
+                if(trans.wrdata_en[i] && vif.mp_mon.cb_mon)
+                begin 
+                    if(`tphy_wrlat != clkticks) 
+                    begin
+                        `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the write enable (%d)is not equal to tphy_wrlat(%d)",clkticks,`tphy_wrlat));                        
+                    end
+                    
+                end
+                end
 
+
+            end
+        end
     endtask
 
     task handle_wck();
         wav_DFI_wck_transfer trans;
         trans = new();
         forever begin
-            /*checks*/
+           
+           
         end
 
     endtask

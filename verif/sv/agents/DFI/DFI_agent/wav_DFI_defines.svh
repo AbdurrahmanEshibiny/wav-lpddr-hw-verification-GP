@@ -43,4 +43,17 @@
 `define WAV_DFI_DATA_EN_WIDTH 1
 `define WAV_READ_DATA_VALID_WIDTH `WAV_DFI_DATA_EN_WIDTH
 
+// write time constraints
+`define tphy_wrcsgap 0
+`define tphy_wrcslat 0
+`define tphy_wrdata 0
+`define tphy_wrlat 0
+`define tphy_wrdatadelay 0
+
+`define phydpi_mode 0
+
+`define frequency 1
+
+
+
 `endif 
