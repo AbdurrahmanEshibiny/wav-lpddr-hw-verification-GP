@@ -157,37 +157,21 @@ class wav_DFI_update_transfer extends wav_DFI_control_transfer;
     endfunction
 endclass
 
+typedef struct {
+    bit [63:0] data;
+    bit [7:0] dbi;
+} read_data_t;
 
-/*
-// virtual to prevent making instances of it
-// both read and write should create their own classes 
-// by inheriting from this class
 
-virtual class rw extends wav_DFI_transfer;
-    // cmd_t command;
-
-    // modify the factory appropriately
-    `uvm_object_utils(rw);
-
-    function new(string name="");
-        super.new(name);
-    endfunction //new()
-endclass
-*/
-
-class rd_seq_item extends wav_DFI_transfer;
-    bit [63:0] dfi_rddata [0:3];
-    bit [1:0] dfi_rddata_cs [0:3];
-    bit [7:0] dfi_rddata_dbi [0:3];
-    bit [7:0] dfi_rddata_dnv [0:3];
-    bit dfi_rddata_en [0:3];
-    bit dfi_rddata_valid [0:3];
-    
+class wav_DFI_read_transfer extends wav_DFI_transfer;
+     
+    bit [1:0] cs;
+    read_data_t rd [$];
 
     // modify the factory appropriately
-    `uvm_object_utils(rd_seq_item);
+    `uvm_object_utils(wav_DFI_read_transfer);
 
-    function new(string name="read_seq_item");
+    function new(string name="wav_DFI_read_transfer");
         super.new(name);
         tr_type = read;
     endfunction

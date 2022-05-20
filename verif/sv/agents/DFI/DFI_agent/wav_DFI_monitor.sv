@@ -74,6 +74,49 @@ class wav_DFI_monitor extends uvm_monitor;
         trans.ack = vif.mp_mon.cb_mon.ctrlupd_ack; 
     endtask
 
+    task automatic collect_read (
+        ref wav_DFI_read_transfer trans,
+        ref bit [1:0] word_ptr,
+        bit [1:0] curr_cs 
+    );
+        default clocking vif.mp_mon.cb_mon;
+        endclocking
+
+        /*
+        here we will assume we already got to the
+        point where we received a read command and
+        we keep reading until the read ends
+        */
+
+        // timing parameters for read interface
+        // find the value of this parameter
+        int t_rddata_en = 0;
+        // length of the transaction
+        int data_len = 0;
+        // ratio of the DFI clk to the DFI PHY clk
+
+    endtask
+
+    `define READ_INST 0
+
+    task handle_read();
+        bit [1:0] data_word_ptr = 0;
+        semaphore s = new(1);
+        @(vif.mp_mon.cb_mon) begin
+            foreach(vif.mp_mon.cb_mon.dfi_address[i]) begin
+                if(vif.mp_mon.cb_mon.dfi_address[i] == `READ_INST)
+                fork
+                    s.get(1);
+                    wav_DFI_read_transfer rd_seq_item = new();
+                    collect_read(rd_seq_item, data_word_ptr, i);
+                    // send rd_seq_item to scoreboard
+                    s.put(1);
+                join_none
+            end
+        end
+        
+    endtask
+
 /* add handles for the remaining interface signals*/
     task handle_write();
         wav_DFI_write_transfer trans;
