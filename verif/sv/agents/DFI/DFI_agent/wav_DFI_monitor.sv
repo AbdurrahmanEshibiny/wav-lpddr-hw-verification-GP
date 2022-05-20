@@ -79,8 +79,8 @@ class wav_DFI_monitor extends uvm_monitor;
         ref bit [1:0] word_ptr,
         bit [1:0] curr_cs 
     );
-        default clocking vif.mp_mon.cb_mon;
-        endclocking
+        // default clocking vif.mp_mon.cb_mon;
+        // endclocking
 
         /*
         here we will assume we already got to the
@@ -105,9 +105,13 @@ class wav_DFI_monitor extends uvm_monitor;
         @(vif.mp_mon.cb_mon) begin
             foreach(vif.mp_mon.cb_mon.dfi_address[i]) begin
                 if(vif.mp_mon.cb_mon.dfi_address[i] == `READ_INST)
-                fork
-                    s.get(1);
+                // I believe each statement in this code will run in parallel
+                // not the entire block of code, I think using
+                // fork begin .... end join_none 
+                // might fix this
+                fork    
                     wav_DFI_read_transfer rd_seq_item = new();
+                    s.get(1);
                     collect_read(rd_seq_item, data_word_ptr, i);
                     // send rd_seq_item to scoreboard
                     s.put(1);
