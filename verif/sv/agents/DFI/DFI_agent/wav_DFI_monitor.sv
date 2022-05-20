@@ -102,22 +102,23 @@ class wav_DFI_monitor extends uvm_monitor;
     task handle_read();
         bit [1:0] data_word_ptr = 0;
         semaphore s = new(1);
-        @(vif.mp_mon.cb_mon) begin
-            foreach(vif.mp_mon.cb_mon.dfi_address[i]) begin
-                if(vif.mp_mon.cb_mon.dfi_address[i] == `READ_INST)
-                // I believe each statement in this code will run in parallel
-                // not the entire block of code, I think using
-                // fork begin .... end join_none 
-                // might fix this
-                fork    
-                    wav_DFI_read_transfer rd_seq_item = new();
-                    s.get(1);
-                    collect_read(rd_seq_item, data_word_ptr, i);
-                    // send rd_seq_item to scoreboard
-                    s.put(1);
-                join_none
-            end
-        end
+        // REQUIRES REVISION
+        // @(vif.mp_mon.cb_mon) begin
+        //     foreach(vif.mp_mon.cb_mon.address[i]) begin
+        //         if(vif.mp_mon.cb_mon.address[i] == `READ_INST)
+        //         // I believe each statement in this code will run in parallel
+        //         // not the entire block of code, I think using
+        //         // fork begin .... end join_none 
+        //         // might fix this
+        //         fork    
+        //             wav_DFI_read_transfer rd_seq_item = new();
+        //             s.get(1);
+        //             collect_read(rd_seq_item, data_word_ptr, i);
+        //             // send rd_seq_item to scoreboard
+        //             s.put(1);
+        //         join_none
+        //     end
+        // end
         
     endtask
 
@@ -133,7 +134,8 @@ class wav_DFI_monitor extends uvm_monitor;
             begin 
                 @(trans.address[i]) begin
                 @(vif.mp_mon.cb_mon) ++clkticks; 
-                if(trans.wrdata_en[i] && vif.mp_mon.cb_mon)
+                // if(trans.wrdata_en[i] && vif.mp_mon.cb_mon) // REQUIRES REVISION
+                if(trans.wrdata_en[i])
                 begin 
                     if(`tphy_wrlat != clkticks) 
                     begin
