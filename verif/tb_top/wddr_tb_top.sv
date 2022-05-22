@@ -1210,11 +1210,11 @@ ddr_phy_1x32 u_phy_1x32 (
 
     `else
 
-        .o_dfi_ctrlupd_ack           (),
-        .i_dfi_ctrlupd_req           ('0),
-        .i_dfi_phyupd_ack            ('0),
-        .o_dfi_phyupd_req            (),
-        .o_dfi_phyupd_type           (),
+        .o_dfi_ctrlupd_ack           (DFI_if.ctrlupd_ack),
+        .i_dfi_ctrlupd_req           (DFI_if.ctrlupd_req),
+        .i_dfi_phyupd_ack            (DFI_if.phyupd_ack),
+        .o_dfi_phyupd_req            (DFI_if.phyupd_req),
+        .o_dfi_phyupd_type           (DFI_if.phyupd_type),
 
         .i_dfi_freq_fsp              ('0),
         .i_dfi_freq_ratio            ('0),
@@ -1222,18 +1222,18 @@ ddr_phy_1x32 u_phy_1x32 (
         .o_dfi_init_complete         (),
         .i_dfi_init_start            ('0),
 
-        .i_dfi_phymstr_ack           ('0),
-        .o_dfi_phymstr_cs_state      (),
-        .o_dfi_phymstr_req           (),
-        .o_dfi_phymstr_state_sel     (),
-        .o_dfi_phymstr_type          (),
+        .i_dfi_phymstr_ack           (DFI_if.phymstr_ack),
+        .o_dfi_phymstr_cs_state      (DFI_if.phymstr_cs_state),
+        .o_dfi_phymstr_req           (DFI_if.phymstr_req),
+        .o_dfi_phymstr_state_sel     (DFI_if.phymstr_state_sel),
+        .o_dfi_phymstr_type          (DFI_if.phymstr_type),
 
-        .o_dfi_lp_ctrl_ack           (),
-        .i_dfi_lp_ctrl_req           ('0),
-        .i_dfi_lp_ctrl_wakeup        ('0),
-        .o_dfi_lp_data_ack           (),
-        .i_dfi_lp_data_req           ('0),
-        .i_dfi_lp_data_wakeup        ('0),
+        .o_dfi_lp_ctrl_ack           (DFI_if.lp_ctrl_ack),
+        .i_dfi_lp_ctrl_req           (DFI_if.lp_ctrl_req),
+        .i_dfi_lp_ctrl_wakeup        (DFI_if.lp_ctrl_wakeup),
+        .o_dfi_lp_data_ack           (DFI_if.lp_data_ack),
+        .i_dfi_lp_data_req           (DFI_if.lp_data_req),
+        .i_dfi_lp_data_wakeup        (DFI_if.lp_data_wakeup),
 
         .i_dfi_reset_n_p0            (dfi_reset_sig),// FIXME
         .i_dfi_reset_n_p1            (dfi_reset_sig),// FIXME
@@ -1618,6 +1618,50 @@ ddr_phy_1x32 u_phy_1x32 (
 
 `endif
 
+
+// Register Assertions, they require accessing internal modules
+    `define dfi_v       u_phy_1x32.u_phy.u_dfi
+    `define dfi_csr_v   `dfi_v.u_dfi_csr_wrapper.u_dfi_csr.dfi_csr
+    `define rst_v       `dfi_v.i_rst
+    `define ahb_rst_v   `dfi_v.i_ahb_rst
+    `define ahb_clk_v   `dfi_v.i_ahb_clk
+
+    property csr_is_resetted (csr);
+        @(posedge `ahb_rst_v) csr |-> ($fell(csr) || ~csr);
+    endproperty;
+
+    // At-reset assertions
+    reset_item_1: assert property (csr_is_resetted(`dfi_csr_v.dfi_lp_data_if_cfg_q));
+    reset_item_2: assert property (csr_is_resetted(`dfi_csr_v.dfi_lp_data_if_sta_q));
+    reset_item_3: assert property (csr_is_resetted(`dfi_csr_v.dfi_lp_data_if_event_0_cfg_q));
+    reset_item_4: assert property (csr_is_resetted(`dfi_csr_v.dfi_lp_data_if_event_1_cfg_q));
+
+    reset_item_8: assert property (csr_is_resetted(`dfi_csr_v.dfi_lp_ctrl_if_cfg_q));
+    reset_item_9: assert property (csr_is_resetted(`dfi_csr_v.dfi_lp_ctrl_if_sta_q));
+    reset_item_10: assert property (csr_is_resetted(`dfi_csr_v.dfi_lp_ctrl_if_event_0_cfg_q));
+    reset_item_11: assert property (csr_is_resetted(`dfi_csr_v.dfi_lp_ctrl_if_event_1_cfg_q));
+
+    reset_item_51: assert property (csr_is_resetted(`dfi_csr_v.dfi_ctrlupd_if_cfg_q));
+    reset_item_52: assert property (csr_is_resetted(`dfi_csr_v.dfi_ctrlupd_if_sta_q));
+    reset_item_53: assert property (csr_is_resetted(`dfi_csr_v.dfi_ctrlupd_if_event_0_cfg_q));
+    reset_item_54: assert property (csr_is_resetted(`dfi_csr_v.dfi_ctrlupd_if_event_1_cfg_q));
+
+    reset_item_55: assert property (csr_is_resetted(`dfi_csr_v.dfi_phyupd_if_cfg_q));
+    reset_item_56: assert property (csr_is_resetted(`dfi_csr_v.dfi_phyupd_if_sta_q));
+
+    reset_item_57: assert property (csr_is_resetted(`dfi_csr_v.dfi_phymstr_if_cfg_q));
+    reset_item_58: assert property (csr_is_resetted(`dfi_csr_v.dfi_phymstr_if_sta_q));
+
+    // assertions that the status registers actually reflect the value
+    property sta_reflects_sig(sta, sig);
+        @(posedge `ahb_clk_v) disable iff (`ahb_rst_v) ((sta != 0) |->##[0:20] (sta == sig));
+    endproperty;
+
+    lp_ctrl_status:  assert property(sta_reflects_sig(`dfi_csr_v.dfi_lp_ctrl_if_sta_q, {DFI_if.lp_ctrl_wakeup, DFI_if.lp_ctrl_ack, DFI_if.lp_ctrl_req}));
+    lp_data_status:  assert property(sta_reflects_sig(`dfi_csr_v.dfi_lp_data_if_sta_q, {DFI_if.lp_data_wakeup, DFI_if.lp_data_ack, DFI_if.lp_data_req}));
+    ctrlupd_status:  assert property(sta_reflects_sig(`dfi_csr_v.dfi_ctrlupd_if_sta_q, {DFI_if.ctrlupd_ack, DFI_if.ctrlupd_req}));
+    phyupd_status:   assert property(sta_reflects_sig(`dfi_csr_v.dfi_phyupd_if_sta_q[1:0], {DFI_if.phyupd_ack, DFI_if.phyupd_req}));
+    phymstr_status:   assert property(sta_reflects_sig(`dfi_csr_v.dfi_phymstr_if_sta_q[1:0], {DFI_if.phymstr_ack, DFI_if.phymstr_req}));
 endmodule
 
 `endif // DDR_SYNTH

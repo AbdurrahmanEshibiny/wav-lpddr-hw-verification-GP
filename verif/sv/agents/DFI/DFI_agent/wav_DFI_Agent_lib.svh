@@ -2,3 +2,5 @@
 `include "DFI/DFI_agent/wav_DFI_transfer.sv"
 `include "DFI/DFI_agent/wav_DFI_driver.sv"
 `include "DFI/DFI_agent/wav_DFI_monitor.sv"
+`include "DFI/DFI_agent/wav_DFI_sequencer.sv"
+`include "DFI/DFI_agent/wav_DFI_agent.sv"

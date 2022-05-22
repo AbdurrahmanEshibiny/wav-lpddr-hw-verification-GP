@@ -20,6 +20,7 @@ package wddr_pkg;
 
   import uvm_pkg::*;
   import wav_APB_pkg::*;
+  import wav_DFI_pkg::*;
 
 `include "uvm_macros.svh"
 

@@ -24,17 +24,18 @@ class wddr_DFI_lp_data_test extends wddr_base_test;
     task run_phase (uvm_phase phase);
 
         uvm_objection objection;
-
+        wav_DFI_sequencer sequencer;
         wav_DFI_lp_data_seq  dfi_seq;
 
-        `uvm_info (get_type_name(),$psprintf("------- Running WDDR DFI PHYMSTR TEST ---------"),UVM_LOW)
+        `uvm_info (get_type_name(),$psprintf("------- Running WDDR DFI LP_DATA TEST ---------"),UVM_LOW)
         phase.raise_objection(this, "start_test");
 
         super.run_phase(phase);
-
+        if (!uvm_config_db#(wav_DFI_sequencer)::get(uvm_root::get(), "*", "DFI_sequencer", sequencer))
+            `uvm_fatal(get_name(), "Failed at getting the sequencer");
         dfi_seq = wav_DFI_lp_data_seq::type_id::create("dfi_seq");
 
-        dfi_seq.start(null);
+        dfi_seq.start(sequencer);
 
         phase.drop_objection(this,"Done test.");
 
