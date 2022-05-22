@@ -49,6 +49,17 @@ interface gp_LPDDR5_channel_intf(
 	logic cs;
 	assign cs = cs0 | cs1;
 
+	//-------------------timing parameter declarations-------------------------------
+	int min_reset_time = 1;
+	int tREFi = 1;
+	int min_delay_between_act_to_ref = 1;
+	int tCKCSH = 1;
+	int tCSLCK = 1;
+	int BL = 16, tCK = 8;
+	int latency_with_clock_cycles_in_16 = BL + 0.5* tCK;
+	int latency_with_clock_cycles_in_32 = BL + 0.5* tCK;;
+	//----------------------------Sequences------------------------------------------
+
 	sequence PDE;
 		@(posedge ck_t) (cs==1 && ca==7'b0000001) ##1 (cs==0);
 	endsequence
@@ -124,5 +135,58 @@ interface gp_LPDDR5_channel_intf(
 	sequence RFF;
 		@(posedge ck_t) (cs==1 && ca==7'b0000010);
 	endsequence
+
+	sequence PDX;
+		@(posedge ck_t) (cs==0 && ca==7'b0000001);
+	endsequence
+
+	//----------------------------Properties------------------------------------------
+
+	property Max_Refresh_Interval;
+		@(posedge ck_t) 
+			   (REF |-> ##[1: 2] REF); //[tREFi: 2*tREFi]
+		endproperty
+	
+		property Illegal_refresh_after_activate;
+		@(posedge ck_t)
+			  ACT1 |-> not (##[0: 6] (REF)); //[0: min_delay_between_act_to_ref]
+		endproperty
+	
+		property clock_stable_before_PDX;
+		@(posedge ck_t)
+			  PDX |=> $past(dq0_wck_t, tCKCSH) != 'bZ; 
+		endproperty
+	
+		property clock_off_after_PDE;
+		@(posedge ck_t)
+			  PDE |=> ##5 ~isunknown(ck_t); //tCSLCK
+		endproperty
+		
+		property check_clock_during_write16;
+		@(posedge ck_t)
+			  WR16 |=> ~isunknown(dq0_wck_t)[*6]; //[*latency_with_clock_cycles_in_16]
+		endproperty
+		property check_clock_during_MWR;
+		@(posedge ck_t)
+			  MWR |=> ~isunknown(dq0_wck_t)[*6]; //[*latency_with_clock_cycles_in_16]
+		endproperty
+		
+	
+		//----------------------------Assertions------------------------------------------
+		
+		assertion1: 
+			assert property (@(negedge ddr_reset_n)  ##[5: $] ddr_reset_n); //##[min_reset_time: $]
+		assertion2:
+			assert property (@(posedge ck_t) Max_Refresh_Interval);
+		assertion3:
+			assert property (@(posedge ck_t) Illegal_refresh_after_activate);
+		assertion4:
+			assert property (@(posedge ck_t) clock_stable_before_PDX);
+		assertion5:
+			assert property (@(posedge ck_t) clock_off_after_PDE);
+		assertion6:
+			assert property (@(posedge ck_t) check_clock_during_write16);
+		assertion7:
+			assert property (@(posedge ck_t) check_clock_during_MWR);
 
 endinterface : gp_LPDDR5_channel_intf
