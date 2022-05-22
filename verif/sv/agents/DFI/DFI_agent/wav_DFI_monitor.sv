@@ -74,52 +74,197 @@ class wav_DFI_monitor extends uvm_monitor;
         trans.ack = vif.mp_mon.cb_mon.ctrlupd_ack; 
     endtask
 
+    `define READ_INST 0
+
+   typedef struct {
+        bit [13:0] command; 
+        bit [63:0] r_data;
+        bit [7:0] dbi;
+        bit en;
+        bit valid;
+        bit [1:0] dfi_phase;
+   } read_slice_st;
+
+    task automatic serialize_read(
+        // bit [1:0] cmd_phase,
+        output read_slice_st slices[$]
+    );
+        slices = {};
+        foreach(vif.mp_mon.cb_mon.address[i]) begin
+            read_slice_st temp;
+            temp.command = vif.mp_mon.cb_mon.address[i];
+            temp.r_data = vif.mp_mon.cb_mon.rddata[i];
+            temp.dbi = vif.mp_mon.cb_mon.rddata_dbi[i];
+            temp.en = vif.mp_mon.cb_mon.rddata_en[i];
+            temp.valid = vif.mp_mon.cb_mon.rddata_valid[i];
+            temp.dfi_phase = i;
+            slices.push_back(temp);
+        end
+        // bit [1:0] shift_cntr = 0;
+        // while (shift_cntr < cmd_phase) begin
+        //     read_slice_st tmp = slices.pop_front();
+        //     slices.push_back(tmp);
+        //     shift_cntr++;
+        // end
+    endtask
+
     task automatic collect_read (
         ref wav_DFI_read_transfer trans,
         ref bit [1:0] word_ptr,
-        bit [1:0] curr_cs 
+        ref bit [1:0] cmd_phase,
+        ref read_slice_st slices[$]
     );
-        // default clocking vif.mp_mon.cb_mon;
-        // endclocking
-
-        /*
-        here we will assume we already got to the
-        point where we received a read command and
-        we keep reading until the read ends
-        */
-
         // timing parameters for read interface
-        // find the value of this parameter
+        // TODO: find the values of these parameters
         int t_rddata_en = 0;
-        // length of the transaction
+        int t_phy_rdcslat = 0;
+
         int data_len = 0;
-        // ratio of the DFI clk to the DFI PHY clk
+        // TODO: ratio of the DFI clk to the DFI PHY clk
 
+        int en_cntr = 1;
+        int max_data_len;
+        bit is_max_len_def = 0;
+        bit delete_slice = 1;
+
+        int slice_index;
+
+        bit is_data_len_done;
+
+        read_slice_st new_slices[$];
+
+        read_data_t d;
+
+        // OPERATION STARTS HERE
+        fork
+            begin
+                // TODO: Sort out the @(posedge) mess here
+                int cs_delay = t_phy_rdcslat/4;
+                bit [1:0] cs_phase = cmd_phase + t_phy_rdcslat;
+                repeat(cs_delay) @(vif.mp_mon.cb_mon);
+                trans.cs = vif.mp_mon.cb_mon.rddata_cs[cs_phase];
+                // TODO: here we can assert that
+                // cs stays constant throughout the transaction
+            end
+        join_none
+
+        while(slices.size() <= t_rddata_en) begin
+            new_slices = {};
+            serialize_read(new_slices);
+            slices = {slices, new_slices};
+            @(vif.mp_mon.cb_mon);
+        end
+
+        while(slices[0].command != `READ_INST) begin
+            slices.pop_front();
+        end
+        slices.pop_front();
+
+        
+
+        while(en_cntr < t_rddata_en) begin
+            if(slices[0].command != `READ_INST) begin
+                slices.pop_front();
+                en_cntr++;
+            end else begin
+                delete_slice = 0;
+                max_data_len = en_cntr;
+                is_max_len_def = 1;
+                break;
+            end
+        end
+        slice_index = t_rddata_en - en_cntr;
+        
+        is_data_len_done = 0;
+
+        while(is_data_len_done == 0) begin
+            if (slices.size() < slice_index + 1) begin
+                new_slices = {};
+                serialize_read(new_slices);
+                slices = {slices, new_slices};
+                @(vif.mp_mon.cb_mon);
+            end
+            if(slices[slice_index].en == 1) begin
+                data_len++;
+                slice_index++;
+                if (is_max_len_def == 1) begin
+                    if (data_len == max_data_len) begin
+                        is_data_len_done = 1;    
+                    end
+                end else if (slices[slice_index].command == `READ_INST) begin
+                    max_data_len = data_len + t_rddata_en;
+                    is_max_len_def = 1;
+                end                
+            end else begin
+                is_data_len_done = 1;
+            end
+        end // we have the correct data length here
+
+        slice_index = 0;
+        
+        while (1) begin
+            if (slices.size() < slice_index + 1) begin
+                new_slices = {};
+                serialize_read(new_slices);
+                slices = {slices, new_slices};
+                @(vif.mp_mon.cb_mon);
+            end
+            if (slices[slice_index].valid == 1) begin
+                break;
+            end else begin
+                slice_index++;    
+            end
+            
+        end
+
+        // TODO: check that word_ptr is correct
+
+        while (data_len != 0) begin
+            if (slices.size() < slice_index + 1) begin
+                new_slices = {};
+                serialize_read(new_slices);
+                slices = {slices, new_slices};
+                @(vif.mp_mon.cb_mon);
+            end
+            if (slices[slice_index].valid == 1) begin
+                slices[slice_index].valid = 0;
+                d.data = slices[slice_index].r_data;
+                d.dbi = slices[slice_index].dbi;
+                trans.rd.push_back(d);
+                data_len--;
+            end
+            slice_index++;
+        end
+
+        word_ptr = slices[slice_index-1].dfi_phase + 1;
+
+        while(slices[0].command != `READ_INST) begin
+            slices.pop_front();
+        end
     endtask
-
-    `define READ_INST 0
 
     task handle_read();
         bit [1:0] data_word_ptr = 0;
-        semaphore s = new(1);
-        // REQUIRES REVISION
-        // @(vif.mp_mon.cb_mon) begin
-        //     foreach(vif.mp_mon.cb_mon.address[i]) begin
-        //         if(vif.mp_mon.cb_mon.address[i] == `READ_INST)
-        //         // I believe each statement in this code will run in parallel
-        //         // not the entire block of code, I think using
-        //         // fork begin .... end join_none 
-        //         // might fix this
-        //         fork    
-        //             wav_DFI_read_transfer rd_seq_item = new();
-        //             s.get(1);
-        //             collect_read(rd_seq_item, data_word_ptr, i);
-        //             // send rd_seq_item to scoreboard
-        //             s.put(1);
-        //         join_none
-        //     end
-        // end
-        
+        read_slice_st rd_slices[$] = {};
+        read_slice_st new_slices[$] = {};
+        wav_DFI_read_transfer rd_seq_item;
+        forever begin
+            // TODO: Sort out the @(posedge) mess here
+            @(vif.mp_mon.cb_mon);
+            new_slices = {};
+            serialize_read(new_slices);
+            rd_slices = {rd_slices, new_slices};
+
+            while (rd_slices.size() != 0) begin
+                if (rd_slices[0].command != `READ_INST) begin
+                    rd_slices.pop_front();
+                end else begin
+                    rd_seq_item = new();
+                    collect_read(rd_seq_item, data_word_ptr, rd_slices[0].dfi_phase, rd_slices);
+                    // send rd_seq_item to scoreboard
+                end
+            end
+        end
     endtask
 
 /* add handles for the remaining interface signals*/

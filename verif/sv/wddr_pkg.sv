@@ -21,6 +21,7 @@ package wddr_pkg;
   import uvm_pkg::*;
   import wav_APB_pkg::*;
   import wav_DFI_pkg::*;
+  import gp_lpddr5_pkg::*;
 
 `include "uvm_macros.svh"
 

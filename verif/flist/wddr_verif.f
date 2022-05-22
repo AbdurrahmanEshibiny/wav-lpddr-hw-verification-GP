@@ -12,6 +12,7 @@
 
 $APB_PKG
 $DFI_PKG
+$LPDDR5_PKG
 $WDDR_PKG
 ${VERIF}/sv/agents/mm/wav_mm.sv
 ${VERIF}/sv/agents/APB/apb_to_ahb.v
