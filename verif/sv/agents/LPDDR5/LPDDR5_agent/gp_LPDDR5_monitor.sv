@@ -103,7 +103,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 	int i;
 	int j = 0;
 	logic [0: 15]DQ;
-	int tWCK2CK, tWCKDQO, tWCKDQI, tCK, nWR, tCMDPD,tMRWPD, tESPD, tRFCab, tRFCpb, tpbR2pbR, tRP, delay, tRP, tRRD,
+	int tWCK2CK, tWCKDQO, tWCKDQI, tCK, nWR, tCMDPD,tMRWPD, tESPD, tRFCab, tRFCpb, tpbR2pbR, delay, tRP, tRRD,
 	tCSPD, tPDN, tXSR_DSM, tSR;
 	int BL = 16;
 	int time_refresh_all_bank, time_prev_CA, time_SRE,time_last_MRR, time_last_MRW, time_last_write, time_last_read, time_DSE, time_DSX,
@@ -113,8 +113,8 @@ class gp_LPDDR5_monitor extends uvm_monitor;
  	/*assign DQ = {ch0_vif.dq0_dq0, ch0_vif.dq0_dq1, ch0_vif.dq0_dq2, ch0_vif.dq0_dq3, ch0_vif.dq0_dq4, ch0_vif.dq0_dq5,
 			ch0_vif.dq0_dq6, ch0_vif.dq0_dq7,ch1_vif.dq1_dq0, ch1_vif.dq1_dq1, ch1_vif.dq1_dq2, ch1_vif.dq1_dq3,
 			ch1_vif.dq1_dq4, ch1_vif.dq1_dq5,ch1_vif.dq1_dq6, ch1_vif.dq1_dq7};*/
-	uvm_analysis_port #(write_seq_item) recieved_transaction;
-	write_seq_item item;
+	uvm_analysis_port #(wav_DFI_write_transfer) recieved_transaction;
+	wav_DFI_write_transfer item;
 
 	//--------------------------------------------------------------------------
 
@@ -139,7 +139,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 	
 
 	task run_phase(uvm_phase phase);
-		item = write_seq_item::type_id::create("item", this);
+		item = wav_DFI_write_transfer::type_id::create("item", this);
 
 		phase.raise_objection(this);
 		`uvm_info(get_name(), "LPDDR5 monitor started, objection raised.", UVM_NONE)
@@ -245,15 +245,15 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							begin
 								time_PDE = $time;
 								CA = PDE;
-								if (CA == SRE) bank_state = '{SELF_REFRESH_POWER_DOWN};
-								else bank_state = '{IDLE_POWER_DOWN};
+								if (CA == SRE) bank_state = '{default:SELF_REFRESH_POWER_DOWN};
+								else bank_state = '{default:IDLE_POWER_DOWN};
 								while(1) begin
 									@(ch0_vif.cs)begin //wait for cs to toggle for DSX
 										if( ($time - time_PDE) < tCSPD )
 											`uvm_error("gp_lpddr5_monitor", "Cannot exit deep sleep mode too soon")
 										else begin
 											time_PDX = $time;
-											bank_state = '{ACTIVE_POWER_DOWN};
+											bank_state = '{default:ACTIVE_POWER_DOWN};
 											CA = SRE;
 										end
 									end
@@ -264,7 +264,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 					ACT2:begin end
 					PRE:begin end
 					REF:begin
-						if (infs.CA6 == 0) begin
+						if (ch0_vif.CA6 == 0) begin
 							// if(bank_mode == 4)
 							// begin
 							`ifdef BG_MODE
@@ -318,7 +318,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							// end
 							`endif
 						end
-						else if (infs.CA6 == 1) // ALL BANK refresh
+						else if (ch0_vif.CA6 == 1) // ALL BANK refresh
 						begin
 							// if(bank_mode == 4) begin
 							`ifdef BG_MODE
@@ -339,7 +339,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							// end
 							// else begin
 							`else
-								if ((bank_state != '{IDLE}) 
+								if ((bank_state != '{default:IDLE}) 
 								|| (($time - time_last_refresh_per_bank) < tRFCpb )
 								|| (($time - time_refresh_all_bank) < tpbR2pbR )
 								|| (($time - time_refresh_all_bank) < tRFCab )
@@ -347,11 +347,11 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 								`uvm_error("gp_lpddr5_monitor", "Cannot refresh this bank untill all other banks are refreshed")
 								else 
 									begin
-									bank_state = ALL_BANK_REFRESH;
+									bank_state = '{default:ALL_BANK_REFRESH};
 									CA = REF;
 									time_refresh_all_bank = $time;
 									flag_all_bank_refresh_commands_done = 1;
-									#tRFCab bank_state = IDLE;
+									#tRFCab bank_state = '{default:IDLE};
 									end
 							// end
 							`endif
@@ -365,11 +365,12 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 									`uvm_error("gp_lpddr5_monitor", "WCK error")
 							end
 						end
-						assign i = 0;
+						i = 0;
 						if(bank_mode == 8) begin
 						repeat(16) begin
 							@(posedge ch0_vif.dq0_wck_t)begin
-								item.data[j][i] = DQ[i];
+								// item.data[j][i] = DQ[i];
+								//TODO fix this @ Nada
 								i++;
 							end
 						end
@@ -377,7 +378,8 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						else begin
 						repeat(16) begin
 							@(posedge ch0_vif.dq0_wck_t)begin
-								item.data[j][i] = DQ[i];
+								// item.data[j][i] = DQ[i];
+								//TODO fix this @ Nada
 								i++;
 							end
 						end
@@ -396,10 +398,11 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 									`uvm_error("gp_lpddr5_monitor", "WCK error")
 							end
 						end
-						assign i = 0;
+						i = 0;
 						repeat(16) begin
 							@(posedge ch0_vif.dq0_wck_t)begin
-								item.data[j][i] = DQ[i];
+								// item.data[j][i] = DQ[i];
+								//TODO fix this @ Nada
 								i++;
 							end
 						end
@@ -437,12 +440,12 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 					MPC:begin end
 					SRE: begin 
 						if(CA == 'bxxxxx10) begin
-							if(bank_state != '{IDLE})	// deep sleep entry
+							if(bank_state != '{default:IDLE})	// deep sleep entry
 							`uvm_error("gp_lpddr5_monitor", "Cannot enter deep sleep mode")
 							else
 							begin
 								time_DSE = $time;
-								bank_state = '{DEEP_SLEEP_MODE};
+								bank_state = '{default:DEEP_SLEEP_MODE};
 								while(1) begin
 									@(ch0_vif.cs)begin //wait for cs to toggle for DSX
 										if( ($time - time_SE) < tPDN )
@@ -456,12 +459,12 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end
 						end
 						if(CA == 'bxxxxx01) begin		// deep sleep entry with self refresh
-							if( bank_state != '{IDLE})	
+							if( bank_state != '{default:IDLE})	
 							`uvm_error("gp_lpddr5_monitor", "Cannot enter deep sleep mode")
 							else
 							begin
 								time_DSE = $time;
-								bank_state = '{DEEP_SLEEP_MODE};
+								bank_state = '{default:DEEP_SLEEP_MODE};
 								while(1) begin
 									@(ch0_vif.cs)begin 	//wait for cs to toggle for DSX
 										if( ($time - time_SE) < tPDN )
@@ -476,7 +479,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						end
 						
 						else begin //self refresh
-							if(bank_state != '{IDLE})
+							if(bank_state != '{default:IDLE})
 								`uvm_error("gp_lpddr5_monitor", "Cannot refresh this bank untill all other banks are refreshed")
 							else
 							begin
@@ -484,7 +487,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 								flag_16_refresh_commands_done 	    = 0;
 								flag_all_bank_refresh_commands_done = 0;
 								time_SRE = $time;
-								bank_state = '{SELF_REFRESH};
+								bank_state = '{default:SELF_REFRESH};
 							end
 						end
 					end
@@ -496,7 +499,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							flag_16_refresh_commands_done 	    = 1;
 							flag_all_bank_refresh_commands_done = 1;
 							time_SRX = $time;
-							bank_state = '{SELF_REFRESH_POWER_DOWN};
+							bank_state = '{default:SELF_REFRESH_POWER_DOWN};
 						end
 					end
 					
