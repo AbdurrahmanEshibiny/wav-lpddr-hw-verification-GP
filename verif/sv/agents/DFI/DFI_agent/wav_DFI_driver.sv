@@ -1,4 +1,4 @@
-class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer); 
+class wav_DFI_driver extends uvm_driver; // use default value to adhere to the wavious standard, not #(wav_DFI_transfer); 
 
     wav_DFI_vif vif;
     uvm_phase driver_run_phase;
@@ -27,6 +27,7 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
             `uvm_info(get_type_name(), "wav_DFI driver received the next item", UVM_MEDIUM);
 
             $cast(rsp, req.clone());
+
             rsp.set_id_info(req);
             `uvm_info(get_type_name(),$psprintf("wav_DFI driver start driving transfer :\n%s", rsp.sprint()), UVM_MEDIUM);
 
@@ -38,7 +39,20 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
         end
       endtask
 
-	/*should we drive the signal through sequencer*/
+    /*should we drive the signal through sequencer*/
+      
+    //reset tasks
+    task reset_lp(bit is_ctrl);
+        if (is_ctrl) begin
+            vif.mp_drv.cb_drv.lp_ctrl_req <= 0; 
+            vif.mp_drv.cb_drv.lp_ctrl_wakeup <= 0; 
+        end
+        else begin
+            vif.mp_drv.cb_drv.lp_data_req <= 0; 
+            vif.mp_drv.cb_drv.lp_data_wakeup <= 0; 
+        end
+        `uvm_info(get_name(), "done resetting lp", UVM_MEDIUM);  
+    endtask
 
     //drive lp interface according to the specified transaction
     task drive_lp(wav_DFI_lp_transfer trans);  
@@ -53,6 +67,12 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
             vif.mp_drv.cb_drv.lp_data_wakeup <= trans.wakeup; 
         end
         `uvm_info(get_name(), "done driving lp", UVM_MEDIUM);  
+
+        if (trans.cyclesCount > 0) begin
+            repeat (trans.cyclesCount) @(posedge vif.mp_drv.cb_drv);
+            reset_lp(trans.is_ctrl);
+        end
+        `uvm_info(get_name(), "done driving lp transaction", UVM_MEDIUM);  
     endtask                        
         
     //drive ctrlupd interface according to the specified transaction

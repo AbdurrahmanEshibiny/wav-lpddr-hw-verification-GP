@@ -184,4 +184,13 @@ interface wav_DFI_if(input clock, input reset);
     item_110: assert property (@(posedge clock) ~(init_start & ctrlupd_req));
     item_111: assert property (@(posedge clock) ~(init_start & lp_ctrl_req));
     item_112: assert property (@(posedge clock) ~(init_start & lp_data_req));
+
+    // while phyupd_req is accepted, ensure that no other commands are sent and that the DFI is idle
+    item_95: assert property(@(posedge clock) phyupd_ack |-> (~lp_ctrl_req & ~lp_data_req & ~phymstr_req & ~ctrlupd_req & ~(!56'({>>{address}})))); 
+    item_96: assert property(@(posedge clock) ctrlupd_ack |-> (~lp_ctrl_req & ~lp_data_req & ~phymstr_req & ~phyupd_req & ~(!56'({>>{address}})))); 
+    item_97: assert property(@(posedge clock) $rose(ctrlupd_req) |->##[0:$] ctrlupd_ack); 
+
+    // no read or write transactions at lp mode    
+    item_30: assert property(@(posedge clock) ~(lp_data_req & ~(!(4'({>>{wrdata_en}})))) && ~(lp_data_req & ~(!(4'({>>{rddata_en}})))));
+    item_27: assert property(@(posedge clock) ~(lp_ctrl_req & ~(!(56'({>>{address}})))));
 endinterface

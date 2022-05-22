@@ -92,10 +92,12 @@ need to ask samuel about this:
 class wav_DFI_control_transfer extends wav_DFI_transfer; 
     bit req; 
     bit ack; 
+    int unsigned cyclesCount;   // how many cycles should the trans be driven before returning to idle
     
     `uvm_object_utils_begin(wav_DFI_control_transfer)
         `uvm_field_int(req, UVM_DEFAULT | UVM_NOCOMPARE)
         `uvm_field_int(ack, UVM_DEFAULT | UVM_NOCOMPARE)
+        `uvm_field_int(cyclesCount, UVM_DEFAULT | UVM_NOCOMPARE)
     `uvm_object_utils_end
     
     function new(string name=" wav_DFI_control_transfer"); 
@@ -119,7 +121,7 @@ class wav_DFI_lp_transfer extends wav_DFI_control_transfer;
     
     function new(string name="wav_DFI_lp_transfer"); 
         super.new(name); 
-        super.tr_type = lp; 
+        super.tr_type = lp;
     endfunction
 endclass
     

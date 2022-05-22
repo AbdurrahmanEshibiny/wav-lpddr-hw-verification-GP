@@ -25,6 +25,7 @@ import wav_APB_pkg::*;
 import wav_DFI_pkg::*;
 
 `include "uvm_macros.svh"
+`include "DFI/DFI_agent/wav_DFI_defines.svh"
 
 `include "ddr_global_define.vh"
 `include "ddr_cmn_csr_defs.vh"
@@ -68,3 +69,6 @@ import wav_DFI_pkg::*;
 
 `include "sv/sequences/dfi/wddr_DFI_phymstr_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_phyupd_seq.sv"
+`include "sv/sequences/dfi/wddr_DFI_ctrlupd_seq.sv"
+`include "sv/sequences/dfi/wddr_DFI_lp_ctrl_seq.sv"
+`include "sv/sequences/dfi/wddr_DFI_lp_data_seq.sv"
