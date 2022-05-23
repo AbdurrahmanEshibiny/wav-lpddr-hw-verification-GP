@@ -8,6 +8,7 @@ class wav_DFI_monitor extends uvm_monitor;
     const int wakeup_times[20] = '{1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144,-1};
     const int phyupd_types[4] = '{`tphyupd_type0, `tphyupd_type1, `tphyupd_type2, `tphyupd_type3};
     const int phymstr_types[4] = '{`tphymstr_type0, `tphymstr_type1, `tphymstr_type2, `tphymstr_type3};
+    
 
     `uvm_component_utils_begin(wav_DFI_monitor)
     `uvm_component_utils_end
@@ -32,14 +33,14 @@ class wav_DFI_monitor extends uvm_monitor;
             trans.address[i] = vif.mp_mon.cb_mon.address[i];
     endtask
 
-    task collect_wck(ref wav_DFI_wck_transfer trans); 
+    /*task collect_wck(ref wav_DFI_wck_transfer trans); 
         foreach(vif.mp_mon.cb_mon.wck_cs[i])
             trans.wck_cs[i] = vif.mp_mon.cb_mon.wck_cs[i];
         foreach(vif.mp_mon.cb_mon.wck_en[i])
             trans.wck_en[i] =  vif.mp_mon.cb_mon.wck_en[i];
         foreach(vif.mp_mon.cb_mon.wck_toggle[i])
             trans.wck_toggle[i] = vif.mp_mon.cb_mon.wck_toggle[i];
-    endtask
+    endtask*/
 
     task collect_lp_ctrl(ref wav_DFI_lp_transfer trans); 
         trans.req = vif.mp_mon.cb_mon.lp_ctrl_req; 
@@ -270,39 +271,160 @@ class wav_DFI_monitor extends uvm_monitor;
 /* add handles for the remaining interface signals*/
     task handle_write();
         wav_DFI_write_transfer trans;
-        int clkticks = 0;
+        int clkticks_wrcsgab=0;
+        int clkticks_wrcslat=0;
+        int clkticks_wrdata=0;
+        int clkticks_wrdatalat=0;
+        int clkticks_wrdata_delay=0;
+        logic [1:0]temp_wrdata_cs[0:3] = '{default:0};
         trans = new();
-        
         forever begin
-            /*checks*/
+            /*checks for all write data timing parameters*/
             foreach(trans.address[i])
-            begin 
-                @(trans.address[i]) begin
-                @(vif.mp_mon.cb_mon) ++clkticks; 
-                if(trans.wrdata_en[i] && vif.mp_mon.cb_mon)
-                begin 
-                    if(`tphy_wrlat != clkticks) 
+            begin
+                if(trans.address[i] != 14'b0 && vif.mp_mon.cb_mon) 
+                begin
+                    @(vif.mp_mon.cb_mon)
                     begin
-                        `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the write enable (%d)is not equal to tphy_wrlat(%d)",clkticks,`tphy_wrlat));                        
+                        ++clkticks_wrcsgab;
+                        ++clkticks_wrcslat;
+                        ++clkticks_wrdata;
+                        ++clkticks_wrdatalat;
+                        ++clkticks_wrdata_delay;
                     end
-                    
+                    @(vif.mp_mon.cb_mon);
+                    if(trans.wrdata_cs[i] != 2'b0 && vif.mp_mon.cb_mon)  
+                    begin
+                        temp_wrdata_cs[i] = trans.wrdata_cs[i];
+                        if(`tphy_wrcslat != clkticks_wrcslat) 
+                        begin
+                            `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the write cs (%d)is not equal to tphy_wrcslat(%d)",clkticks,`tphy_wrcslat));                        
+                        end
+                        else 
+                        begin
+                            clkticks_wrcslat=0;
+                        end
+                        if(`tphy_wrlat != clkticks_wrdatalat) 
+                        begin
+                            `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the write en (%d)is not equal to tphy_wrlat(%d)",clkticks,`tphy_wrlat));                        
+                        end
+                        else 
+                        begin
+                            clkticks_wrdatalat=0;
+                        end    
+                    end
+                    if(trans.address[i] != 14'b0 && vif.mp_mon.cb_mon)
+                    begin
+                        if(trans.wrdata_cs[i] != 2'b0 && vif.mp_mon.cb_mon) 
+                        begin
+                            if(temp_wrdata_cs[i] != trans.data_cs[i])
+                            begin
+                                if(`tphy_wrcsgap != clkticks_wrcsgab) 
+                                begin
+                                    `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the next dfi command write if changeing cs (%d)is not equal to tphy_wrcsgap(%d)",clkticks,`tphy_wrcsgap));                        
+                                end
+                                else 
+                                begin
+                                    clkticks_wrcsgab=0;
+                                end
+                            end
+                        end
+                    end
                 end
+                if(trans.wrdata_en[i] != 4'b0 && vif.mp_mon.cb_mon) 
+                begin
+                    @(vif.mp_mon.cb_mon)
+                    begin
+                        ++clkticks_wrcsgab;
+                        ++clkticks_wrcslat;
+                        ++clkticks_wrdata;
+                        ++clkticks_wrdatalat;
+                        ++clkticks_wrdata_delay;
+                    end 
+                    if(trans.wrdata[i] != 64'b0 && vif.mp_mon.cb_mon)
+                    begin
+                        if(`tphy_wrdata != clkticks_wrdata)
+                        begin
+                            `uvm_error(get_name(), $psprintf("The gap between the write enable and the write data (%d)is not equal to tphy_wrdata(%d)",clkticks,`tphy_wrdata));                        
+                        end
+                        else 
+                        begin
+                            clkticks_wrdata=0;
+                        end
+                    end
+                    if(trans.wrdata[i] == 64'b0 && vif.mp_mon.cb_mon)
+                    begin
+                        if(`tphy_wrdatadelay != clkticks_wrdata_delay)
+                        begin
+                            `uvm_error(get_name(), $psprintf("The gap between the write enable and the write data completes transfer (%d)is not equal to tphy_wrdatadelay(%d)",clkticks,`tphy_wrdatadelay));                        
+                        end
+                        else 
+                        begin
+                            clkticks_wrdata_delay=0;
+                        end
+                    end
                 end
-
-
             end
         end
     endtask
 
-    task handle_wck();
+    /*task handle_wck();
         wav_DFI_wck_transfer trans;
+        int clkticks_wckdis=0;
+        int clkticks_wcktoggle=0;
+        int clkticks_wckfast_toggle=0;
+        int clkticks_wcktoggle_cs=0;
+        int clkticks_wcktoggle_rd=0;
+        int clkticks_wcktoggle_wr=0;
         trans = new();
         forever begin
-           
-           
-        end
+            foreach(trans.wck_en[i])
+            begin
+                if(trans.wck_en[i] != 1'b0 && vif.mp_mon.cb_mon) 
+                begin
+                    @(vif.mp_mon.cb_mon)
+                    {
+                       ++clkticks_wckdis;
+                       ++clkticks_wcktoggle;
+                       ++clkticks_wckfast_toggle;
+                       ++clkticks_wcktoggle_cs;
+                       ++clkticks_wcktoggle_rd;
+                       ++clkticks_wcktoggle_wr; 
+                    } 
+                    @(vif.mp_mon.cb_mon);
+                    
+                    if(trans.wck_toggle[i]==2'b10 && vif.mp_mon.cb_mon)
+                    begin
+                        if(`twck_toggle != clkticks_wcktoggle)
+                        begin
+                            `uvm_error(get_name(), $psprintf("The time between the wck enable to toggle command (%d)is not equal to twck_toggle(%d)",clkticks,`twck_toggle));                        
+                        end
+                        else
+                        begin
+                            clkticks_wcktoggle=0;
+                        end 
+                    end
+                    
+                    if(trans.wck_toggle[i]==2'b11 && vif.mp_mon.cb_mon)
+                    begin
+                        if(`twck_fast_toggle != clkticks_wckfast_toggle)
+                        begin
+                            `uvm_error(get_name(), $psprintf("The time between the wck toggle command to wck fast toggle command (%d)is not equal to twck_toggle(%d)",clkticks,`twck_fast_toggle));                        
+                        end
+                        else
+                        begin
+                            clkticks_wckfast_toggle=0;
+                        end
+                    end
+                    
 
-    endtask
+
+
+                end
+            end
+        end
+        
+    endtask*/
 
     //Handles a single request and performs any required checking throughout the transaction
     task handle_lp(bit is_ctrl);
@@ -554,7 +676,7 @@ class wav_DFI_monitor extends uvm_monitor;
         end    
     endtask
 
-    task monitor_wck();                 
+    /*task monitor_wck();                 
         forever begin         
             @(vif.mp_mon.cb_mon)       
             if (vif.mp_mon.cb_mon.wck_en) begin
@@ -562,7 +684,7 @@ class wav_DFI_monitor extends uvm_monitor;
                 handle_wck();
             end
         end    
-    endtask
+    endtask*/
 
     task monitor_initiailization();
         wav_DFI_lp_transfer lp_ctrl = new(), lp_data = new();
@@ -578,7 +700,7 @@ class wav_DFI_monitor extends uvm_monitor;
         collect_lp_data(lp_data);
         collect_phymstr(phymstr);
         collect_write(write);
-        collect_wck(wck);
+        //collect_wck(wck);
 
         if (ctrlupd.req || ctrlupd.ack) begin
             `uvm_error(get_name(), "ctrlupd interface is not zero at initialization");
@@ -618,7 +740,7 @@ class wav_DFI_monitor extends uvm_monitor;
             monitor_phyupd();         
             monitor_ctrlupd();
             monitor_write();
-            monitor_wck();
+            //monitor_wck();
 /*add monitor function to the remaining interface signals*/       
         join
     endtask
