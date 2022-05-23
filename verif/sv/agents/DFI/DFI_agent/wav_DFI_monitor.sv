@@ -276,9 +276,51 @@ class wav_DFI_monitor extends uvm_monitor;
         int clkticks_wrdata=0;
         int clkticks_wrdatalat=0;
         int clkticks_wrdata_delay=0;
+
+        int clkticks_wckdis=0;
+        int clkticks_wcktoggle=0;
+        int clkticks_wckfast_toggle=0;
+        int clkticks_wcktoggle_cs=0;
+        int clkticks_wcktoggle_rd=0;
+        int clkticks_wcktoggle_wr=0;
+
         logic [1:0]temp_wrdata_cs[0:3] = '{default:0};
         trans = new();
         forever begin
+            foreach(trans.wck_en[i])
+            begin
+                if(trans.wck_en[i] != 1'b0 && vif.mp_mon.cb_mon) 
+                begin
+                    @(vif.mp_mon.cb_mon)
+                    begin
+                       ++clkticks_wcktoggle;
+                       ++clkticks_wckfast_toggle;
+                    end
+                    @(vif.mp_mon.cb_mon);
+                    if(trans.wck_toggle[i]==2'b10 && vif.mp_mon.cb_mon)
+                    begin
+                        if(`twck_toggle != clkticks_wcktoggle)
+                        begin
+                            `uvm_error(get_name(), $psprintf("The time between the wck enable to toggle command (%d)is not equal to twck_toggle(%d)",clkticks,`twck_toggle));                        
+                        end
+                        else
+                        begin
+                            clkticks_wcktoggle=0;
+                        end 
+                    end
+                    if(trans.wck_toggle[i]==2'b11 && vif.mp_mon.cb_mon)
+                    begin
+                        if(`twck_fast_toggle != clkticks_wckfast_toggle)
+                        begin
+                            `uvm_error(get_name(), $psprintf("The time between the wck toggle command to wck fast toggle command (%d)is not equal to twck_toggle(%d)",clkticks,`twck_fast_toggle));                        
+                        end
+                        else
+                        begin
+                            clkticks_wckfast_toggle=0;
+                        end
+                    end
+                end
+            end
             /*checks for all write data timing parameters*/
             foreach(trans.address[i])
             begin
@@ -293,6 +335,17 @@ class wav_DFI_monitor extends uvm_monitor;
                         ++clkticks_wrdata_delay;
                     end
                     @(vif.mp_mon.cb_mon);
+                    if(trans.wck_cs[i] != 2'bxx && vif.mp_mon.cb_mon )
+                    begin
+                        if(`twck_toggle_cs != clkticks_wcktoggle_cs)
+                        begin
+                           `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the write cs (%d)is not equal to tphy_wrcslat(%d)",clkticks,`tphy_wrcslat));                         
+                        end
+                        else 
+                        begin
+                            clkticks_wcktoggle_cs=0;
+                        end
+                    end
                     if(trans.wrdata_cs[i] != 2'b0 && vif.mp_mon.cb_mon)  
                     begin
                         temp_wrdata_cs[i] = trans.wrdata_cs[i];
@@ -416,10 +469,6 @@ class wav_DFI_monitor extends uvm_monitor;
                             clkticks_wckfast_toggle=0;
                         end
                     end
-                    
-
-
-
                 end
             end
         end
