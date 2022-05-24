@@ -23,10 +23,6 @@ int place_holder = 1;
 `define WR place_holder
 `define tWTR_L place_holder
 
-import uvm_pkg::*;
-`include "uvm_macros.svh"
-//FIXME These might be removed in the future when we organise the file structure
-
 class gp_LPDDR5_monitor extends uvm_monitor;
 	`uvm_component_utils(gp_LPDDR5_monitor)
 	
@@ -218,6 +214,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 				endcase
 			end 
 			@(negedge ch0_vif.ck_t) begin
+				//TODO COMPLETE ASSIGNMENT OF ALL VARIABLES
 				case(next_CA)
 					PRE: begin
 						prev_CA = CA;
