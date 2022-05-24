@@ -21,6 +21,7 @@ class wddr_tb extends uvm_env;
 
     wav_APB_agent                apb_agent;
     wav_DFI_agent                dfi_agent;
+    gp_LPDDR5_agent              lpddr5_agent;
     wddr_reg_model               reg_model;
 
     //RAL declartions
@@ -37,6 +38,7 @@ class wddr_tb extends uvm_env;
         super.build_phase(phase);
 
         apb_agent        = wav_APB_agent::type_id::create("apb_agent", this);
+        lpddr5_agent     = gp_LPDDR5_agent::type_id::create("lpddr5_agent", this);
         dfi_agent        = wav_DFI_agent::type_id::create("dfi_agent", this);
         reg2apb          = reg_to_apb_adapter::type_id::create("reg2apb");
 

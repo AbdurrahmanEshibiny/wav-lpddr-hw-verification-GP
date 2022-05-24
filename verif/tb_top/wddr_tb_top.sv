@@ -519,6 +519,11 @@ logic [1:0] o_irq;
 
 wav_APB_if APB_if (.reset(i_prst), .clock (i_ahb_clk));
 wav_DFI_if DFI_if (.reset(dfi_reset_sig), .clock(o_dfi_clk));
+gp_LPDDR5_channel_intf ch0_intf(
+    .ddr_reset_n(pad_ddr_reset),
+    .ddr_rext(),
+    .ddr_test()
+);
 
 initial begin
     $timeformat(-9, 0, " ns", 10);
@@ -526,6 +531,7 @@ initial begin
     //uvm_config_db #(virtual ahb_if)::set(uvm_root::get(), "*tb.ahb_agent*" , "ahb_if", AHB_if);
     uvm_config_db#(virtual wav_APB_if)::set(uvm_root::get(), "*", "APB_vif", APB_if);
     uvm_config_db#(virtual wav_DFI_if)::set(uvm_root::get(), "*", "DFI_vif", DFI_if);
+    uvm_config_db#(virtual gp_LPDDR5_channel_intf)::set(uvm_root::get(), "*", "ch0_vif", ch0_intf);
     run_test();
 end
 
@@ -1314,46 +1320,87 @@ ddr_phy_1x32 u_phy_1x32 (
     .pad_ddr_rext                (),
     .pad_ddr_test                (),
 
-    .pad_ch0_ddr_ca_ca0              (pad_ddr_ca_ca0  ), // FIXME
-    .pad_ch0_ddr_ca_ca1              (pad_ddr_ca_ca1  ), // FIXME
-    .pad_ch0_ddr_ca_ca2              (pad_ddr_ca_ca2  ), // FIXME
-    .pad_ch0_ddr_ca_ca3              (pad_ddr_ca_ca3  ), // FIXME
-    .pad_ch0_ddr_ca_ca4              (pad_ddr_ca_ca4  ), // FIXME
-    .pad_ch0_ddr_ca_ca5              (pad_ddr_ca_ca5  ), // FIXME
-    .pad_ch0_ddr_ca_ca6              (pad_ddr_ca_ca6  ), // FIXME
-    .pad_ch0_ddr_ca_cs0              (pad_ddr_ca_cs0  ), // FIXME
-    .pad_ch0_ddr_ca_cs1              (pad_ddr_ca_cs1  ), // FIXME
-    .pad_ch0_ddr_ca_cke0             (pad_ddr_ca_cke0 ), // FIXME
-    .pad_ch0_ddr_ca_cke1             (pad_ddr_ca_cke1 ), // FIXME
-    .pad_ch0_ddr_ca_ck_c             (pad_ddr_ca_ck_c ), // FIXME
-    .pad_ch0_ddr_ca_ck_t             (pad_ddr_ca_ck_t ), // FIXME
+    // .pad_ch0_ddr_ca_ca0              (pad_ddr_ca_ca0  ), // FIXME
+    // .pad_ch0_ddr_ca_ca1              (pad_ddr_ca_ca1  ), // FIXME
+    // .pad_ch0_ddr_ca_ca2              (pad_ddr_ca_ca2  ), // FIXME
+    // .pad_ch0_ddr_ca_ca3              (pad_ddr_ca_ca3  ), // FIXME
+    // .pad_ch0_ddr_ca_ca4              (pad_ddr_ca_ca4  ), // FIXME
+    // .pad_ch0_ddr_ca_ca5              (pad_ddr_ca_ca5  ), // FIXME
+    // .pad_ch0_ddr_ca_ca6              (pad_ddr_ca_ca6  ), // FIXME
+    // .pad_ch0_ddr_ca_cs0              (pad_ddr_ca_cs0  ), // FIXME
+    // .pad_ch0_ddr_ca_cs1              (pad_ddr_ca_cs1  ), // FIXME
+    // .pad_ch0_ddr_ca_cke0             (pad_ddr_ca_cke0 ), // FIXME
+    // .pad_ch0_ddr_ca_cke1             (pad_ddr_ca_cke1 ), // FIXME
+    // .pad_ch0_ddr_ca_ck_c             (pad_ddr_ca_ck_c ), // FIXME
+    // .pad_ch0_ddr_ca_ck_t             (pad_ddr_ca_ck_t ), // FIXME
 
-    .pad_ch0_ddr_dq0_wck_t           (pad_wck_t[0]),
-    .pad_ch0_ddr_dq1_wck_t           (pad_wck_t[1]),
-    .pad_ch0_ddr_dq0_wck_c           (pad_wck_c[0]),
-    .pad_ch0_ddr_dq1_wck_c           (pad_wck_c[1]),
-    .pad_ch0_ddr_dq0_dqs_t           (pad_dqs_t[0]),
-    .pad_ch0_ddr_dq1_dqs_t           (pad_dqs_t[1]),
-    .pad_ch0_ddr_dq0_dqs_c           (pad_dqs_c[0]),
-    .pad_ch0_ddr_dq1_dqs_c           (pad_dqs_c[1]),
-    .pad_ch0_ddr_dq0_dq0             (pad_dq[0]),
-    .pad_ch0_ddr_dq0_dq1             (pad_dq[1]),
-    .pad_ch0_ddr_dq0_dq2             (pad_dq[2]),
-    .pad_ch0_ddr_dq0_dq3             (pad_dq[3]),
-    .pad_ch0_ddr_dq0_dq4             (pad_dq[4]),
-    .pad_ch0_ddr_dq0_dq5             (pad_dq[5]),
-    .pad_ch0_ddr_dq0_dq6             (pad_dq[6]),
-    .pad_ch0_ddr_dq0_dq7             (pad_dq[7]),
-    .pad_ch0_ddr_dq0_dbim            (pad_dq[8]),
-    .pad_ch0_ddr_dq1_dq0             (pad_dq[9]),
-    .pad_ch0_ddr_dq1_dq1             (pad_dq[10]),
-    .pad_ch0_ddr_dq1_dq2             (pad_dq[11]),
-    .pad_ch0_ddr_dq1_dq3             (pad_dq[12]),
-    .pad_ch0_ddr_dq1_dq4             (pad_dq[13]),
-    .pad_ch0_ddr_dq1_dq5             (pad_dq[14]),
-    .pad_ch0_ddr_dq1_dq6             (pad_dq[15]),
-    .pad_ch0_ddr_dq1_dq7             (pad_dq[16]),
-    .pad_ch0_ddr_dq1_dbim            (pad_dq[17]),
+    // .pad_ch0_ddr_dq0_wck_t           (pad_wck_t[0]),
+    // .pad_ch0_ddr_dq1_wck_t           (pad_wck_t[1]),
+    // .pad_ch0_ddr_dq0_wck_c           (pad_wck_c[0]),
+    // .pad_ch0_ddr_dq1_wck_c           (pad_wck_c[1]),
+    // .pad_ch0_ddr_dq0_dqs_t           (pad_dqs_t[0]),
+    // .pad_ch0_ddr_dq1_dqs_t           (pad_dqs_t[1]),
+    // .pad_ch0_ddr_dq0_dqs_c           (pad_dqs_c[0]),
+    // .pad_ch0_ddr_dq1_dqs_c           (pad_dqs_c[1]),
+    // .pad_ch0_ddr_dq0_dq0             (pad_dq[0]),
+    // .pad_ch0_ddr_dq0_dq1             (pad_dq[1]),
+    // .pad_ch0_ddr_dq0_dq2             (pad_dq[2]),
+    // .pad_ch0_ddr_dq0_dq3             (pad_dq[3]),
+    // .pad_ch0_ddr_dq0_dq4             (pad_dq[4]),
+    // .pad_ch0_ddr_dq0_dq5             (pad_dq[5]),
+    // .pad_ch0_ddr_dq0_dq6             (pad_dq[6]),
+    // .pad_ch0_ddr_dq0_dq7             (pad_dq[7]),
+    // .pad_ch0_ddr_dq0_dbim            (pad_dq[8]),
+    // .pad_ch0_ddr_dq1_dq0             (pad_dq[9]),
+    // .pad_ch0_ddr_dq1_dq1             (pad_dq[10]),
+    // .pad_ch0_ddr_dq1_dq2             (pad_dq[11]),
+    // .pad_ch0_ddr_dq1_dq3             (pad_dq[12]),
+    // .pad_ch0_ddr_dq1_dq4             (pad_dq[13]),
+    // .pad_ch0_ddr_dq1_dq5             (pad_dq[14]),
+    // .pad_ch0_ddr_dq1_dq6             (pad_dq[15]),
+    // .pad_ch0_ddr_dq1_dq7             (pad_dq[16]),
+    // .pad_ch0_ddr_dq1_dbim            (pad_dq[17]),
+
+    .pad_ch0_ddr_ca_ca0              (ch0_intf.ca0  ),
+    .pad_ch0_ddr_ca_ca1              (ch0_intf.ca1  ),
+    .pad_ch0_ddr_ca_ca2              (ch0_intf.ca2  ),
+    .pad_ch0_ddr_ca_ca3              (ch0_intf.ca3  ),
+    .pad_ch0_ddr_ca_ca4              (ch0_intf.ca4  ),
+    .pad_ch0_ddr_ca_ca5              (ch0_intf.ca5  ),
+    .pad_ch0_ddr_ca_ca6              (ch0_intf.ca6  ),
+    .pad_ch0_ddr_ca_cs0              (ch0_intf.cs0  ),
+    .pad_ch0_ddr_ca_cs1              (ch0_intf.cs1  ),
+    .pad_ch0_ddr_ca_cke0             (),
+    .pad_ch0_ddr_ca_cke1             (),
+    .pad_ch0_ddr_ca_ck_c             (ch0_intf.ck_c ),
+    .pad_ch0_ddr_ca_ck_t             (ch0_intf.ck_t ),
+
+    .pad_ch0_ddr_dq0_wck_t           (ch0_intf.dq0_wck_t),
+    .pad_ch0_ddr_dq1_wck_t           (ch0_intf.dq1_wck_t),
+    .pad_ch0_ddr_dq0_wck_c           (ch0_intf.dq0_wck_c),
+    .pad_ch0_ddr_dq1_wck_c           (ch0_intf.dq1_wck_c),
+    .pad_ch0_ddr_dq0_dqs_t           (ch0_intf.dq0_dqs_t),
+    .pad_ch0_ddr_dq1_dqs_t           (ch0_intf.dq1_dqs_t),
+    .pad_ch0_ddr_dq0_dqs_c           (ch0_intf.dq0_dqs_c),
+    .pad_ch0_ddr_dq1_dqs_c           (ch0_intf.dq1_dqs_c),
+    .pad_ch0_ddr_dq0_dq0             (ch0_intf.dq0_dq0),
+    .pad_ch0_ddr_dq0_dq1             (ch0_intf.dq0_dq1),
+    .pad_ch0_ddr_dq0_dq2             (ch0_intf.dq0_dq2),
+    .pad_ch0_ddr_dq0_dq3             (ch0_intf.dq0_dq3),
+    .pad_ch0_ddr_dq0_dq4             (ch0_intf.dq0_dq4),
+    .pad_ch0_ddr_dq0_dq5             (ch0_intf.dq0_dq5),
+    .pad_ch0_ddr_dq0_dq6             (ch0_intf.dq0_dq6),
+    .pad_ch0_ddr_dq0_dq7             (ch0_intf.dq0_dq7),
+    .pad_ch0_ddr_dq0_dbim            (ch0_intf.dq0_dbim),
+    .pad_ch0_ddr_dq1_dq0             (ch0_intf.dq1_dq0),
+    .pad_ch0_ddr_dq1_dq1             (ch0_intf.dq1_dq1),
+    .pad_ch0_ddr_dq1_dq2             (ch0_intf.dq1_dq2),
+    .pad_ch0_ddr_dq1_dq3             (ch0_intf.dq1_dq3),
+    .pad_ch0_ddr_dq1_dq4             (ch0_intf.dq1_dq4),
+    .pad_ch0_ddr_dq1_dq5             (ch0_intf.dq1_dq5),
+    .pad_ch0_ddr_dq1_dq6             (ch0_intf.dq1_dq6),
+    .pad_ch0_ddr_dq1_dq7             (ch0_intf.dq1_dq7),
+    .pad_ch0_ddr_dq1_dbim            (ch0_intf.dq1_dbim),
 
     .pad_ch1_ddr_ca_ca0              (/*OPEN*/),
     .pad_ch1_ddr_ca_ca1              (/*OPEN*/),

@@ -44,6 +44,7 @@ package wddr_pkg;
 `include "register/wddr_reg_model.sv"
 
 //--ENV INCLUDES
+`include "./agents/LPDDR5/LPDDR5_agent/gp_LPDDR5_agent.sv" //FIXME
 `include "tb_top/wddr_tb.sv"
 
 endpackage
