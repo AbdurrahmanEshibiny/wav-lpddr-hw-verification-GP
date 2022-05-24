@@ -231,84 +231,84 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 		act1_key = new(1);
 	endfunction: build_phase
 	
-	task get_next_CA();
-		@(posedge ch0_vif.ck_t);
-		casex({ch0_vif.cs, ch0_vif.ca})
-					{1'b0, 7'bxxxxxxx}: begin
-						next_CA = DES;
-					end 
-					{1'b1, 7'b0000000}: begin
-						next_CA = NOP;
-					end
-					{1'b1, 7'b0000001}: begin
-						next_CA = PDE;
-					end
-					{1'b1, 7'b111xxxx}: begin
-						next_CA = ACT1;
-					end
-					{1'b1, 7'b110xxxx}: begin
-						next_CA = ACT2;
-					end
-					{1'b1, 7'b0001111}: begin
-						next_CA = PRE;
-					end
-					{1'b1, 7'b0001110}: begin
-						next_CA = REF;
-					end
-					{1'b1, 7'b010xxxx}: begin
-						next_CA = MWR;
-					end
-					{1'b1, 7'b011xxxx}: begin
-						next_CA = WR16;
-					end
-					{1'b1, 7'b0010xxx}: begin
-						next_CA = WR32;
-					end
-					{1'b1, 7'b100xxxx}: begin
-						next_CA = RD16;
-					end
-					{1'b1, 7'b101xxxx}: begin
-						next_CA = RD32;
-					end
-					{1'b1, 7'b0011100}: begin
-						next_CA = CAS_WR;
-					end
-					{1'b1, 7'b0011010}: begin
-						next_CA = CAS_RD;
-					end
-					{1'b1, 7'b0011001}: begin
-						next_CA = CAS_FS;
-					end
-					{1'b1, 7'b0011111}: begin
-						next_CA = CAS_OFF;
-					end
-					{1'b1, 7'b000011x}: begin
-						next_CA = MPC;
-					end
-					{1'b1, 7'b0001011}: begin
-						next_CA = SRE;
-					end
-					{1'b1, 7'b0010xxx}: begin
-						next_CA = SRX;
-					end
-					{1'b1, 7'b0001101}: begin
-						next_CA = MRW1;
-					end
-					{1'b1, 7'b000100x}: begin
-						next_CA = MRW2;
-					end
-					{1'b1, 7'b0001100}: begin
-						next_CA = MRR;
-					end
-					{1'b1, 7'b0000011}: begin
-						next_CA = WFF;
-					end
-					{1'b1, 7'b0000010}: begin
-						next_CA = RFF;
-					end
-					default: `uvm_error("gp_lpddr5_monitor", "Recieved unknown command on CA bus")
-				endcase
-	endtask
+	// task get_next_CA();
+	// 	@(posedge ch0_vif.ck_t);
+	// 	casex({ch0_vif.cs, ch0_vif.ca})
+	// 				{1'b0, 7'bxxxxxxx}: begin
+	// 					next_CA = DES;
+	// 				end 
+	// 				{1'b1, 7'b0000000}: begin
+	// 					next_CA = NOP;
+	// 				end
+	// 				{1'b1, 7'b0000001}: begin
+	// 					next_CA = PDE;
+	// 				end
+	// 				{1'b1, 7'b111xxxx}: begin
+	// 					next_CA = ACT1;
+	// 				end
+	// 				{1'b1, 7'b110xxxx}: begin
+	// 					next_CA = ACT2;
+	// 				end
+	// 				{1'b1, 7'b0001111}: begin
+	// 					next_CA = PRE;
+	// 				end
+	// 				{1'b1, 7'b0001110}: begin
+	// 					next_CA = REF;
+	// 				end
+	// 				{1'b1, 7'b010xxxx}: begin
+	// 					next_CA = MWR;
+	// 				end
+	// 				{1'b1, 7'b011xxxx}: begin
+	// 					next_CA = WR16;
+	// 				end
+	// 				{1'b1, 7'b0010xxx}: begin
+	// 					next_CA = WR32;
+	// 				end
+	// 				{1'b1, 7'b100xxxx}: begin
+	// 					next_CA = RD16;
+	// 				end
+	// 				{1'b1, 7'b101xxxx}: begin
+	// 					next_CA = RD32;
+	// 				end
+	// 				{1'b1, 7'b0011100}: begin
+	// 					next_CA = CAS_WR;
+	// 				end
+	// 				{1'b1, 7'b0011010}: begin
+	// 					next_CA = CAS_RD;
+	// 				end
+	// 				{1'b1, 7'b0011001}: begin
+	// 					next_CA = CAS_FS;
+	// 				end
+	// 				{1'b1, 7'b0011111}: begin
+	// 					next_CA = CAS_OFF;
+	// 				end
+	// 				{1'b1, 7'b000011x}: begin
+	// 					next_CA = MPC;
+	// 				end
+	// 				{1'b1, 7'b0001011}: begin
+	// 					next_CA = SRE;
+	// 				end
+	// 				{1'b1, 7'b0010xxx}: begin
+	// 					next_CA = SRX;
+	// 				end
+	// 				{1'b1, 7'b0001101}: begin
+	// 					next_CA = MRW1;
+	// 				end
+	// 				{1'b1, 7'b000100x}: begin
+	// 					next_CA = MRW2;
+	// 				end
+	// 				{1'b1, 7'b0001100}: begin
+	// 					next_CA = MRR;
+	// 				end
+	// 				{1'b1, 7'b0000011}: begin
+	// 					next_CA = WFF;
+	// 				end
+	// 				{1'b1, 7'b0000010}: begin
+	// 					next_CA = RFF;
+	// 				end
+	// 				default: `uvm_error("gp_lpddr5_monitor", "Recieved unknown command on CA bus")
+	// 			endcase
+	// endtask
 
 	task automatic ziad_checks();
 		BA <= {ch0_vif.ca0,ch0_vif.ca1,ch0_vif.ca2,ch0_vif.ca3};
