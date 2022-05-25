@@ -25,8 +25,8 @@ interface wav_DFI_if(input clock, input reset);
 
 
 	//command
-    logic                      reset_n [0:3] = '{default:0};
-    logic [13:0]               address [0:3] = '{default:0};
+    logic                      reset_n [0:3] = '{default:1'b0};
+    logic [13:0]               address [0:3] = '{default:14'b0};
     logic [1:0]                cke [0:3] = '{default:0};
     logic [1:0]                cs [0:3] = '{default:0};
     logic                      dram_clk_disable [0:3] = '{default:0};
