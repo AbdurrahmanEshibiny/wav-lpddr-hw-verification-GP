@@ -49,7 +49,6 @@ interface wav_DFI_if(input clock, input reset);
     logic [63:0]               rddata [0:3] = '{default:0};
     logic [1:0]                rddata_cs [0:3] = '{default:0};
     logic [7:0]                rddata_dbi [0:3] = '{default:0};
-    logic [7:0]                rddata_dnv [0:3] = '{default:0};
     logic                      rddata_en [0:3] = '{default:0};
     logic                      rddata_valid [0:3] = '{default:0};
 
