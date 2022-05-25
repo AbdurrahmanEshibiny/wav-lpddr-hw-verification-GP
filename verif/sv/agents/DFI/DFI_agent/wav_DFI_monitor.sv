@@ -253,7 +253,7 @@ class wav_DFI_monitor extends uvm_monitor;
                 d.dbi = slices[slice_index].dbi;
                 trans.rd.push_back(d);
                 data_len--;
-                word_ptr = slices[i].dfi_phase + 1;
+                word_ptr = slices[slice_index].dfi_phase + 1;
             end
             slice_index++;
         end

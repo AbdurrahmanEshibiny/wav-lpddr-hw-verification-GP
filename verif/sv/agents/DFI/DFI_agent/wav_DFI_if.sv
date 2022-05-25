@@ -104,7 +104,6 @@ interface wav_DFI_if(input clock, input reset);
                 // read
                 rddata,
                 rddata_dbi,
-                rddata_dnv,
                 rddata_valid,
                 // status
                 init_complete;
@@ -140,7 +139,6 @@ interface wav_DFI_if(input clock, input reset);
                 rddata,
                 rddata_cs,
                 rddata_dbi,
-                rddata_dnv,
                 rddata_en,
                 rddata_valid,
                 // status
