@@ -17,8 +17,22 @@ class wddr_DFI_write_seq extends wddr_base_seq;
         `uvm_info(get_type_name(), $psprintf("1.PRE-CREATE OF TRANSACTION"), UVM_LOW);
         `uvm_create(trans);
         `uvm_info(get_type_name(), $psprintf("2.POST-CREATE, PRE-RUN OF TRANSACTION"), UVM_LOW);
+        #4;
+        trans.wck_en[0]=1;
+        trans.wck_en[1]=1;
+        trans.wck_en[2]=1;
+        trans.wck_en[3]=1;
+        trans.wck_toggle[0]=2'b10;
+        trans.wck_toggle[1]=2'b10;
+        trans.wck_toggle[2]=2'b10;
+        trans.wck_toggle[3]=2'b10;
+        trans.wrdata_en[0]=1;
+        trans.wrdata_en[1]=1;
+        trans.wrdata_en[2]=1;
+        trans.wrdata_en[3]=1;
 
-        `uvm_rand_send(trans);
+        //trans.randomize();
+        `uvm_send(trans);
 
         `uvm_info(get_type_name(), $psprintf("3.POST-CREATE, PPOST-RUN, PRE-RSP OF TRANSACTION"), UVM_LOW);
 

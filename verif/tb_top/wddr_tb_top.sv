@@ -1144,21 +1144,21 @@ ddr_phy_1x32 u_phy_1x32 (
         .i_dfi_reset_n_p1            (dfi_reset_sig),// FIXME
         .i_dfi_reset_n_p2            (dfi_reset_sig),// FIXME
         .i_dfi_reset_n_p3            (dfi_reset_sig),// FIXME
-        .i_dfi_address_p0            (dfi_address_p0         ),
+        .i_dfi_address_p0            (DFI_if.address[0]),
         .i_dfi_cke_p0                (dfi_cke_p0             ),
-        .i_dfi_cs_p0                 (dfi_cs_p0              ),
+        .i_dfi_cs_p0                 (DFI_if.cs[0]),
         .i_dfi_dram_clk_disable_p0   (dfi_dram_clk_disable_p0),
-        .i_dfi_address_p1            (dfi_address_p1         ),
+        .i_dfi_address_p1            (DFI_if.address[1]),
         .i_dfi_cke_p1                (dfi_cke_p1             ),//fix
-        .i_dfi_cs_p1                 (dfi_cs_p1              ),
+        .i_dfi_cs_p1                 (DFI_if.cs[1]),
         .i_dfi_dram_clk_disable_p1   (dfi_dram_clk_disable_p1),
-        .i_dfi_address_p2            (dfi_address_p2         ),
+        .i_dfi_address_p2            (DFI_if.address[2]),
         .i_dfi_cke_p2                (dfi_cke_p2             ),//fix
-        .i_dfi_cs_p2                 (dfi_cs_p2              ),
+        .i_dfi_cs_p2                 (DFI_if.cs[2]),
         .i_dfi_dram_clk_disable_p2   (dfi_dram_clk_disable_p2),
-        .i_dfi_address_p3            (dfi_address_p3         ),
+        .i_dfi_address_p3            (DFI_if.address[3]),
         .i_dfi_cke_p3                (dfi_cke_p3             ),//fix
-        .i_dfi_cs_p3                 (dfi_cs_p3              ),
+        .i_dfi_cs_p3                 (DFI_if.cs[3]),
         .i_dfi_dram_clk_disable_p3   (dfi_dram_clk_disable_p3),
 
         .i_dfi_wrdata_p0             (DFI_if.wrdata[0]),
