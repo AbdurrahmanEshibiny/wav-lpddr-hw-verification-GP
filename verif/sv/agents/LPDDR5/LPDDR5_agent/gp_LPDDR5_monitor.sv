@@ -1032,6 +1032,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 	endtask
 
 	task run_phase(uvm_phase phase);
+		int counter = 0;
 		item = wav_DFI_write_transfer::type_id::create("item", this);
 
 		phase.raise_objection(this);
@@ -1122,6 +1123,11 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						end
 						default: if(ch0_vif.cs) `uvm_error("gp_LPDDR5_monitor", "Recieved unknown command on CA bus")
 					endcase
+					if(ch0_vif.DQ !== 16'hzzzz) begin 
+						counter += 1;
+						`uvm_info("gp_LPDDR5_monitor", $psprintf("counter = %d", counter), UVM_NONE)
+					end
+					`uvm_info("gp_LPDDR5_monitor", $psprintf("DQ = %h", ch0_vif.DQ), UVM_NONE)
 					`uvm_info("gp_LPDDR5_monitor", $psprintf("next_CA %b", ch0_vif.ca), UVM_NONE)
 					`uvm_info("gp_LPDDR5_monitor", next_CA.name, UVM_NONE)
 				end 
@@ -1890,7 +1896,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 				end
 			end
 			begin
-			  @ (posedge ch0_vif.ck_t) begin//to handle tAAD
+			forever @ (posedge ch0_vif.ck_t) begin//to handle tAAD
 					if (bank_state[BA]==ACTIVATING) act1_to_act2_counter=act1_to_act2_counter+1;
 					else act1_to_act2_counter=0;
 				end

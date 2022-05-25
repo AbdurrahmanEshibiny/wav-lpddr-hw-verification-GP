@@ -13,9 +13,9 @@ class wav_DFI_agent extends uvm_agent;
   
     function void build_phase(uvm_phase phase);
         super.build_phase(phase);
-        monitor = wav_DFI_monitor::type_id::create("monitor", this);
-        sequencer = wav_DFI_sequencer::type_id::create("sequencer", this);
-        driver = wav_DFI_driver::type_id::create("driver", this);
+        monitor = wav_DFI_monitor::type_id::create("wav_DFI_monitor", this);
+        sequencer = wav_DFI_sequencer::type_id::create("wav_DFI_sequencer", this);
+        driver = wav_DFI_driver::type_id::create("wav_DFI_driver", this);
 
         `uvm_info(get_type_name(), $psprintf("DFI Agent subcomponenets are built"), UVM_MEDIUM);
 

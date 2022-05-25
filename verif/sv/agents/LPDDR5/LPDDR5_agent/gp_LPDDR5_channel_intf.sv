@@ -209,8 +209,10 @@ interface gp_LPDDR5_channel_intf(
 		assert property (@(posedge ck_t) check_clock_during_MWR);
 
 	//------------------------------Ziad's stuff--------------------------------------
-	logic [7:0] DQ;	
-	assign DQ={dq0_dq0,dq0_dq1,dq0_dq2,dq0_dq3,dq0_dq4,dq0_dq5,dq0_dq6,dq0_dq7};
+	logic [15:0] DQ;	
+	assign DQ = {	dq0_dq0,dq0_dq1,dq0_dq2,dq0_dq3,dq0_dq4,dq0_dq5,dq0_dq6,dq0_dq7,
+			   		dq1_dq0,dq1_dq1,dq1_dq2,dq1_dq3,dq1_dq4,dq1_dq5,dq1_dq6,dq1_dq7
+				};
 	//assertions layer
 	//NOTE `uvm_error needs to be tested outside of uvm class
 	

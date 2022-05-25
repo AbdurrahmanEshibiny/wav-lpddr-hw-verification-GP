@@ -1,4 +1,4 @@
-class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer); 
+class wav_DFI_driver extends uvm_driver; // use default value to adhere to the wavious standard, not #(wav_DFI_transfer); 
 
     wav_DFI_vif vif;
     uvm_phase driver_run_phase;
@@ -27,6 +27,7 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
             `uvm_info(get_type_name(), "wav_DFI driver received the next item", UVM_MEDIUM);
 
             $cast(rsp, req.clone());
+
             rsp.set_id_info(req);
             `uvm_info(get_type_name(),$psprintf("wav_DFI driver start driving transfer :\n%s", rsp.sprint()), UVM_MEDIUM);
 
@@ -38,7 +39,20 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
         end
       endtask
 
-	/*should we drive the signal through sequencer*/
+    /*should we drive the signal through sequencer*/
+      
+    //reset tasks
+    task reset_lp(bit is_ctrl);
+        if (is_ctrl) begin
+            vif.mp_drv.cb_drv.lp_ctrl_req <= 0; 
+            vif.mp_drv.cb_drv.lp_ctrl_wakeup <= 0; 
+        end
+        else begin
+            vif.mp_drv.cb_drv.lp_data_req <= 0; 
+            vif.mp_drv.cb_drv.lp_data_wakeup <= 0; 
+        end
+        `uvm_info(get_name(), "done resetting lp", UVM_MEDIUM);  
+    endtask
 
     //drive lp interface according to the specified transaction
     task drive_lp(wav_DFI_lp_transfer trans);  
@@ -53,6 +67,12 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
             vif.mp_drv.cb_drv.lp_data_wakeup <= trans.wakeup; 
         end
         `uvm_info(get_name(), "done driving lp", UVM_MEDIUM);  
+
+        if (trans.cyclesCount > 0) begin
+            repeat (trans.cyclesCount) @(posedge vif.mp_drv.cb_drv);
+            reset_lp(trans.is_ctrl);
+        end
+        `uvm_info(get_name(), "done driving lp transaction", UVM_MEDIUM);  
     endtask                        
         
     //drive ctrlupd interface according to the specified transaction
@@ -61,12 +81,15 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
         @(posedge vif.mp_drv.cb_drv)         
         if (trans.is_ctrl) begin
             vif.mp_drv.cb_drv.ctrlupd_req <= trans.req;       
-            `uvm_info(get_name(), "Done driving ctrlupd", UVM_MEDIUM); 
-        end
-        else begin     
-            // `CSR_WRF1(DDR_DFI_OFFSET,DDR_DFI_STATUS_IF_CFG, SW_ACK_OVR, 1'b0);
-            // write to register phyupd_req <= trans.req;         
-            // write to register phyupd_type <= trans.type;               
+            `uvm_info(get_name(), "done driving lp", UVM_MEDIUM);  
+            if (trans.cyclesCount > 0) begin
+                // wait for ctrlupd_ack goes HIGH and then LOW
+                // wait(vif.mp_drv.cb_drv.ctrlupd_ack == 1);   
+                // wait(vif.mp_drv.cb_drv.ctrlupd_ack == 0);
+                repeat(trans.cyclesCount) @(posedge vif.mp_drv.cb_drv);
+                vif.mp_drv.cb_drv.ctrlupd_req <= 0;
+                `uvm_info(get_name(), "Done resetting ctrlupd", UVM_MEDIUM); 
+            end
         end
     endtask
 
@@ -86,7 +109,7 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
         foreach(trans.wck_en[i])
             vif.mp_drv.cb_drv.wck_en[i] <= trans.wck_en[i]; 
         foreach(trans.wck_toggle[i])        
-            vif.mp_drv.cb_drv.wck_toggle[i] <= trans.wck_toggle[i]; 
+            vif.mp_drv.cb_drv.wck_toggle[i] <= trans.wck_toggle[i];   
     endtask
 
     //there are different types of DFI transactions 
@@ -95,8 +118,8 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
         wav_DFI_lp_transfer lp_trans;
         wav_DFI_update_transfer update_trans;
         wav_DFI_write_transfer write_trans;
-        
-	//add the remaining interface cases
+    //add the remaining interface cases
+        driver_run_phase.raise_objection(this, "start driving transaction");
         case(trans.tr_type)
             lp: begin
                 $cast(lp_trans, trans);
@@ -111,6 +134,7 @@ class wav_DFI_driver extends uvm_driver #(wav_DFI_transfer);
                 drive_write(write_trans); 
             end
         endcase    
+        driver_run_phase.drop_objection(this, "done driving transaction");
     endtask
 
     //monitors requests from the PHY on phyupd interface and grant them
