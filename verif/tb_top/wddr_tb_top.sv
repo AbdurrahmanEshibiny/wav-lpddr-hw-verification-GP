@@ -519,6 +519,11 @@ logic [1:0] o_irq;
 
 wav_APB_if APB_if (.reset(i_prst), .clock (i_ahb_clk));
 wav_DFI_if DFI_if (.reset(dfi_reset_sig), .clock(o_dfi_clk));
+gp_LPDDR5_channel_intf ch0_intf(
+    .ddr_reset_n(pad_ddr_reset),
+    .ddr_rext(),
+    .ddr_test()
+);
 
 initial begin
     $timeformat(-9, 0, " ns", 10);
@@ -526,6 +531,7 @@ initial begin
     //uvm_config_db #(virtual ahb_if)::set(uvm_root::get(), "*tb.ahb_agent*" , "ahb_if", AHB_if);
     uvm_config_db#(virtual wav_APB_if)::set(uvm_root::get(), "*", "APB_vif", APB_if);
     uvm_config_db#(virtual wav_DFI_if)::set(uvm_root::get(), "*", "DFI_vif", DFI_if);
+    uvm_config_db#(virtual gp_LPDDR5_channel_intf)::set(uvm_root::get(), "*", "ch0_vif", ch0_intf);
     run_test();
 end
 
@@ -1155,40 +1161,40 @@ ddr_phy_1x32 u_phy_1x32 (
         .i_dfi_cs_p3                 (dfi_cs_p3              ),
         .i_dfi_dram_clk_disable_p3   (dfi_dram_clk_disable_p3),
 
-        .i_dfi_wrdata_p0             ({16'b0,dfi_wrdata_p0[31:16],16'b0,dfi_wrdata_p0[15:0]}),
-        .i_dfi_wrdata_mask_p0        ({2'b0,dfi_wrdata_mask_p0[3:2],2'b0,dfi_wrdata_mask_p0[1:0]}),
-        .i_dfi_wrdata_cs_p0          (dfi_wrdata_cs_n_p0     ),
-        .i_dfi_wrdata_en_p0          (dfi_wrdata_en_p0       ),
-        .i_dfi_parity_in_p0          (dfi_parity_in_p0       ),
-        .i_dfi_wck_cs_p0             (dfi_wck_cs_p0          ),
-        .i_dfi_wck_en_p0             (dfi_wck_en_p0          ),
-        .i_dfi_wck_toggle_p0         (dfi_wck_toggle_p0      ),
-        .i_dfi_rddata_cs_p0          (dfi_rddata_cs_n_p0     ),
-        .i_dfi_rddata_en_p0          (dfi_rddata_en_p0       ),
-        .i_dfi_wrdata_p1             ({16'b0,dfi_wrdata_p1[31:16],16'b0,dfi_wrdata_p1[15:0]}),
-        .i_dfi_wrdata_mask_p1        ({2'b0,dfi_wrdata_mask_p1[3:2],2'b0,dfi_wrdata_mask_p1[1:0]}),
-        .i_dfi_wrdata_cs_p1          (dfi_wrdata_cs_n_p1     ),
-        .i_dfi_wrdata_en_p1          (dfi_wrdata_en_p1       ),
-        .i_dfi_parity_in_p1          (dfi_parity_in_p1       ),
-        .i_dfi_wck_cs_p1             (dfi_wck_cs_p1          ),
-        .i_dfi_wck_en_p1             (dfi_wck_en_p1          ),
-        .i_dfi_wck_toggle_p1         (dfi_wck_toggle_p1      ),
-        .i_dfi_wrdata_p2             ({16'b0,dfi_wrdata_p2[31:16],16'b0,dfi_wrdata_p2[15:0]}),
-        .i_dfi_wrdata_mask_p2        ({2'b0,dfi_wrdata_mask_p2[3:2],2'b0,dfi_wrdata_mask_p2[1:0]}),
-        .i_dfi_wrdata_cs_p2          (dfi_wrdata_cs_n_p2     ),
-        .i_dfi_wrdata_en_p2          (dfi_wrdata_en_p2       ),
-        .i_dfi_parity_in_p2          (dfi_parity_in_p2       ),
-        .i_dfi_wck_cs_p2             (dfi_wck_cs_p2          ),
-        .i_dfi_wck_en_p2             (dfi_wck_en_p2          ),
-        .i_dfi_wck_toggle_p2         (dfi_wck_toggle_p2      ),
-        .i_dfi_wrdata_p3             ({16'b0,dfi_wrdata_p3[31:16],16'b0,dfi_wrdata_p3[15:0]}),
-        .i_dfi_wrdata_mask_p3        ({2'b0,dfi_wrdata_mask_p3[3:2],2'b0,dfi_wrdata_mask_p3[1:0]}),
-        .i_dfi_wrdata_cs_p3          (dfi_wrdata_cs_n_p3     ),
-        .i_dfi_wrdata_en_p3          (dfi_wrdata_en_p3       ),
-        .i_dfi_parity_in_p3          (dfi_parity_in_p3       ),
-        .i_dfi_wck_cs_p3             (dfi_wck_cs_p3          ),
-        .i_dfi_wck_en_p3             (dfi_wck_en_p3          ),
-        .i_dfi_wck_toggle_p3         (dfi_wck_toggle_p3      ),
+        .i_dfi_wrdata_p0             (DFI_if.wrdata[0]),
+        .i_dfi_wrdata_mask_p0        (DFI_if.wrdata_mask[0]),
+        .i_dfi_wrdata_cs_p0          (DFI_if.wrdata_cs[0]),
+        .i_dfi_wrdata_en_p0          (DFI_if.wrdata_en[0]),
+        .i_dfi_parity_in_p0          (DFI_if.parity_in[0]),
+        .i_dfi_wck_cs_p0             (DFI_if.wck_cs[0]),
+        .i_dfi_wck_en_p0             (DFI_if.wck_en[0]),
+        .i_dfi_wck_toggle_p0         (DFI_if.wck_toggle[0]),
+        .i_dfi_rddata_cs_p0          (dfi_rddata_cs_n_p0),
+        .i_dfi_rddata_en_p0          (dfi_rddata_en_p0),
+        .i_dfi_wrdata_p1             (DFI_if.wrdata[1]),
+        .i_dfi_wrdata_mask_p1        (DFI_if.wrdata_mask[1]),
+        .i_dfi_wrdata_cs_p1          (DFI_if.wrdata_cs[1]),
+        .i_dfi_wrdata_en_p1          (DFI_if.wrdata_en[1]),
+        .i_dfi_parity_in_p1          (DFI_if.parity_in[1]),
+        .i_dfi_wck_cs_p1             (DFI_if.wck_cs[1]),
+        .i_dfi_wck_en_p1             (DFI_if.wck_en[1]),
+        .i_dfi_wck_toggle_p1         (DFI_if.wck_toggle[1]),
+        .i_dfi_wrdata_p2             (DFI_if.wrdata[2]),
+        .i_dfi_wrdata_mask_p2        (DFI_if.wrdata_mask[2]),
+        .i_dfi_wrdata_cs_p2          (DFI_if.wrdata_cs[2]),
+        .i_dfi_wrdata_en_p2          (DFI_if.wrdata_en[2]),
+        .i_dfi_parity_in_p2          (DFI_if.parity_in[2]),
+        .i_dfi_wck_cs_p2             (DFI_if.wck_cs[2]),
+        .i_dfi_wck_en_p2             (DFI_if.wck_en[2]),
+        .i_dfi_wck_toggle_p2         (DFI_if.wck_toggle[2]),
+        .i_dfi_wrdata_p3             (DFI_if.wrdata[3]),
+        .i_dfi_wrdata_mask_p3        (DFI_if.wrdata_mask[3]),
+        .i_dfi_wrdata_cs_p3          (DFI_if.wrdata_cs[3]),
+        .i_dfi_wrdata_en_p3          (DFI_if.wrdata_en[3]),
+        .i_dfi_parity_in_p3          (DFI_if.parity_in[3]),
+        .i_dfi_wck_cs_p3             (DFI_if.wck_cs[3]),
+        .i_dfi_wck_en_p3             (DFI_if.wck_en[3]),
+        .i_dfi_wck_toggle_p3         (DFI_if.wck_toggle[3]),
         .i_dfi_rddata_cs_p1          (dfi_rddata_cs_n_p1     ),
         .i_dfi_rddata_en_p1          (dfi_rddata_en_p1       ),
         .i_dfi_rddata_cs_p2          (dfi_rddata_cs_n_p2     ),
@@ -1314,46 +1320,87 @@ ddr_phy_1x32 u_phy_1x32 (
     .pad_ddr_rext                (),
     .pad_ddr_test                (),
 
-    .pad_ch0_ddr_ca_ca0              (pad_ddr_ca_ca0  ), // FIXME
-    .pad_ch0_ddr_ca_ca1              (pad_ddr_ca_ca1  ), // FIXME
-    .pad_ch0_ddr_ca_ca2              (pad_ddr_ca_ca2  ), // FIXME
-    .pad_ch0_ddr_ca_ca3              (pad_ddr_ca_ca3  ), // FIXME
-    .pad_ch0_ddr_ca_ca4              (pad_ddr_ca_ca4  ), // FIXME
-    .pad_ch0_ddr_ca_ca5              (pad_ddr_ca_ca5  ), // FIXME
-    .pad_ch0_ddr_ca_ca6              (pad_ddr_ca_ca6  ), // FIXME
-    .pad_ch0_ddr_ca_cs0              (pad_ddr_ca_cs0  ), // FIXME
-    .pad_ch0_ddr_ca_cs1              (pad_ddr_ca_cs1  ), // FIXME
-    .pad_ch0_ddr_ca_cke0             (pad_ddr_ca_cke0 ), // FIXME
-    .pad_ch0_ddr_ca_cke1             (pad_ddr_ca_cke1 ), // FIXME
-    .pad_ch0_ddr_ca_ck_c             (pad_ddr_ca_ck_c ), // FIXME
-    .pad_ch0_ddr_ca_ck_t             (pad_ddr_ca_ck_t ), // FIXME
+    // .pad_ch0_ddr_ca_ca0              (pad_ddr_ca_ca0  ), // FIXME
+    // .pad_ch0_ddr_ca_ca1              (pad_ddr_ca_ca1  ), // FIXME
+    // .pad_ch0_ddr_ca_ca2              (pad_ddr_ca_ca2  ), // FIXME
+    // .pad_ch0_ddr_ca_ca3              (pad_ddr_ca_ca3  ), // FIXME
+    // .pad_ch0_ddr_ca_ca4              (pad_ddr_ca_ca4  ), // FIXME
+    // .pad_ch0_ddr_ca_ca5              (pad_ddr_ca_ca5  ), // FIXME
+    // .pad_ch0_ddr_ca_ca6              (pad_ddr_ca_ca6  ), // FIXME
+    // .pad_ch0_ddr_ca_cs0              (pad_ddr_ca_cs0  ), // FIXME
+    // .pad_ch0_ddr_ca_cs1              (pad_ddr_ca_cs1  ), // FIXME
+    // .pad_ch0_ddr_ca_cke0             (pad_ddr_ca_cke0 ), // FIXME
+    // .pad_ch0_ddr_ca_cke1             (pad_ddr_ca_cke1 ), // FIXME
+    // .pad_ch0_ddr_ca_ck_c             (pad_ddr_ca_ck_c ), // FIXME
+    // .pad_ch0_ddr_ca_ck_t             (pad_ddr_ca_ck_t ), // FIXME
 
-    .pad_ch0_ddr_dq0_wck_t           (pad_wck_t[0]),
-    .pad_ch0_ddr_dq1_wck_t           (pad_wck_t[1]),
-    .pad_ch0_ddr_dq0_wck_c           (pad_wck_c[0]),
-    .pad_ch0_ddr_dq1_wck_c           (pad_wck_c[1]),
-    .pad_ch0_ddr_dq0_dqs_t           (pad_dqs_t[0]),
-    .pad_ch0_ddr_dq1_dqs_t           (pad_dqs_t[1]),
-    .pad_ch0_ddr_dq0_dqs_c           (pad_dqs_c[0]),
-    .pad_ch0_ddr_dq1_dqs_c           (pad_dqs_c[1]),
-    .pad_ch0_ddr_dq0_dq0             (pad_dq[0]),
-    .pad_ch0_ddr_dq0_dq1             (pad_dq[1]),
-    .pad_ch0_ddr_dq0_dq2             (pad_dq[2]),
-    .pad_ch0_ddr_dq0_dq3             (pad_dq[3]),
-    .pad_ch0_ddr_dq0_dq4             (pad_dq[4]),
-    .pad_ch0_ddr_dq0_dq5             (pad_dq[5]),
-    .pad_ch0_ddr_dq0_dq6             (pad_dq[6]),
-    .pad_ch0_ddr_dq0_dq7             (pad_dq[7]),
-    .pad_ch0_ddr_dq0_dbim            (pad_dq[8]),
-    .pad_ch0_ddr_dq1_dq0             (pad_dq[9]),
-    .pad_ch0_ddr_dq1_dq1             (pad_dq[10]),
-    .pad_ch0_ddr_dq1_dq2             (pad_dq[11]),
-    .pad_ch0_ddr_dq1_dq3             (pad_dq[12]),
-    .pad_ch0_ddr_dq1_dq4             (pad_dq[13]),
-    .pad_ch0_ddr_dq1_dq5             (pad_dq[14]),
-    .pad_ch0_ddr_dq1_dq6             (pad_dq[15]),
-    .pad_ch0_ddr_dq1_dq7             (pad_dq[16]),
-    .pad_ch0_ddr_dq1_dbim            (pad_dq[17]),
+    // .pad_ch0_ddr_dq0_wck_t           (pad_wck_t[0]),
+    // .pad_ch0_ddr_dq1_wck_t           (pad_wck_t[1]),
+    // .pad_ch0_ddr_dq0_wck_c           (pad_wck_c[0]),
+    // .pad_ch0_ddr_dq1_wck_c           (pad_wck_c[1]),
+    // .pad_ch0_ddr_dq0_dqs_t           (pad_dqs_t[0]),
+    // .pad_ch0_ddr_dq1_dqs_t           (pad_dqs_t[1]),
+    // .pad_ch0_ddr_dq0_dqs_c           (pad_dqs_c[0]),
+    // .pad_ch0_ddr_dq1_dqs_c           (pad_dqs_c[1]),
+    // .pad_ch0_ddr_dq0_dq0             (pad_dq[0]),
+    // .pad_ch0_ddr_dq0_dq1             (pad_dq[1]),
+    // .pad_ch0_ddr_dq0_dq2             (pad_dq[2]),
+    // .pad_ch0_ddr_dq0_dq3             (pad_dq[3]),
+    // .pad_ch0_ddr_dq0_dq4             (pad_dq[4]),
+    // .pad_ch0_ddr_dq0_dq5             (pad_dq[5]),
+    // .pad_ch0_ddr_dq0_dq6             (pad_dq[6]),
+    // .pad_ch0_ddr_dq0_dq7             (pad_dq[7]),
+    // .pad_ch0_ddr_dq0_dbim            (pad_dq[8]),
+    // .pad_ch0_ddr_dq1_dq0             (pad_dq[9]),
+    // .pad_ch0_ddr_dq1_dq1             (pad_dq[10]),
+    // .pad_ch0_ddr_dq1_dq2             (pad_dq[11]),
+    // .pad_ch0_ddr_dq1_dq3             (pad_dq[12]),
+    // .pad_ch0_ddr_dq1_dq4             (pad_dq[13]),
+    // .pad_ch0_ddr_dq1_dq5             (pad_dq[14]),
+    // .pad_ch0_ddr_dq1_dq6             (pad_dq[15]),
+    // .pad_ch0_ddr_dq1_dq7             (pad_dq[16]),
+    // .pad_ch0_ddr_dq1_dbim            (pad_dq[17]),
+
+    .pad_ch0_ddr_ca_ca0              (ch0_intf.ca0  ),
+    .pad_ch0_ddr_ca_ca1              (ch0_intf.ca1  ),
+    .pad_ch0_ddr_ca_ca2              (ch0_intf.ca2  ),
+    .pad_ch0_ddr_ca_ca3              (ch0_intf.ca3  ),
+    .pad_ch0_ddr_ca_ca4              (ch0_intf.ca4  ),
+    .pad_ch0_ddr_ca_ca5              (ch0_intf.ca5  ),
+    .pad_ch0_ddr_ca_ca6              (ch0_intf.ca6  ),
+    .pad_ch0_ddr_ca_cs0              (ch0_intf.cs0  ),
+    .pad_ch0_ddr_ca_cs1              (ch0_intf.cs1  ),
+    .pad_ch0_ddr_ca_cke0             (),
+    .pad_ch0_ddr_ca_cke1             (),
+    .pad_ch0_ddr_ca_ck_c             (ch0_intf.ck_c ),
+    .pad_ch0_ddr_ca_ck_t             (ch0_intf.ck_t ),
+
+    .pad_ch0_ddr_dq0_wck_t           (ch0_intf.dq0_wck_t),
+    .pad_ch0_ddr_dq1_wck_t           (ch0_intf.dq1_wck_t),
+    .pad_ch0_ddr_dq0_wck_c           (ch0_intf.dq0_wck_c),
+    .pad_ch0_ddr_dq1_wck_c           (ch0_intf.dq1_wck_c),
+    .pad_ch0_ddr_dq0_dqs_t           (ch0_intf.dq0_dqs_t),
+    .pad_ch0_ddr_dq1_dqs_t           (ch0_intf.dq1_dqs_t),
+    .pad_ch0_ddr_dq0_dqs_c           (ch0_intf.dq0_dqs_c),
+    .pad_ch0_ddr_dq1_dqs_c           (ch0_intf.dq1_dqs_c),
+    .pad_ch0_ddr_dq0_dq0             (ch0_intf.dq0_dq0),
+    .pad_ch0_ddr_dq0_dq1             (ch0_intf.dq0_dq1),
+    .pad_ch0_ddr_dq0_dq2             (ch0_intf.dq0_dq2),
+    .pad_ch0_ddr_dq0_dq3             (ch0_intf.dq0_dq3),
+    .pad_ch0_ddr_dq0_dq4             (ch0_intf.dq0_dq4),
+    .pad_ch0_ddr_dq0_dq5             (ch0_intf.dq0_dq5),
+    .pad_ch0_ddr_dq0_dq6             (ch0_intf.dq0_dq6),
+    .pad_ch0_ddr_dq0_dq7             (ch0_intf.dq0_dq7),
+    .pad_ch0_ddr_dq0_dbim            (ch0_intf.dq0_dbim),
+    .pad_ch0_ddr_dq1_dq0             (ch0_intf.dq1_dq0),
+    .pad_ch0_ddr_dq1_dq1             (ch0_intf.dq1_dq1),
+    .pad_ch0_ddr_dq1_dq2             (ch0_intf.dq1_dq2),
+    .pad_ch0_ddr_dq1_dq3             (ch0_intf.dq1_dq3),
+    .pad_ch0_ddr_dq1_dq4             (ch0_intf.dq1_dq4),
+    .pad_ch0_ddr_dq1_dq5             (ch0_intf.dq1_dq5),
+    .pad_ch0_ddr_dq1_dq6             (ch0_intf.dq1_dq6),
+    .pad_ch0_ddr_dq1_dq7             (ch0_intf.dq1_dq7),
+    .pad_ch0_ddr_dq1_dbim            (ch0_intf.dq1_dbim),
 
     .pad_ch1_ddr_ca_ca0              (/*OPEN*/),
     .pad_ch1_ddr_ca_ca1              (/*OPEN*/),

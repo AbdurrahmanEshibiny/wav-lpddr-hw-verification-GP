@@ -52,7 +52,17 @@
 
 `define phydpi_mode 0
 
+`define twck_dis 0
+`define twck_fast_toggle 0
+`define twck_toggle 0
+`define twck_toggle_cs 0
+`define twck_toggle_post 0
+`define twck_toggle_rd 0
+`define twck_toggle_wr 0
+
 `define frequency 1
+
+
 
 
 

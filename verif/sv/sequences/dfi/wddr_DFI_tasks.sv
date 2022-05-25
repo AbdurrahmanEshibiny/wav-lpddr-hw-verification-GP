@@ -1,4 +1,4 @@
-`include "DFI/DFI_agent/wav_DFI_transfer.sv"
+// `include "DFI/DFI_agent/wav_DFI_transfer.sv"
 
 task automatic set_dfi_phymstr_req;
     input wav_DFI_phymstr_transfer trans;

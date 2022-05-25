@@ -118,3 +118,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 `include "tests/dfi/wddr_DFI_ctrlupd_test.sv"
 `include "tests/dfi/wddr_DFI_lp_ctrl_test.sv"
 `include "tests/dfi/wddr_DFI_lp_data_test.sv"
+`include "tests/dfi/wddr_DFI_write_test.sv"

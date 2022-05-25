@@ -1,4 +1,4 @@
-class wav_DFI_sequencer extends uvm_sequencer #(wav_DFI_transfer);
+class wav_DFI_sequencer extends uvm_sequencer; // // use default value to adhere to the wavious standard not #(wav_DFI_transfer);
 
     `uvm_component_utils(wav_DFI_sequencer)
  
