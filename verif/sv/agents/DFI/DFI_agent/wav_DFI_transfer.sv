@@ -28,16 +28,16 @@ endclass
 
 // Base class for DFI write transactions 
 class wav_DFI_write_transfer extends wav_DFI_transfer; 
-    rand bit [63:0]               wrdata [0:3];
-    rand bit                      parity_in [0:3];
-    rand bit [1:0]                wrdata_cs [0:3];
-    rand bit [7:0]                wrdata_mask [0:3];
-    rand bit                      wrdata_en [0:3];
-    rand bit [13:0]               address [0:3];
-
-    rand bit [1:0]                wck_cs [0:3];
-    rand bit                      wck_en [0:3];
-    rand bit [1:0]                wck_toggle [0:3];
+    bit [63:0]               wrdata [0:3];
+    bit                      parity_in [0:3];
+    bit [1:0]                wrdata_cs [0:3];
+    bit [7:0]                wrdata_mask [0:3];
+    bit                           wrdata_en [0:3];
+    bit [13:0]               address [0:3];
+    bit [1:0]                cs [0:3];
+    bit [1:0]                wck_cs [0:3];
+    bit                      wck_en [0:3];
+    bit [1:0]                wck_toggle [0:3];
 
     `uvm_object_utils_begin(wav_DFI_write_transfer)
         `uvm_field_sarray_int(wrdata, UVM_DEFAULT | UVM_NOCOMPARE)
