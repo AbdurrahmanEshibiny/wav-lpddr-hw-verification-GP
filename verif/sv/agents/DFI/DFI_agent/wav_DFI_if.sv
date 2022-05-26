@@ -163,13 +163,15 @@ interface wav_DFI_if(input clock, input reset);
     phyupd_is_defined:  assert property (@(posedge clock) $isunknown({phyupd_req, phyupd_type, phyupd_ack}) == 0);
     phymstr_is_defined: assert property (@(posedge clock) $isunknown({phymstr_req, phymstr_cs_state, phymstr_ack, phymstr_state_sel, phymstr_type}) == 0);
 
-    item_26: assert property (@(posedge clock) lp_ctrl_ack[*1:$] |=> ($fell(lp_ctrl_ack) && ~lp_ctrl_req));    // ack should be de-asserted after req
-    item_34: assert property (@(posedge clock) lp_data_ack[*1:$] |=> ($fell(lp_data_ack) && ~lp_data_req));    // ack should be de-asserted after req
+    // item_26: assert property (@(posedge clock) $fell(lp_ctrl_ack)[*1:$] |=> ($fell(lp_ctrl_ack) && ~lp_ctrl_req));    // ack should be de-asserted after req
+    item_26: assert property (@(posedge clock) lp_ctrl_ack |->##[1:$] ($fell(lp_ctrl_ack) && ~lp_ctrl_req));    // ack should be de-asserted after req
+    // item_34: assert property (@(posedge clock) lp_data_ack[*1:$] |=> ($fell(lp_data_ack) && ~lp_data_req));    // ack should be de-asserted after req
+    item_34: assert property (@(posedge clock) lp_data_ack |->##[1:$] ($fell(lp_data_ack) && ~lp_data_req));    // ack should be de-asserted after req
 
     item_42: assert property (@(posedge clock) (lp_ctrl_req & ~lp_ctrl_ack) [*(`tlp_resp)] |=> ~lp_ctrl_req);    // if ack didn't show up after tlp_resp, req should go low
     item_43: assert property (@(posedge clock) (lp_data_req & ~lp_data_ack) [*(`tlp_resp)] |=> ~lp_data_req);    // if ack didn't show up after tlp_resp, req should go low
 
-    item_92: assert property (@(posedge clock) (ctrlupd_ack |-> ctrlupd_req));  //req is HIGH as long as req is HIGH
+    item_92: assert property (@(posedge clock) (ctrlupd_ack |-> ctrlupd_req));  //req is HIGH as long as ack is HIGH
     item_100: assert property (@(posedge clock) phyupd_req |->##[0:`tphyupd_resp] phyupd_ack);  // ack should come within tphyupd_resp cycles from the req
     item_101: assert property (@(posedge clock) $rose(phyupd_req) |-> ~phyupd_ack); //req cannot be re-asserted before de-assertion of ack
     item_102: assert property (@(posedge clock) ~phyupd_req |=> ~phyupd_ack); // ack should de-assert upon detection of de-asserton of req
@@ -185,9 +187,11 @@ interface wav_DFI_if(input clock, input reset);
     item_111: assert property (@(posedge clock) ~(init_start & lp_ctrl_req));
     item_112: assert property (@(posedge clock) ~(init_start & lp_data_req));
 
+    `define address_is_idle (address[0] == 14'b0 && address[1] == 14'b0 && address[2] == 14'b0 && address[3] == 14'b0)
+
     // while phyupd_req is accepted, ensure that no other commands are sent and that the DFI is idle
-    item_95: assert property(@(posedge clock) phyupd_ack |-> (~lp_ctrl_req & ~lp_data_req & ~phymstr_req & ~ctrlupd_req & ~(!56'({>>{address}})))); 
-    item_96: assert property(@(posedge clock) ctrlupd_ack |-> (~lp_ctrl_req & ~lp_data_req & ~phymstr_req & ~phyupd_req & ~(!56'({>>{address}})))); 
+    item_95: assert property(@(posedge clock) phyupd_ack |-> (~lp_ctrl_req & ~lp_data_req & ~phymstr_req & ~ctrlupd_req & `address_is_idle));
+    item_96: assert property(@(posedge clock) ctrlupd_ack |-> (~lp_ctrl_req & ~lp_data_req & ~phymstr_req & ~phyupd_req & `address_is_idle)); 
     item_97: assert property(@(posedge clock) $rose(ctrlupd_req) |->##[0:$] ctrlupd_ack); 
 
     // no read or write transactions at lp mode    

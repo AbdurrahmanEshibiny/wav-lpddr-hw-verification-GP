@@ -19,8 +19,7 @@ class wddr_DFI_lp_data_seq extends wddr_base_seq;
         `uvm_info(get_type_name(), $psprintf("2.POST-CREATE, PRE-RUN OF TRANSACTION"), UVM_LOW);
 
         trans.req = 1'b1;
-        trans.is_ctrl = 0'b1;
-        trans.cyclesCount = `tlp_resp + 2;
+        trans.is_ctrl = 1'b0;
 
         `uvm_rand_send(trans);        
 

@@ -312,7 +312,11 @@ class wav_DFI_monitor extends uvm_monitor;
         int counter = 0, steadyCounter = 0;
         bit isAcked = 0;
         trans = new();
+        if (is_ctrl) collect_lp_ctrl(trans); else collect_lp_data(trans);
+        wakeup = trans.wakeup;
+        `uvm_info(get_name(), $psprintf("Detected lp transaction with is_ctrl:%0d wakeup:%0d and wakeup_time: %0d", is_ctrl, wakeup, wakeup_times[wakeup]), UVM_MEDIUM);                
         forever begin
+            @(vif.mp_mon.cb_mon);
             if (is_ctrl) collect_lp_ctrl(trans); else collect_lp_data(trans);
             if (trans.req) begin
                 if (wakeup > trans.wakeup) begin
@@ -324,7 +328,7 @@ class wav_DFI_monitor extends uvm_monitor;
                 else if ((wakeup != trans.wakeup) && steadyCounter < `tlp_resp) begin
                     `uvm_error(get_name(), $psprintf("wakeup time has been changed from %0d to %0d so early in %0d cycles", wakeup, trans.wakeup, steadyCounter));
                 end
-                else begin
+                else if (wakeup < trans.wakeup) begin
                     `uvm_info(get_name(), $psprintf("wakeup time has been INCREASED from %0d to %0d", wakeup, trans.wakeup), UVM_MEDIUM);                    
                     wakeup = trans.wakeup;
                 end
@@ -339,11 +343,10 @@ class wav_DFI_monitor extends uvm_monitor;
             end
             else 
                 break;
-            @(vif.mp_mon.cb_mon);
         end
 
         if (wakeup != 19 && counter > wakeup_times[wakeup]) begin
-            `uvm_error(get_name(), $psprintf("PHY stayed asleep more than the wakeup time, it should stay %d, but it stayed %d", wakeup_times[wakeup], counter));
+            `uvm_error(get_name(), $psprintf("PHY stayed asleep more than the wakeup time, it should stay %0d, but it stayed %0d", wakeup_times[wakeup], counter));
         end
     endtask
 
@@ -355,6 +358,7 @@ class wav_DFI_monitor extends uvm_monitor;
         original = new();
         collect_phyupd(original);
         forever begin
+            @(vif.mp_mon.cb_mon);
             collect_phyupd(trans);
             if (trans.req) begin
                 ++steadyCounter;
@@ -392,8 +396,6 @@ class wav_DFI_monitor extends uvm_monitor;
             if (original._type != trans._type) begin  // type should be constant
                 `uvm_error(get_name(), $psprintf("phyupd._type is not stable but changed from %0d to %0d", original._type, trans._type));
             end
-
-            @(vif.mp_mon.cb_mon);
         end
     endtask
 
@@ -402,6 +404,7 @@ class wav_DFI_monitor extends uvm_monitor;
         int counter = 0, steadyCounter = 0;
         bit isAcked = 0;
         forever begin
+            @(vif.mp_mon.cb_mon);
             collect_ctrlupd(trans);
             if (trans.req) begin
                 ++steadyCounter;
@@ -421,8 +424,10 @@ class wav_DFI_monitor extends uvm_monitor;
                 if (trans.ack) begin
                     `uvm_error(get_name(), "ctrlupd_req is LOW while ctrlupd_ack is HIGH");
                 end
-                `uvm_info(get_name(), $psprintf("ctrlupd_ack stayed HIGH for %d", counter), UVM_MEDIUM);
-                break;
+                else if (isAcked) begin
+                    `uvm_info(get_name(), $psprintf("ctrlupd_ack stayed HIGH for %d", counter), UVM_MEDIUM);
+                    break;
+                end
             end
 
             if (trans.ack) begin
@@ -432,8 +437,6 @@ class wav_DFI_monitor extends uvm_monitor;
                 ++counter;
                 isAcked = 1;
             end
-
-            @(vif.mp_mon.cb_mon);
         end
     endtask
 
@@ -445,6 +448,7 @@ class wav_DFI_monitor extends uvm_monitor;
         original = new();
         collect_phymstr(original);
         forever begin
+            @(vif.mp_mon.cb_mon);
             collect_phymstr(trans);
             if (trans.req) begin
                 if (trans.ack)
@@ -474,11 +478,9 @@ class wav_DFI_monitor extends uvm_monitor;
             if (count & trans.req)
                 ++counter;
 
-            if (original.compare(trans)) begin
+            if (original.compare(trans) == 0) begin
                 `uvm_error(get_name(), "Some of the phymstr signals are not the stable during the transaction");
             end
-
-            @(vif.mp_mon.cb_mon);
         end
     endtask
 /*add monitor functions to the remaining interface signals*/

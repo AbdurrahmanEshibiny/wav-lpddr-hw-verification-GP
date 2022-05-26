@@ -6,21 +6,21 @@
 `define tctrlupd_max 10
 
 // phyupd time constraints
-`define tphyupd_resp 200
-`define tphyupd_type0 500
-`define tphyupd_type1 1000
-`define tphyupd_type2 1500
-`define tphyupd_type3 2000
+`define tphyupd_resp 152
+`define tphyupd_type0 `tphyupd_resp
+`define tphyupd_type1 (2*`tphyupd_resp)
+`define tphyupd_type2 (4*`tphyupd_resp)
+`define tphyupd_type3 (8*`tphyupd_resp)
 
 // lp time constraints
 `define tlp_resp 5
 
 // phymstr time constraints
-`define tphymstr_resp
-`define tphymstr_type0 5
-`define tphymstr_type1 10
-`define tphymstr_type2 15
-`define tphymstr_type3 20
+`define tphymstr_resp 152
+`define tphymstr_type0 `tphymstr_resp
+`define tphymstr_type1 (2*(`tphymstr_type0))
+`define tphymstr_type2 (4*(`tphymstr_type0))
+`define tphymstr_type3 (8*(`tphymstr_type0))
 
 // TODO: ALL THE DEFS BELOW NEED TO BE PROPERLY DEFINED
 

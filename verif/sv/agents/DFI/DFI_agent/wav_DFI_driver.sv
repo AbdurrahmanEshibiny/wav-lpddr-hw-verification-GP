@@ -81,12 +81,15 @@ class wav_DFI_driver extends uvm_driver; // use default value to adhere to the w
         @(posedge vif.mp_drv.cb_drv)         
         if (trans.is_ctrl) begin
             vif.mp_drv.cb_drv.ctrlupd_req <= trans.req;       
-            `uvm_info(get_name(), "Done driving ctrlupd", UVM_MEDIUM); 
-        end
-        else begin     
-            // `CSR_WRF1(DDR_DFI_OFFSET,DDR_DFI_STATUS_IF_CFG, SW_ACK_OVR, 1'b0);
-            // write to register phyupd_req <= trans.req;         
-            // write to register phyupd_type <= trans.type;               
+            `uvm_info(get_name(), "done driving lp", UVM_MEDIUM);  
+            if (trans.cyclesCount > 0) begin
+                // wait for ctrlupd_ack goes HIGH and then LOW
+                // wait(vif.mp_drv.cb_drv.ctrlupd_ack == 1);   
+                // wait(vif.mp_drv.cb_drv.ctrlupd_ack == 0);
+                repeat(trans.cyclesCount) @(posedge vif.mp_drv.cb_drv);
+                vif.mp_drv.cb_drv.ctrlupd_req <= 0;
+                `uvm_info(get_name(), "Done resetting ctrlupd", UVM_MEDIUM); 
+            end
         end
     endtask
 
@@ -121,7 +124,8 @@ class wav_DFI_driver extends uvm_driver; // use default value to adhere to the w
         wav_DFI_update_transfer update_trans;
         wav_DFI_write_transfer write_trans;
         wav_DFI_wck_transfer wck_trans;
-	//add the remaining interface cases
+    //add the remaining interface cases
+        driver_run_phase.raise_objection(this, "start driving transaction");
         case(trans.tr_type)
             lp: begin
                 $cast(lp_trans, trans);
@@ -140,6 +144,7 @@ class wav_DFI_driver extends uvm_driver; // use default value to adhere to the w
                 drive_wck(wck_trans); 
             end
         endcase    
+        driver_run_phase.drop_objection(this, "done driving transaction");
     endtask
 
     //monitors requests from the PHY on phyupd interface and grant them

@@ -20,7 +20,6 @@ class wddr_DFI_lp_ctrl_seq extends wddr_base_seq;
 
         trans.req = 1'b1;
         trans.is_ctrl = 1'b1;
-        trans.cyclesCount = `tlp_resp + 2;
 
         `uvm_rand_send(trans);
 

@@ -2,12 +2,12 @@
 
 task automatic set_dfi_phymstr_req;
     input wav_DFI_phymstr_transfer trans;
-    begin
-        `CSR_WRF1(DDR_DFI_OFFSET,DDR_DFI_PHYMSTR_IF_CFG, SW_REQ_OVR, 1'b1);
-        `CSR_WRF1(DDR_DFI_OFFSET,DDR_DFI_PHYMSTR_IF_CFG, SW_REQ_VAL, trans.req);
+    begin        
         `CSR_WRF1(DDR_DFI_OFFSET,DDR_DFI_PHYMSTR_IF_CFG, SW_CS_STATE, trans.cs_state);
         `CSR_WRF1(DDR_DFI_OFFSET,DDR_DFI_PHYMSTR_IF_CFG, SW_STATE_SEL, trans.state_sel);
         `CSR_WRF1(DDR_DFI_OFFSET,DDR_DFI_PHYMSTR_IF_CFG, SW_TYPE, trans._type);
+		`CSR_WRF1(DDR_DFI_OFFSET,DDR_DFI_PHYMSTR_IF_CFG, SW_REQ_OVR, 1'b1);
+        `CSR_WRF1(DDR_DFI_OFFSET,DDR_DFI_PHYMSTR_IF_CFG, SW_REQ_VAL, trans.req);
     end
 endtask
 
@@ -15,6 +15,13 @@ task automatic get_dfi_phymstr_ack;
     output logic val;
     begin
         `CSR_RDF1(DDR_DFI_OFFSET,DDR_DFI_PHYMSTR_IF_STA, ACK, val);
+    end
+endtask
+
+task automatic get_dfi_phymstr_req;
+    output logic val;
+    begin
+        `CSR_RDF1(DDR_DFI_OFFSET,DDR_DFI_PHYMSTR_IF_STA, REQ, val);
     end
 endtask
 
@@ -95,7 +102,7 @@ task t_dfi_phyupd;
 
 task t_dfi_phymstr;
     output int err;
-    logic ack;
+    logic ack = 0, req = 0;
     wav_DFI_phymstr_transfer trans;
     begin
         `uvm_info(get_name(), "starting t_dfi_phymstr", UVM_MEDIUM);   
@@ -109,7 +116,7 @@ task t_dfi_phymstr;
         assert(trans.randomize());
         trans.req = 1;
         trans.print();
-        err = 0;
+		
         `uvm_info(get_name(), "driving the phymstr trans HIGH", UVM_MEDIUM);
         set_dfi_phymstr_req(trans);
         do begin
@@ -118,9 +125,24 @@ task t_dfi_phymstr;
         trans.req = 0;
         `uvm_info(get_name(), "driving the phymstr trans LOW", UVM_MEDIUM);
         set_dfi_phymstr_req(trans);
+		
+		
+		`uvm_info(get_name(), "overriding phymstr event to HIGH", UVM_MEDIUM);
+        `CSR_WRF2(DDR_DFI_OFFSET,DDR_DFI_PHYMSTR_IF_CFG, 
+                    SW_EVENT_OVR, SW_EVENT_VAL,
+                    1'b1, 1'b1);
+		
+		do begin
+            get_dfi_phymstr_ack(req);
+        end while (req);
+        `uvm_info(get_name(), $psprintf("req = %0d", req), UVM_MEDIUM);
+		
+		`uvm_info(get_name(), "overriding phymstr event to LOW", UVM_MEDIUM);
+        `CSR_WRF2(DDR_DFI_OFFSET,DDR_DFI_PHYMSTR_IF_CFG, 
+                    SW_EVENT_OVR, SW_EVENT_VAL,
+                    1'b1, 1'b0);
 
         #10ns;
-
         $display("DFI phymstr test completed!!!!!!!!");
     end
 endtask
