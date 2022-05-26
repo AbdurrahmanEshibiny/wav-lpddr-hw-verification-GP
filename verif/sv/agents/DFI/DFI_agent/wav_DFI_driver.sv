@@ -103,18 +103,13 @@ class wav_DFI_driver extends uvm_driver; // use default value to adhere to the w
         foreach(trans.wrdata_en[i])
             vif.mp_drv.cb_drv.wrdata_en[i] <= trans.wrdata_en[i];   
         foreach(trans.wrdata_mask[i])              
-            vif.mp_drv.cb_drv.wrdata_mask[i] <= trans.wrdata_mask[i];  
-    endtask
-
-    task drive_wck(wav_DFI_wck_transfer trans);         
-        @(posedge vif.mp_drv.cb_drv);
-        // For arrays
+            vif.mp_drv.cb_drv.wrdata_mask[i] <= trans.wrdata_mask[i]; 
         foreach(trans.wck_cs[i])
             vif.mp_drv.cb_drv.wck_cs[i] <= trans.wck_cs[i];  
         foreach(trans.wck_en[i])
             vif.mp_drv.cb_drv.wck_en[i] <= trans.wck_en[i]; 
         foreach(trans.wck_toggle[i])        
-            vif.mp_drv.cb_drv.wck_toggle[i] <= trans.wck_toggle[i];        
+            vif.mp_drv.cb_drv.wck_toggle[i] <= trans.wck_toggle[i];   
     endtask
 
     //there are different types of DFI transactions 
@@ -123,7 +118,6 @@ class wav_DFI_driver extends uvm_driver; // use default value to adhere to the w
         wav_DFI_lp_transfer lp_trans;
         wav_DFI_update_transfer update_trans;
         wav_DFI_write_transfer write_trans;
-        wav_DFI_wck_transfer wck_trans;
     //add the remaining interface cases
         driver_run_phase.raise_objection(this, "start driving transaction");
         case(trans.tr_type)
@@ -138,10 +132,6 @@ class wav_DFI_driver extends uvm_driver; // use default value to adhere to the w
             write: begin     
                 $cast(write_trans, trans);
                 drive_write(write_trans); 
-            end
-            wck: begin     
-                $cast(wck_trans, trans);
-                drive_wck(wck_trans); 
             end
         endcase    
         driver_run_phase.drop_objection(this, "done driving transaction");

@@ -6,4 +6,5 @@ package gp_lpddr5_pkg;
 
 	`include "DFI/DFI_agent/wav_DFI_transfer.sv"	
 	`include "LPDDR5/LPDDR5_agent/gp_LPDDR5_monitor.sv"
+	`include "LPDDR5/LPDDR5_agent/gp_LPDDR5_agent.sv"
 endpackage

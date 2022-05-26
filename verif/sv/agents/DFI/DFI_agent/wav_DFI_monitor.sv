@@ -30,9 +30,6 @@ class wav_DFI_monitor extends uvm_monitor;
             trans.wrdata_en[i] = vif.mp_mon.cb_mon.wrdata_en[i];
         foreach(vif.mp_mon.cb_mon.address[i])        
             trans.address[i] = vif.mp_mon.cb_mon.address[i];
-    endtask
-
-    task collect_wck(ref wav_DFI_wck_transfer trans); 
         foreach(vif.mp_mon.cb_mon.wck_cs[i])
             trans.wck_cs[i] = vif.mp_mon.cb_mon.wck_cs[i];
         foreach(vif.mp_mon.cb_mon.wck_en[i])
@@ -77,19 +74,20 @@ class wav_DFI_monitor extends uvm_monitor;
     `define READ_INST 0
 
    typedef struct {
-        bit [13:0] command; 
+        bit [13:0] command;
         bit [63:0] r_data;
         bit [7:0] dbi;
         bit en;
         bit valid;
         bit [1:0] dfi_phase;
+        bit [1:0] cs;
+        int timestamp;
    } read_slice_st;
 
     task automatic serialize_read(
-        // bit [1:0] cmd_phase,
-        output read_slice_st slices[$]
+        ref read_slice_st slices[$]
     );
-        slices = {};
+        read_slice_st new_slices[$] = {};
         foreach(vif.mp_mon.cb_mon.address[i]) begin
             read_slice_st temp;
             temp.command = vif.mp_mon.cb_mon.address[i];
@@ -98,91 +96,80 @@ class wav_DFI_monitor extends uvm_monitor;
             temp.en = vif.mp_mon.cb_mon.rddata_en[i];
             temp.valid = vif.mp_mon.cb_mon.rddata_valid[i];
             temp.dfi_phase = i;
-            slices.push_back(temp);
+            temp.cs = vif.mp_mon.cb_mon.rddata_cs[i];
+            temp.timestamp = $time;
+            new_slices.push_back(temp);
         end
-        // bit [1:0] shift_cntr = 0;
-        // while (shift_cntr < cmd_phase) begin
-        //     read_slice_st tmp = slices.pop_front();
-        //     slices.push_back(tmp);
-        //     shift_cntr++;
-        // end
+        // TODO: rotate the signals
+        // r_data, dbi, valid, dfi_phase
+        // according to the word_ptr
+        slices = {slices, new_slices};
+    endtask
+
+    task automatic extend_read_queue(
+        ref read_slice_st slices[$]
+    );
+        // the behaviour for an empty queue is to
+        // advance 1 timestep before extending
+        if ((slices.size() == 0) || (slices[$].timestamp == $time))
+        begin
+            @(vif.mp_mon.cb_mon);
+        end
+        serialize_read(slices);
     endtask
 
     task automatic collect_read (
-        ref wav_DFI_read_transfer trans,
+        output wav_DFI_read_transfer trans,
         ref bit [1:0] word_ptr,
-        ref bit [1:0] cmd_phase,
         ref read_slice_st slices[$]
     );
-        // timing parameters for read interface
         // TODO: find the values of these parameters
         int t_rddata_en = 0;
         int t_phy_rdcslat = 0;
 
         int data_len = 0;
+
         // TODO: ratio of the DFI clk to the DFI PHY clk
 
         int en_cntr = 1;
         int max_data_len;
         bit is_max_len_def = 0;
-        bit delete_slice = 1;
 
         int slice_index;
 
         bit is_data_len_done;
 
-        read_slice_st new_slices[$];
+        read_slice_st rolled_slices[$];
 
         read_data_t d;
 
+        bit [1:0] old_word_ptr;        
+
         // OPERATION STARTS HERE
-        fork
-            begin
-                // TODO: Sort out the @(posedge) mess here
-                int cs_delay = t_phy_rdcslat/4;
-                bit [1:0] cs_phase = cmd_phase + t_phy_rdcslat;
-                repeat(cs_delay) @(vif.mp_mon.cb_mon);
-                trans.cs = vif.mp_mon.cb_mon.rddata_cs[cs_phase];
-                // TODO: here we can assert that
-                // cs stays constant throughout the transaction
-            end
-        join_none
-
-        while(slices.size() <= t_rddata_en) begin
-            new_slices = {};
-            serialize_read(new_slices);
-            slices = {slices, new_slices};
-            @(vif.mp_mon.cb_mon);
-        end
-
-        while(slices[0].command != `READ_INST) begin
-            slices.pop_front();
-        end
-        slices.pop_front();
-
+        trans = new();
         
+        while(slices.size() <= t_rddata_en) begin
+            extend_read_queue(slices);
+        end
+
+        slice_index = 1;
 
         while(en_cntr < t_rddata_en) begin
-            if(slices[0].command != `READ_INST) begin
-                slices.pop_front();
+            if(slices[slice_index].command != `READ_INST) begin
+                slice_index++;
                 en_cntr++;
             end else begin
-                delete_slice = 0;
                 max_data_len = en_cntr;
                 is_max_len_def = 1;
                 break;
             end
         end
-        slice_index = t_rddata_en - en_cntr;
         
         is_data_len_done = 0;
 
         while(is_data_len_done == 0) begin
             if (slices.size() < slice_index + 1) begin
-                new_slices = {};
-                serialize_read(new_slices);
-                slices = {slices, new_slices};
-                @(vif.mp_mon.cb_mon);
+                extend_read_queue(slices);
             end
             if(slices[slice_index].en == 1) begin
                 data_len++;
@@ -191,40 +178,70 @@ class wav_DFI_monitor extends uvm_monitor;
                     if (data_len == max_data_len) begin
                         is_data_len_done = 1;    
                     end
-                end else if (slices[slice_index].command == `READ_INST) begin
+                end else if (slices[slice_index].command == `READ_INST)
+                begin
                     max_data_len = data_len + t_rddata_en;
                     is_max_len_def = 1;
                 end                
             end else begin
                 is_data_len_done = 1;
             end
-        end // we have the correct data length here
+        end // here we have the correct data length
 
         slice_index = 0;
         
         while (1) begin
             if (slices.size() < slice_index + 1) begin
-                new_slices = {};
-                serialize_read(new_slices);
-                slices = {slices, new_slices};
-                @(vif.mp_mon.cb_mon);
+                extend_read_queue(slices);
             end
-            if (slices[slice_index].valid == 1) begin
+            if ((slices[slice_index].valid == 1) && 
+                (slices[slice_index].dfi_phase == word_ptr)) begin
                 break;
             end else begin
                 slice_index++;    
             end
-            
+        end // here we have the location of the first data slice
+
+        rolled_slices =
+        slices[slice_index-word_ptr : slice_index-word_ptr+3];
+        
+        while (rolled_slices[0].dfi_phase != word_ptr) begin
+            read_slice_st tmp = rolled_slices[0];
+            rolled_slices[0:$-1] = rolled_slices[1:$];
+            rolled_slices [$] = tmp;
         end
 
-        // TODO: check that word_ptr is correct
+        old_word_ptr = word_ptr;
+
+        foreach (rolled_slices[i]) begin
+            if (data_len != 0) begin
+                if (rolled_slices[i].valid == 1) begin
+                    rolled_slices[i].valid = 0;
+                    d.data = rolled_slices[i].r_data;
+                    d.dbi = rolled_slices[i].dbi;
+                    trans.rd.push_back(d);
+                    data_len--;
+                    word_ptr = rolled_slices[i].dfi_phase + 1;
+                end
+            end else begin
+                break;
+            end
+        end
+
+        while (rolled_slices[0].dfi_phase != 0) begin
+            read_slice_st tmp = rolled_slices[0];
+            rolled_slices[0:$-1] = rolled_slices[1:$];
+            rolled_slices [$] = tmp;
+        end
+
+        slices [slice_index-old_word_ptr : 
+                slice_index-old_word_ptr+3] = rolled_slices;
+
+        slice_index += (4-old_word_ptr);
 
         while (data_len != 0) begin
             if (slices.size() < slice_index + 1) begin
-                new_slices = {};
-                serialize_read(new_slices);
-                slices = {slices, new_slices};
-                @(vif.mp_mon.cb_mon);
+                extend_read_queue(slices);
             end
             if (slices[slice_index].valid == 1) begin
                 slices[slice_index].valid = 0;
@@ -232,78 +249,191 @@ class wav_DFI_monitor extends uvm_monitor;
                 d.dbi = slices[slice_index].dbi;
                 trans.rd.push_back(d);
                 data_len--;
+                word_ptr = slices[slice_index].dfi_phase + 1;
             end
             slice_index++;
         end
 
-        word_ptr = slices[slice_index-1].dfi_phase + 1;
+        slice_index = t_phy_rdcslat;
+        trans.cs = slices[slice_index].cs;
 
-        while(slices[0].command != `READ_INST) begin
-            slices.pop_front();
-        end
+        // TODO: check for the cs signal staying constant for
+        // dfi_rw_length + tphy_rdcsgap here
+
+        slices.pop_front();
     endtask
 
     task handle_read();
         bit [1:0] data_word_ptr = 0;
         read_slice_st rd_slices[$] = {};
-        read_slice_st new_slices[$] = {};
         wav_DFI_read_transfer rd_seq_item;
         forever begin
-            // TODO: Sort out the @(posedge) mess here
-            @(vif.mp_mon.cb_mon);
-            new_slices = {};
-            serialize_read(new_slices);
-            rd_slices = {rd_slices, new_slices};
-
+            extend_read_queue(rd_slices);
             while (rd_slices.size() != 0) begin
                 if (rd_slices[0].command != `READ_INST) begin
                     rd_slices.pop_front();
                 end else begin
-                    rd_seq_item = new();
-                    collect_read(rd_seq_item, data_word_ptr, rd_slices[0].dfi_phase, rd_slices);
-                    // send rd_seq_item to scoreboard
+                    collect_read(rd_seq_item, data_word_ptr, rd_slices);
+                    // TODO: send rd_seq_item to scoreboard
                 end
             end
         end
     endtask
 
-/* add handles for the remaining interface signals*/
+    /* add handles for the remaining interface signals*/
     task handle_write();
         wav_DFI_write_transfer trans;
-        int clkticks = 0;
+        int clkticks_wrcsgab=0;
+        int clkticks_wrcslat=0;
+        int clkticks_wrdata=0;
+        int clkticks_wrdatalat=0;
+        int clkticks_wrdata_delay=0;
+
+        int clkticks_wckdis=0;
+        int clkticks_wcktoggle=0;
+        int clkticks_wckfast_toggle=0;
+        int clkticks_wcktoggle_cs=0;
+        int clkticks_wcktoggle_rd=0;
+        int clkticks_wcktoggle_wr=0;
+
+        logic [1:0]temp_wrdata_cs[0:3] = '{default:0};
         trans = new();
-        
         forever begin
-            /*checks*/
-            foreach(trans.address[i])
-            begin 
-                @(trans.address[i]) begin
-                @(vif.mp_mon.cb_mon) ++clkticks; 
-                // if(trans.wrdata_en[i] && vif.mp_mon.cb_mon) // REQUIRES REVISION
-                if(trans.wrdata_en[i])
-                begin 
-                    if(`tphy_wrlat != clkticks) 
+            foreach(trans.wck_en[i])
+            begin
+                if(trans.wck_en[i] != 1'b0) 
+                begin
+                    @(vif.mp_mon.cb_mon)
                     begin
-                        `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the write enable (%d)is not equal to tphy_wrlat(%d)",clkticks,`tphy_wrlat));                        
+                       ++clkticks_wcktoggle;
+                       ++clkticks_wckfast_toggle;
                     end
-                    
+                    @(vif.mp_mon.cb_mon);
+                    if(trans.wck_toggle[i]==2'b10)
+                    begin
+                        if(`twck_toggle != clkticks_wcktoggle)
+                        begin
+                            `uvm_error(get_name(), $psprintf("The time between the wck enable to toggle command (%d)is not equal to twck_toggle(%d)",clkticks_wcktoggle,`twck_toggle));                        
+                        end
+                        else
+                        begin
+                            clkticks_wcktoggle=0;
+                        end 
+                    end
+                    if(trans.wck_toggle[i]==2'b11)
+                    begin
+                        if(`twck_fast_toggle != clkticks_wckfast_toggle)
+                        begin
+                            `uvm_error(get_name(), $psprintf("The time between the wck toggle command to wck fast toggle command (%d)is not equal to twck_toggle(%d)",clkticks_wckfast_toggle,`twck_fast_toggle));                        
+                        end
+                        else
+                        begin
+                            clkticks_wckfast_toggle=0;
+                        end
+                    end
                 end
+            end
+            /*checks for all write data timing parameters*/
+            foreach(trans.address[i])
+            begin
+                if(trans.address[i] != 14'b0) 
+                begin
+                    @(vif.mp_mon.cb_mon)
+                    begin
+                        ++clkticks_wrcsgab;
+                        ++clkticks_wrcslat;
+                        ++clkticks_wrdata;
+                        ++clkticks_wrdatalat;
+                        ++clkticks_wrdata_delay;
+                    end
+                    @(vif.mp_mon.cb_mon);
+                    if(trans.wck_cs[i] != 2'bxx)
+                    begin
+                        if(`twck_toggle_cs != clkticks_wcktoggle_cs)
+                        begin
+                           `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the write cs (%d)is not equal to tphy_wrcslat(%d)",clkticks_wcktoggle_cs,`tphy_wrcslat));                         
+                        end
+                        else 
+                        begin
+                            clkticks_wcktoggle_cs=0;
+                        end
+                    end
+                    if(trans.wrdata_cs[i] != 2'b0)  
+                    begin
+                        temp_wrdata_cs[i] = trans.wrdata_cs[i];
+                        if(`tphy_wrcslat != clkticks_wrcslat) 
+                        begin
+                            `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the write cs (%d)is not equal to tphy_wrcslat(%d)",clkticks_wrcslat,`tphy_wrcslat));                        
+                        end
+                        else 
+                        begin
+                            clkticks_wrcslat=0;
+                        end
+                        if(`tphy_wrlat != clkticks_wrdatalat) 
+                        begin
+                            `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the write en (%d)is not equal to tphy_wrlat(%d)",clkticks_wrdatalat,`tphy_wrlat));                        
+                        end
+                        else 
+                        begin
+                            clkticks_wrdatalat=0;
+                        end    
+                    end
+                    if(trans.address[i] != 14'b0)
+                    begin
+                        if(trans.wrdata_cs[i] != 2'b0) 
+                        begin
+                            if(temp_wrdata_cs[i] != trans.wrdata_cs[i])
+                            begin
+                                if(`tphy_wrcsgap != clkticks_wrcsgab) 
+                                begin
+                                    `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the next dfi command write if changeing cs (%d)is not equal to tphy_wrcsgap(%d)",clkticks_wrcsgab,`tphy_wrcsgap));                        
+                                end
+                                else 
+                                begin
+                                    clkticks_wrcsgab=0;
+                                end
+                            end
+                        end
+                    end
                 end
-
-
+                if(trans.wrdata_en[i] != 4'b0) 
+                begin
+                    @(vif.mp_mon.cb_mon)
+                    begin
+                        ++clkticks_wrcsgab;
+                        ++clkticks_wrcslat;
+                        ++clkticks_wrdata;
+                        ++clkticks_wrdatalat;
+                        ++clkticks_wrdata_delay;
+                    end 
+                    if(trans.wrdata[i] != 64'b0)
+                    begin
+                        if(`tphy_wrdata != clkticks_wrdata)
+                        begin
+                            `uvm_error(get_name(), $psprintf("The gap between the write enable and the write data (%d)is not equal to tphy_wrdata(%d)",clkticks_wrdata,`tphy_wrdata));                        
+                        end
+                        else 
+                        begin
+                            clkticks_wrdata=0;
+                        end
+                    end
+                    if(trans.wrdata[i] == 64'b0)
+                    begin
+                        if(`tphy_wrdatadelay != clkticks_wrdata_delay)
+                        begin
+                            `uvm_error(get_name(), $psprintf("The gap between the write enable and the write data completes transfer (%d)is not equal to tphy_wrdatadelay(%d)",clkticks_wrdata_delay,`tphy_wrdatadelay));                        
+                        end
+                        else 
+                        begin
+                            clkticks_wrdata_delay=0;
+                        end
+                    end
+                end
             end
         end
     endtask
 
-    task handle_wck();
-        wav_DFI_wck_transfer trans;
-        trans = new();
-        forever begin
-           
-           
-        end
-
-    endtask
+    
 
     //Handles a single request and performs any required checking throughout the transaction
     task handle_lp(bit is_ctrl);
@@ -549,20 +679,13 @@ class wav_DFI_monitor extends uvm_monitor;
 
     task monitor_write();                 
         forever begin         
-            @(vif.mp_mon.cb_mon)       
-            if (vif.mp_mon.cb_mon.wrdata_en) begin
-                `uvm_info(get_name(), "write transaction is detected", UVM_MEDIUM);
-                handle_write();
-            end
-        end    
-    endtask
-
-    task monitor_wck();                 
-        forever begin         
-            @(vif.mp_mon.cb_mon)       
-            if (vif.mp_mon.cb_mon.wck_en) begin
-                `uvm_info(get_name(), "wck transaction is detected", UVM_MEDIUM);
-                handle_wck();
+            @(vif.mp_mon.cb_mon) 
+            foreach(vif.mp_mon.cb_mon.wrdata_en[i])
+            begin      
+                if (vif.mp_mon.cb_mon.wrdata_en[i]) begin
+                    `uvm_info(get_name(), "write transaction is detected", UVM_MEDIUM);
+                    handle_write();
+                end
             end
         end    
     endtask
@@ -572,7 +695,6 @@ class wav_DFI_monitor extends uvm_monitor;
         wav_DFI_phymstr_transfer phymstr = new();
         wav_DFI_update_transfer ctrlupd = new(), phyupd = new();
         wav_DFI_write_transfer write = new();
-        wav_DFI_wck_transfer wck = new();
         @(vif.mp_mon.cb_mon) 
         // Collect initial transaction at the first cycle
         collect_ctrlupd(ctrlupd);
@@ -581,8 +703,6 @@ class wav_DFI_monitor extends uvm_monitor;
         collect_lp_data(lp_data);
         collect_phymstr(phymstr);
         collect_write(write);
-        collect_wck(wck);
-
         if (ctrlupd.req || ctrlupd.ack) begin
             `uvm_error(get_name(), "ctrlupd interface is not zero at initialization");
             ctrlupd.print();
@@ -621,7 +741,6 @@ class wav_DFI_monitor extends uvm_monitor;
             monitor_phyupd();         
             monitor_ctrlupd();
             monitor_write();
-            monitor_wck();
 /*add monitor function to the remaining interface signals*/       
         join
     endtask
