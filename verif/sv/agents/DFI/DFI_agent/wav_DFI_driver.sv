@@ -99,9 +99,15 @@ class wav_DFI_driver extends uvm_driver; // use default value to adhere to the w
 
     task drive_write(wav_DFI_write_transfer trans);         
         @(posedge vif.mp_drv.cb_drv);
+        `uvm_info(get_name(), "write xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", UVM_MEDIUM); 
+        trans.print();
         // For arrays
+        foreach(trans.address[i])
+            vif.mp_drv.cb_drv.address[i] <= trans.address[i]; 
         foreach(trans.wrdata[i])
-            vif.mp_drv.cb_drv.wrdata[i] <= trans.wrdata[i];  
+            vif.mp_drv.cb_drv.wrdata[i] <= trans.wrdata[i];
+        foreach(trans.parity_in[i])
+            vif.mp_drv.cb_drv.parity_in[i] <= trans.parity_in[i]; 
         foreach(trans.wrdata_cs[i])
             vif.mp_drv.cb_drv.wrdata_cs[i] <= trans.wrdata_cs[i]; 
         foreach(trans.wrdata_en[i])
@@ -113,12 +119,18 @@ class wav_DFI_driver extends uvm_driver; // use default value to adhere to the w
         foreach(trans.wck_en[i])
             vif.mp_drv.cb_drv.wck_en[i] <= trans.wck_en[i]; 
         foreach(trans.wck_toggle[i])        
-            vif.mp_drv.cb_drv.wck_toggle[i] <= trans.wck_toggle[i];   
+            vif.mp_drv.cb_drv.wck_toggle[i] <= trans.wck_toggle[i];
+        foreach(trans.cs[i])        
+            vif.mp_drv.cb_drv.cs[i] <= trans.cs[i];
+        foreach(trans.dram_clk_disable[i])        
+            vif.mp_drv.cb_drv.dram_clk_disable[i] <= trans.dram_clk_disable[i];  
     endtask
 
     //there are different types of DFI transactions 
     //this task checks the tr_type in the transaction and call the corresponding task 
     task automatic drive_transaction(wav_DFI_transfer trans);
+        `uvm_info(get_name(), "write xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", UVM_MEDIUM); 
+        trans.print();
 		fork 
 		begin
 			wav_DFI_lp_transfer lp_trans;
