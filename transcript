@@ -1,7 +1,0 @@
-# vsim -c "+UVM_TESTNAME=wddr_DFI_write_test" work.wddr_tb_top 
-# Start time: 16:34:04 on May 25,2022
-# ** Error (suppressible): (vsim-19) Failed to access library 'work' at "work".
-# No such file or directory. (errno = ENOENT)
-# Error loading design
-# End time: 16:34:04 on May 25,2022, Elapsed time: 0:00:00
-# Errors: 1, Warnings: 0

@@ -123,8 +123,6 @@ class wav_DFI_monitor extends uvm_monitor;
         ref bit [1:0] word_ptr,
         ref read_slice_st slices[$]
     );
-        // bit [1:0] cmd_phase;
-
         // TODO: find the values of these parameters
         int t_rddata_en = 0;
         int t_phy_rdcslat = 0;
@@ -149,8 +147,6 @@ class wav_DFI_monitor extends uvm_monitor;
 
         // OPERATION STARTS HERE
         trans = new();
-        
-        // cmd_phase = slices[0].dfi_phase;
         
         while(slices.size() <= t_rddata_en) begin
             extend_read_queue(slices);
@@ -209,7 +205,7 @@ class wav_DFI_monitor extends uvm_monitor;
         rolled_slices =
         slices[slice_index-word_ptr : slice_index-word_ptr+3];
         
-        repeat (word_ptr) begin
+        while (rolled_slices[0].dfi_phase != word_ptr) begin
             read_slice_st tmp = rolled_slices[0];
             rolled_slices[0:$-1] = rolled_slices[1:$];
             rolled_slices [$] = tmp;
@@ -284,7 +280,6 @@ class wav_DFI_monitor extends uvm_monitor;
         end
     endtask
 
-/* add handles for the remaining interface signals*/
     /* add handles for the remaining interface signals*/
     task handle_write();
         wav_DFI_write_transfer trans;
@@ -613,7 +608,7 @@ class wav_DFI_monitor extends uvm_monitor;
             if (count & trans.req)
                 ++counter;
 
-            if (original.compare(trans)) begin
+            if (original.compare(trans) == 0) begin
                 `uvm_error(get_name(), "Some of the phymstr signals are not the stable during the transaction");
             end
         end

@@ -1704,8 +1704,8 @@ ddr_phy_1x32 u_phy_1x32 (
         @(posedge `ahb_clk_v) disable iff (`ahb_rst_v) ((sta != 0) |->##[0:20] (sta == sig));
     endproperty;
 
-    lp_ctrl_status:  assert property(sta_reflects_sig(`dfi_csr_v.dfi_lp_ctrl_if_sta_q, {DFI_if.lp_ctrl_wakeup, DFI_if.lp_ctrl_ack, DFI_if.lp_ctrl_req}));
-    lp_data_status:  assert property(sta_reflects_sig(`dfi_csr_v.dfi_lp_data_if_sta_q, {DFI_if.lp_data_wakeup, DFI_if.lp_data_ack, DFI_if.lp_data_req}));
+    lp_ctrl_status:  assert property(sta_reflects_sig(`dfi_csr_v.dfi_lp_ctrl_if_sta_q, {DFI_if.lp_ctrl_wakeup, 2'b0, DFI_if.lp_ctrl_ack, DFI_if.lp_ctrl_req}));
+    lp_data_status:  assert property(sta_reflects_sig(`dfi_csr_v.dfi_lp_data_if_sta_q, {DFI_if.lp_data_wakeup, 2'b0, DFI_if.lp_data_ack, DFI_if.lp_data_req}));
     ctrlupd_status:  assert property(sta_reflects_sig(`dfi_csr_v.dfi_ctrlupd_if_sta_q, {DFI_if.ctrlupd_ack, DFI_if.ctrlupd_req}));
     phyupd_status:   assert property(sta_reflects_sig(`dfi_csr_v.dfi_phyupd_if_sta_q[1:0], {DFI_if.phyupd_ack, DFI_if.phyupd_req}));
     phymstr_status:   assert property(sta_reflects_sig(`dfi_csr_v.dfi_phymstr_if_sta_q[1:0], {DFI_if.phymstr_ack, DFI_if.phymstr_req}));
