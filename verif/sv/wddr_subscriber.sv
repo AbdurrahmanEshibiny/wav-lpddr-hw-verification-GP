@@ -5,10 +5,10 @@ class wddr_subscriber extends uvm_component;
 	`uvm_component_utils(wddr_subscriber);
 
 	wav_DFI_transfer dfi_trans;
-	uvm_analysis_imp_DFI #(wav_DFI_transfer) DFI_imp;
+	uvm_analysis_imp_DFI #(wav_DFI_transfer, wddr_subscriber) DFI_imp;
 	
 	wav_DFI_write_transfer lpddr5_trans;
-	uvm_analysis_imp_LPDDR5 #(wav_DFI_write_transfer) LPDDR5_imp;
+	uvm_analysis_imp_LPDDR5 #(wav_DFI_write_transfer, wddr_subscriber) LPDDR5_imp;
 
 	//--------------------------------COVERGROUPS------------------------------------
 	
