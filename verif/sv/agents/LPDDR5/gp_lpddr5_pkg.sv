@@ -4,7 +4,8 @@ package gp_lpddr5_pkg;
 	import uvm_pkg::*;
 	`include "uvm_macros.svh"
 
-	`include "DFI/DFI_agent/wav_DFI_transfer.sv"	
+	// `include "DFI/DFI_agent/wav_DFI_transfer.sv"	
+	import wav_DFI_pkg::wav_DFI_write_transfer;
 	`include "LPDDR5/LPDDR5_agent/gp_LPDDR5_monitor.sv"
 	`include "LPDDR5/LPDDR5_agent/gp_LPDDR5_agent.sv"
 endpackage
