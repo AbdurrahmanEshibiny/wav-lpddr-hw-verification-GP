@@ -436,7 +436,7 @@ class wav_DFI_monitor extends uvm_monitor;
     
 
     //Handles a single request and performs any required checking throughout the transaction
-    task handle_lp(bit is_ctrl);
+    task automatic handle_lp(bit is_ctrl);
         wav_DFI_lp_transfer trans;
         int wakeup = -1;
         int counter = 0, steadyCounter = 0;
@@ -477,10 +477,13 @@ class wav_DFI_monitor extends uvm_monitor;
 
         if (wakeup != 19 && counter > wakeup_times[wakeup]) begin
             `uvm_error(get_name(), $psprintf("PHY stayed asleep more than the wakeup time, it should stay %0d, but it stayed %0d", wakeup_times[wakeup], counter));
+		end
+		else begin
+			`uvm_info(get_name(), $psprintf("PHY stayed asleep for %0d, with wakeup_time = %0d", counter, wakeup_times[wakeup]), UVM_MEDIUM);
         end
     endtask
 
-    task handle_phyupd();
+    task automatic handle_phyupd();
         wav_DFI_update_transfer trans, original;
         int counter = 0, steadyCounter = 0;
         bit next_should_be_idle = 0, count = 0;
@@ -529,7 +532,7 @@ class wav_DFI_monitor extends uvm_monitor;
         end
     endtask
 
-    task handle_ctrlupd();
+    task automatic handle_ctrlupd();
         wav_DFI_update_transfer trans = new();
         int counter = 0, steadyCounter = 0;
         bit isAcked = 0;
@@ -570,7 +573,7 @@ class wav_DFI_monitor extends uvm_monitor;
         end
     endtask
 
-    task handle_phymstr();
+    task automatic handle_phymstr();
         wav_DFI_phymstr_transfer trans, original;
         int counter = 0, steadyCounter = 0;
         bit next_should_be_idle = 0, count = 0;
@@ -617,7 +620,7 @@ class wav_DFI_monitor extends uvm_monitor;
     //each task goes in a forever loop that monitors a specific sub-interface, collects 
     //a packet whenever it detects a change, and then it write the packet in the analysis 
     //port for the scoreboard to perform its checks 
-    task monitor_lp_ctrl(); 
+    task automatic monitor_lp_ctrl(); 
         forever begin 
             @(vif.mp_mon.cb_mon) 
             if (vif.mp_mon.cb_mon.lp_ctrl_req) begin
@@ -629,7 +632,7 @@ class wav_DFI_monitor extends uvm_monitor;
         end      
     endtask          
         
-    task monitor_lp_data();         
+    task automatic monitor_lp_data();         
         forever begin                 
             @(vif.mp_mon.cb_mon) 
             if (vif.mp_mon.cb_mon.lp_data_req) begin
@@ -641,7 +644,7 @@ class wav_DFI_monitor extends uvm_monitor;
         end
     endtask
 
-    task monitor_phyupd ();           
+    task automatic monitor_phyupd ();           
         forever begin                
             @(vif.mp_mon.cb_mon)     
             if (vif.mp_mon.cb_mon.phyupd_req) begin
@@ -653,7 +656,7 @@ class wav_DFI_monitor extends uvm_monitor;
         end     
     endtask
     
-    task monitor_ctrlupd ();                 
+    task automatic monitor_ctrlupd ();                 
         forever begin            
             @(vif.mp_mon.cb_mon) 
             if (vif.mp_mon.cb_mon.ctrlupd_req) begin
@@ -665,7 +668,7 @@ class wav_DFI_monitor extends uvm_monitor;
         end 
     endtask  
     
-    task monitor_phymstr();                 
+    task automatic monitor_phymstr();                 
         forever begin         
             @(vif.mp_mon.cb_mon)       
             if (vif.mp_mon.cb_mon.phymstr_req) begin
@@ -690,7 +693,7 @@ class wav_DFI_monitor extends uvm_monitor;
         end    
     endtask
 
-    task monitor_initiailization();
+    task automatic monitor_initiailization();
         wav_DFI_lp_transfer lp_ctrl = new(), lp_data = new();
         wav_DFI_phymstr_transfer phymstr = new();
         wav_DFI_update_transfer ctrlupd = new(), phyupd = new();
