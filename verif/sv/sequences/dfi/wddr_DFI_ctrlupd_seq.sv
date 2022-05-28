@@ -29,6 +29,9 @@ class wddr_DFI_ctrlupd_seq extends wddr_base_seq;
         `uvm_info(get_type_name(), "--------PRINTING THE REQ ITEM--------", UVM_DEBUG); 
         trans.print();
 
+        `uvm_info(get_name(), "waiting for ctrlupd transaction", UVM_MEDIUM);
+        EventHandler::wait_for_transaction(EventHandler::ctrlupd);
+        
         `uvm_info(get_type_name(), "done sequence", UVM_LOW);
     endtask
 
