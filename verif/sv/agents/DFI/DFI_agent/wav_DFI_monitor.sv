@@ -17,7 +17,7 @@ class wav_DFI_monitor extends uvm_monitor;
     endfunction
 	/*add collect for remaining interface signals*/
     //each task samples a single packet from the corresponding sub-interface 
-    task collect_write(ref wav_DFI_write_transfer trans); 
+    task automatic collect_write(ref wav_DFI_write_transfer trans); 
         foreach(vif.mp_mon.cb_mon.wrdata[i])
             trans.wrdata[i] = vif.mp_mon.cb_mon.wrdata[i];
         foreach(vif.mp_mon.cb_mon.parity_in[i]) 
@@ -38,21 +38,21 @@ class wav_DFI_monitor extends uvm_monitor;
             trans.wck_toggle[i] = vif.mp_mon.cb_mon.wck_toggle[i];
     endtask
 
-    task collect_lp_ctrl(ref wav_DFI_lp_transfer trans); 
+    task automatic collect_lp_ctrl(ref wav_DFI_lp_transfer trans); 
         trans.req = vif.mp_mon.cb_mon.lp_ctrl_req; 
         trans.ack = vif.mp_mon.cb_mon.lp_ctrl_ack; 
         trans.wakeup = vif.mp_mon.cb_mon.lp_ctrl_wakeup; 
         trans.is_ctrl = 1; 
     endtask
           
-    task collect_lp_data(ref wav_DFI_lp_transfer trans); 
+    task automatic collect_lp_data(ref wav_DFI_lp_transfer trans); 
         trans.req = vif.mp_mon.cb_mon.lp_data_req; 
         trans.ack = vif.mp_mon.cb_mon.lp_data_ack; 
         trans.wakeup = vif.mp_mon.cb_mon.lp_data_wakeup; 
         trans.is_ctrl = 0; 
     endtask    
           
-    task collect_phymstr(ref wav_DFI_phymstr_transfer trans);     
+    task automatic collect_phymstr(ref wav_DFI_phymstr_transfer trans);     
         trans.req = vif.mp_mon.cb_mon.phymstr_req; 
         trans.ack = vif.mp_mon.cb_mon.phymstr_ack; 
         trans._type = vif.mp_mon.cb_mon.phymstr_type; 
@@ -60,13 +60,13 @@ class wav_DFI_monitor extends uvm_monitor;
         trans.cs_state = vif.mp_mon.cb_mon.phymstr_cs_state; 
     endtask  
           
-    task collect_phyupd(ref wav_DFI_update_transfer trans); 
+    task automatic collect_phyupd(ref wav_DFI_update_transfer trans); 
         trans.req = vif.mp_mon.cb_mon.phyupd_req; 
         trans.ack = vif.mp_mon.cb_mon.phyupd_ack; 
         trans._type = vif.mp_mon.cb_mon.phyupd_type; 
     endtask
     
-    task collect_ctrlupd(ref wav_DFI_update_transfer trans); 
+    task automatic collect_ctrlupd(ref wav_DFI_update_transfer trans); 
         trans.req = vif.mp_mon.cb_mon.ctrlupd_req; 
         trans.ack = vif.mp_mon.cb_mon.ctrlupd_ack; 
     endtask
@@ -281,7 +281,7 @@ class wav_DFI_monitor extends uvm_monitor;
     endtask
 
     /* add handles for the remaining interface signals*/
-    task handle_write();
+    task automatic handle_write();
         wav_DFI_write_transfer trans;
         int clkticks_wrcsgab=0;
         int clkticks_wrcslat=0;
@@ -680,7 +680,7 @@ class wav_DFI_monitor extends uvm_monitor;
         end    
     endtask
 
-    task monitor_write();                 
+    task automatic monitor_write();                 
         forever begin         
             @(vif.mp_mon.cb_mon) 
             foreach(vif.mp_mon.cb_mon.wrdata_en[i])

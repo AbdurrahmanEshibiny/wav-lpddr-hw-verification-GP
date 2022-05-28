@@ -75,6 +75,13 @@ class wav_DFI_control_transfer extends wav_DFI_transfer;
     function new(string name=" wav_DFI_control_transfer"); 
         super.new(name); 
         super.tr_type = control; 
+        reset();
+    endfunction
+
+    virtual function void reset();
+        this.req = 0;
+        this.ack = 0;
+        this.cyclesCount = 0;
     endfunction
 endclass
     
@@ -98,6 +105,13 @@ class wav_DFI_lp_transfer extends wav_DFI_control_transfer;
     function new(string name="wav_DFI_lp_transfer"); 
         super.new(name); 
         super.tr_type = lp;
+        reset();
+    endfunction
+
+    virtual function void reset();
+        super.reset();
+        this.wakeup = 0;
+        this.is_ctrl = 0;
     endfunction
 endclass
     
@@ -116,6 +130,14 @@ class wav_DFI_phymstr_transfer extends wav_DFI_control_transfer;
     function new(string name = "wav_DFI_phymstr_transfer"); 
         super.new(name); 
         super.tr_type = phymstr; 
+        this.reset();
+    endfunction
+
+    virtual function void reset();
+        super.reset();
+        this._type = 0;
+        this.cs_state = 0;
+        this.state_sel = 0;
     endfunction
 endclass
       
@@ -136,6 +158,13 @@ class wav_DFI_update_transfer extends wav_DFI_control_transfer;
     function new(string name = "wav_DFI_update_transfer"); 
         super.new(name); 
         super.tr_type = update; 
+        this.reset();
+    endfunction
+
+    virtual function void reset();
+        super.reset();
+        this._type = 0;
+        this.is_ctrl = 0;
     endfunction
 endclass
 

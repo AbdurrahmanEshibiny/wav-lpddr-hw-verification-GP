@@ -97,7 +97,7 @@ class wav_DFI_driver extends uvm_driver; // use default value to adhere to the w
         end
     endtask
 
-    task drive_write(wav_DFI_write_transfer trans);         
+    task automatic drive_write(wav_DFI_write_transfer trans);         
         @(posedge vif.mp_drv.cb_drv);
         // For arrays
         foreach(trans.wrdata[i])
