@@ -9,8 +9,8 @@ class wddr_subscriber extends uvm_component;
 	wav_DFI_lp_transfer lp_ctrl_trans, lp_data_trans;
 	wav_DFI_phymstr_transfer phymstr_trans;
 	wav_DFI_update_transfer ctrlupd_trans, phyupd_trans;
-	wav_DFI_read_transfer read_trans;
-	wav_DFI_write_transfer write_trans;
+	wav_DFI_read_transfer DFI_read_trans;
+	wav_DFI_write_transfer DFI_write_trans;
 
 	uvm_analysis_imp_DFI #(wav_DFI_transfer, wddr_subscriber) DFI_imp;
 	
@@ -68,6 +68,14 @@ class wddr_subscriber extends uvm_component;
 			bins infinite_cycles = {19};
 			illegal_bins more_than_infinity = {[20:$]};
 		}
+	endgroup
+
+	// Cover different parameters of write
+	covergroup DFI_write_cg;
+		wck_modes_p0_cp:	coverpoint DFI_write_trans.wck_toggle[0] iff(DFI_write_trans.wck_en[0]);
+		wck_modes_p1_cp:	coverpoint DFI_write_trans.wck_toggle[1] iff(DFI_write_trans.wck_en[1]);
+		wck_modes_p2_cp:	coverpoint DFI_write_trans.wck_toggle[2] iff(DFI_write_trans.wck_en[2]);
+		wck_modes_p3_cp:	coverpoint DFI_write_trans.wck_toggle[3] iff(DFI_write_trans.wck_en[3]);
 	endgroup
 
 	// Cover different control high level scenarios
@@ -159,6 +167,8 @@ class wddr_subscriber extends uvm_component;
 		ctrlupd_trans = wav_DFI_update_transfer::type_id::create("coverage_ctrlupd_trans", this);
 		phyupd_trans = wav_DFI_update_transfer::type_id::create("coverage_phyupd_trans", this);
 
+		DFI_write_trans = wav_DFI_write_transfer::type_id::create("coverage_DFI_write_trans", this);
+
 		// Instantiate the required scalar data field
 		trans_c = DFI_C;
 
@@ -167,6 +177,7 @@ class wddr_subscriber extends uvm_component;
 		phymstr_cg = new();
 		update_cg = new();
 		lp_cg = new();
+		DFI_write_cg = new();
 		advanced_control_cg = new();
 	endfunction: new
 
@@ -174,7 +185,7 @@ class wddr_subscriber extends uvm_component;
 		super.build_phase(phase);
 	endfunction: build_phase
 
-	function automatic void reset_control_objects;
+	function automatic void reset_DFI_objects;
 		lp_data_trans.reset();
 		lp_ctrl_trans.reset();
 
@@ -182,6 +193,8 @@ class wddr_subscriber extends uvm_component;
 		ctrlupd_trans.reset();
 
 		phymstr_trans.reset();
+
+		DFI_write_trans.reset();
 
 		trans_c = DFI_C;
 	endfunction
@@ -217,7 +230,7 @@ class wddr_subscriber extends uvm_component;
 		wav_DFI_lp_transfer lp_trans;
 		wav_DFI_update_transfer update_trans;
 		// To ensure that we are not counting the same transaction twice
-		reset_control_objects();
+		reset_DFI_objects();
 
 		if ($cast(dfi_trans, trans.clone())) begin
 			`uvm_fatal(get_name(), "Coverage collector cannot cast wav_DFI_transfer object");			
@@ -237,11 +250,12 @@ class wddr_subscriber extends uvm_component;
 				handle_update_cg(update_trans);
 			end
 			write: begin     
-				$cast(write_trans, trans);
+				$cast(DFI_write_trans, trans);
 				trans_c = write_c;
+				DFI_write_cg.sample();
 			end
 			read: begin     
-				$cast(read_trans, trans);
+				$cast(DFI_read_trans, trans);
 				trans_c = read_c;
 			end
 		endcase    
