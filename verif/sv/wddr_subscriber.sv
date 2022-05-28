@@ -25,14 +25,6 @@ class wddr_subscriber extends uvm_component;
 	//--------------------------------COVERGROUPS------------------------------------
 	// Cover the occurence of the control_c transactions
 	covergroup basic_DFI_cg;
-		// lp_ctrl_trans_cp:	coverpoint lp_ctrl_trans.req `high_bin_only
-		// lp_data_trans_cp:	coverpoint lp_data_trans.req `high_bin_only
-
-		// phymstr_trans_cp: 	coverpoint phymstr_trans.req `high_bin_only
-		
-		// ctrlupd_trans_cp:	coverpoint ctrlupd_trans.req `high_bin_only
-		// phyupd_trans_cp: 	coverpoint phyupd_trans.req `high_bin_only
-
 		basic_cp: coverpoint trans_c {
 			bins lp_ctrl_trans 		= {lp_ctrl_c};
 			bins lp_data_trans 		= {lp_data_c};
@@ -59,8 +51,23 @@ class wddr_subscriber extends uvm_component;
 
 	// Cover different parameters of lp
 	covergroup lp_cg;
-		lp_ctrl_wakeup_cp:	coverpoint lp_ctrl_trans.wakeup iff(lp_ctrl_trans.req);
-		lp_data_wakeup_cp:	coverpoint lp_data_trans.wakeup iff(lp_data_trans.req);
+		lp_ctrl_wakeup_cp:	coverpoint lp_ctrl_trans.wakeup iff(lp_ctrl_trans.req)
+		{
+			bins one_cycle = {0};
+			bins few_cycles = {[1:10]};
+			bins many_cycles = {[11:18]};
+			bins infinite_cycles = {19};
+			illegal_bins more_than_infinity = {[20:$]};
+		} 	
+
+		lp_data_wakeup_cp:	coverpoint lp_data_trans.wakeup iff(lp_data_trans.req)
+		{
+			bins one_cycle = {0};
+			bins few_cycles = {[1:10]};
+			bins many_cycles = {[11:18]};
+			bins infinite_cycles = {19};
+			illegal_bins more_than_infinity = {[20:$]};
+		}
 	endgroup
 
 	// Cover different control high level scenarios
