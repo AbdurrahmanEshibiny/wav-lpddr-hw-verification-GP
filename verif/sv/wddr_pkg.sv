@@ -25,7 +25,7 @@ package wddr_pkg;
 
 `include "uvm_macros.svh"
 
-`include "./wddr_subscriber.sv"
+// `include "./wddr_subscriber.sv"
 
 `include "ddr_global_define.vh"
 `include "ddr_cmn_csr_defs.vh"

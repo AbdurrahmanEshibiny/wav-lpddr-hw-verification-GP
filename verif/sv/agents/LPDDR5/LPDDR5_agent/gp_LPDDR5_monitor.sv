@@ -98,17 +98,11 @@ int place_holder = 1;
 `define tWCKDQI
 `define tXSR
 
-import uvm_pkg::*;
-`include "uvm_macros.svh"
-
 class gp_LPDDR5_monitor extends uvm_monitor;
 	`uvm_component_utils(gp_LPDDR5_monitor)
 	
 	//-------------------Start of variable declarations-------------------------------
-	typedef enum {	DES, NOP, PDE, ACT1, ACT2, PRE, REF, MWR, WR16, WR32, RD16, RD32,
-					CAS_WR,CAS_RD,CAS_FS,CAS_OFF, MPC, SRE, SRX, MRW1, MRW2, MRR, WFF, RFF, RDC
-	} command;
-	
+	//typdef command was moved to gp_lpddr5_pkg.sv
 	command CA, prev_CA, next_CA;
 	bit [17:0] ROW;
 	
