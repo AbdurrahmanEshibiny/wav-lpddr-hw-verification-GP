@@ -38,6 +38,7 @@ class wav_DFI_write_transfer extends wav_DFI_transfer;
     bit [1:0]                wck_cs [0:3];
     bit                      wck_en [0:3];
     bit [1:0]                wck_toggle [0:3];
+    bit                     dram_clk_disable [0:3];
 
     `uvm_object_utils_begin(wav_DFI_write_transfer)
         `uvm_field_sarray_int(wrdata, UVM_DEFAULT | UVM_NOCOMPARE)
