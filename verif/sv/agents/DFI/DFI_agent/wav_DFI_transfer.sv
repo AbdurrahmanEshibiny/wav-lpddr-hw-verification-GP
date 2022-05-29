@@ -24,6 +24,9 @@ class wav_DFI_transfer extends uvm_sequence_item;
         tr_type = DFI;
     endfunction
 
+    virtual function void reset();
+
+    endfunction
 endclass
 
 // Base class for DFI write transactions 
@@ -55,6 +58,20 @@ class wav_DFI_write_transfer extends wav_DFI_transfer;
     function new(string name=" wav_DFI_write_transfer"); 
         super.new(name); 
         super.tr_type = write; 
+    endfunction
+
+    virtual function void reset();
+        wrdata = '{default:0};
+        parity_in = '{default:0};
+        wrdata_cs = '{default:0};
+        wrdata_mask = '{default:0};
+        wrdata_en = '{default:0};
+        address = '{default:0};
+        cs = '{default:0};
+        wck_cs = '{default:0};
+        wck_en = '{default:0};
+        wck_toggle = '{default:0};
+        dram_clk_disable = '{default:0};
     endfunction
 endclass
 
