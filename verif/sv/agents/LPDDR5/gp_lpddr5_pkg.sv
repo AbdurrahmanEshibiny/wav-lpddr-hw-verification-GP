@@ -3,6 +3,7 @@
 package gp_lpddr5_pkg;
 	import uvm_pkg::*;
 	`include "uvm_macros.svh"
+	`include "gp_lpddr5_time_defs.svh"
 
 	typedef enum {	DES, NOP, PDE, ACT1, ACT2, PRE, REF, MWR, WR16, WR32, RD16, RD32,
 					CAS_WR,CAS_RD,CAS_FS,CAS_OFF, MPC, SRE, SRX, MRW1, MRW2, MRR, WFF, RFF, RDC

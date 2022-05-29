@@ -14,8 +14,8 @@ class wddr_subscriber extends uvm_component;
 
 	uvm_analysis_imp_DFI #(wav_DFI_transfer, wddr_subscriber) DFI_imp;
 	
-	// wav_DFI_write_transfer is a placeholder for another transaction that will inlcue the abstracted
-	// values of the DRAM interface
+	// TODO wav_DFI_write_transfer is a placeholder for another transaction that will inlcue the abstracted
+	// values and datatypes from the DRAM monitor
 	wav_DFI_write_transfer lpddr5_trans;
 	uvm_analysis_imp_LPDDR5 #(wav_DFI_write_transfer, wddr_subscriber) LPDDR5_imp;
 
@@ -24,61 +24,57 @@ class wddr_subscriber extends uvm_component;
 
 	`define high_bin_only {bins is_high = {1};}
 
-	time prev_CA_time;
-	typedef enum {SAME, DIFFERENT} different_BA;
-	different_BA diff_BA;
+	// typedef enum {SAME, DIFFERENT} different_BA;
+	// different_BA diff_BA;
+	
+	time prev_CA_time[command];
+
+	enum {
+		RD_AFTER_RD_NO_SYNC,
+		RD_AFTER_RD_WITH_SYNC, 	
+		WR_AFTER_RD_WITH_SYNC, 	
+		WR_AFTER_WR_NO_SYNC,
+		WR_AFTER_WR_WITH_SYNC,
+		MWR_SAME_BG,
+		SRE_AFTER_PDE,
+		ANY_COMMAND_AFTER_CAS_FS,
+		WR_AFTER_WR_NO_CAS,
+		WR_AFTER_WR_WITH_CAS,
+		IO_AFTER_RD_NO_CAS,
+		WR_AFTER_RD_WITH_CAS,
+		RD_AFTER_RD_WITH_CAS,
+		WR_AFTER_MRR_NO_CAS,
+		WR_AFTER_MRR_WITH_CAS,
+		WFF_AFTER_WFF_NO_CAS,
+		WFF_AFTER_WFF_WITH_CAS,
+		WFF_RFF_AFTER_RFF_NO_CAS,
+		WFF_AFTER_RFF_WITH_CAS,
+		RFF_AFTER_RFF_WITH_CAS,
+		RDC_AFTER_RDC_NO_CAS,
+		RDC_AFTER_RDC_WITH_CAS,
+		DIFF_BANK_DURING_ACT,
+		VR258,
+		VR259_ab,
+		VR259_pb,
+		CMD_AFTER_CMD_SAME_BANK,
+		CMD_AFTER_CMD_DIFF_BANK
+	} lpddr5_cover_reqs;
 	//--------------------------------COVERGROUPS------------------------------------
+	//TODO Need to create cross bins to handle multiple commands in the same requirements
+	//TODO Single-Ended MODE: Will still see how it's implemented in the monitor
 	covergroup lpddr5_cg;
-
-		COVER_REQUIREMENTS: coverpoint lpddr5_trans.CA {
-			bins COMMANDS[] = lpddr5_trans.CA with (item != DES && item != NOP);
-			
-			bins RD_AFTER_RD_NO_SYNC[] = (RD32,RD16 => RD32,RD16) with (($time - prev_CA_time)/`tCK <= `tCCD);
-			bins RD_AFTER_RD_WITH_SYNC[] = (RD32,RD16 => CAS_FS,CAS_RD => RD32,RD16) with (($time - prev_CA_time)/`tCK > `tCCD);
-			bins WR_AFTER_RD_WITH_SYNC[] = (RD32,RD16 => CAS_FS,CAS_WR => WR32,WR16) with (($time - prev_CA_time)/`tCK > (`RL + `BL/8 + 1));
-			bins WR_AFTER_WR_NO_SYNC[] = (WR32,WR16 => WR32,WR16) with (($time - prev_CA_time)/`tCK <= `tCCD);
-			bins WR_AFTER_WR_WITH_SYNC[] = (WR32,WR16 => CAS_FS,CAS_WR => WR32,WR16) with (($time - prev_CA_time)/`tCK > `tCCD);
-			
-			bins MWR_SAME_BG = (MWR => MWR) with ((lpddr5_trans.prev_BA[3:2] == lpddr5_trans.BA[3:2]) && (`tCK > `WL + `BL/`n_max));
-			bins SRE_AFTER_PDE = (PDE => SRE);
-			bins ANY_COMMAND_AFTER_CAS_FS = (CAS_FS => item) with (item != WR16 && item != WR32);
-			
-			bins WR_AFTER_WR_NO_CAS[] = (WR16,WR32,MWR => WR16,WR32,MWR) with (($time - prev_CA_time)/`tCK <= (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK)));
-			bins WR_AFTER_WR_WITH_CAS[] = (WR16,WR32,MWR => CAS_FS,CAS_WR => WR16,WR32,MWR) with (($time - prev_CA_time)/`tCK > (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK)));
-			
-			bins IO_AFTER_RD_NO_CAS[] = (RD16,RD32 => RD16,RD32,WR16,WR32,MWR) with (($time - prev_CA_time)/`tCK <= (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)));
-			bins WR_AFTER_RD_WITH_CAS[] = (RD16,RD32 => CAS_FS,CAS_WR => WR16,WR32,MWR) with (($time - prev_CA_time)/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)));
-			bins RD_AFTER_RD_WITH_CAS[] = (RD16,RD32 => CAS_FS,CAS_RD => RD16,RD32) with (($time - prev_CA_time)/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)));
-			
-			bins WR_AFTER_MRR_NO_CAS[] = (MRR => MRR,WR16,WR32,MWR) with (($time - prev_CA_time)/`tCK <= (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)));
-			bins WR_AFTER_MRR_WITH_CAS[] = (MRR => CAS_FS,CAS_WD => MRR,WR16,WR32,MWR) with (($time - prev_CA_time)/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)));
-			
-			bins WFF_AFTER_WFF_NO_CAS = (WFF => WFF) with(($time - prev_CA_time)/`tCK <= (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK)));
-			bins WFF_AFTER_WFF_WITH_CAS = (WFF => CAS_FS, CAS_WR => WFF) with(($time - prev_CA_time)/`tCK > (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK)));
-
-			bins WFF_RFF_AFTER_RFF_NO_CAS = (RFF => WFF,RFF) with(($time - prev_CA_time)/`tCK <= (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)));
-			bins WFF_AFTER_RFF_WITH_CAS = (RFF => CAS_FS,CAS_WR => WFF) with(($time - prev_CA_time)/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)));
-			bins RFF_AFTER_RFF_WITH_CAS = (RFF => CAS_FS,CAS_RD => RFF) with(($time - prev_CA_time)/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)));
-
-			bins RDC_AFTER_RDC_NO_CAS = (RDC => RDC) with(($time - prev_CA_time)/`tCK <= (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)));
-			bins RDC_AFTER_RDC_WITH_CAS = (RDC => CAS_FS,CAS_RD => RDC) with(($time - prev_CA_time)/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)));
+		COMMANDS_COVER: coverpoint lpddr5_trans.CA {
+			bins COMMANDS[] = COMMANDS_COVER with (item != DES && item != NOP);
+			bins SRE_AFTER_PDE 				= (PDE => SRE);
 
 			//TODO VR 253?? 
-			bins DIFF_BANK_DURING_ACT = (ACT2[=1] => CAS_FS, CAS_WR, CAS_RD, WR16, WR32, MWR, RD16, RD32, MRR) with (diff_BA == DIFFERENT && lpddr5_trans.prev_CA == ACT1);
 			bins VR256 = (ACT2[=1] => PRE);
 			bins VR257 = (ACT2[=1] => ACT2);
-			bins VR258 = (ACT2[=1] => ACT2) with (diff_BA == DIFFERENT);
-			bins VR259_ab = {PRE} with (ALL_BANKS == 1);
-			bins VR259_pb = {PRE} with (ALL_BANKS == 0);
-
-			bins CMD_AFTER_CMD_SAME_BANK[] = (ACT2, RD32, RD16, WR16, WR32, MWR, PRE => ACT2, RD32, RD16, WR16, WR32, MWR, PRE) with (diff_BA == SAME);
-			illegal_bins PRE_ACT_ILLEGAL_CASES[] = (ACT2, RD32, RD16, WR16, WR32, MWR => ACT2), (PRE => RD32, RD16, WR16, WR32, MWR) with (diff_BA == SAME);
-			bins CMD_AFTER_CMD_DIFF_BANK[] = (ACT2, RD32, RD16, WR16, WR32, MWR, PRE => ACT2, RD32, RD16, WR16, WR32, MWR, PRE) with (diff_BA == DIFFERENT);
 
 			bins PPR_COMMANDS = (MRW1 => MRW2 => ACT1 => ACT2 => PRE => MRW1 => MRW2);
 			bins TTR_COMMANDS = (MRW1 => MRW2 => ACT1 => ACT2 => PRE => ACT1 => ACT2 => PRE => ACT1 => ACT2 => PRE);
-			//TODO Single-Ended MODE: Will still see how it's implemented in the monitor
 		}
+		COVER_REQUIREMENTS: coverpoint lpddr5_cover_reqs;
 	endgroup
 	
 	// Cover the occurence of the control_c transactions
@@ -198,7 +194,7 @@ class wddr_subscriber extends uvm_component;
 		super.new(name, parent);
 		DFI_imp = new("DFI_imp", this);
 		LPDDR5_imp = new("LPDDR5_imp", this);
-		// lpddr5_cg = new(lpddr5_trans, );
+		lpddr5_cg = new();
 
 		// Instantiate the required transaction objects
 		dfi_trans = wav_DFI_transfer::type_id::create("coverage_dfi_trans", this);
@@ -304,12 +300,294 @@ class wddr_subscriber extends uvm_component;
 	
 	//TODO UNCOMMENT ALL OF THIS AFTER DEFINING THE PROPER TRANSACTION (SEQUENCE ITEM) CLASS
 	function void write_LPDDR5(wav_DFI_write_transfer lpddr5_trans);
-		// if(lpddr5_trans.CA != DES && lpddr5_trans.CA != NOP) begin
-		// 	if(lpddr5_trans.BA != lpddr5_trans.prev_BA) diff_BA = DIFFERENT;
-		// 	else diff_BA = SAME;
-		// 	lpddr5_trans_cg.sample();
-		// 	prev_CA_time = $time;
-		// end
+		
+		if(lpddr5_trans.CA != DES && lpddr5_trans.CA != NOP) begin
+			prev_CA_time[lpddr5_trans.CA] = $time;
+			
+			//RD_AFTER_RD_NO_SYNC
+			if(	lpddr5_trans.CA == RD32 ||
+				lpddr5_trans.CA == RD16) begin
+				if(	($time - prev_CA_time[RD16])/`tCK <= `tCCD || 
+					($time - prev_CA_time[RD32])/`tCK <= `tCCD) begin
+						lpddr5_cover_reqs = RD_AFTER_RD_NO_SYNC;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//RD_AFTER_RD_WITH_SYNC
+			if(	lpddr5_trans.CA == RD32 ||
+				lpddr5_trans.CA == RD16) begin
+				if(	($time - prev_CA_time[RD16])/`tCK > `tCCD || 
+					($time - prev_CA_time[RD32])/`tCK > `tCCD) begin
+						lpddr5_cover_reqs = RD_AFTER_RD_WITH_SYNC;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//WR_AFTER_RD_WITH_SYNC
+			if(	lpddr5_trans.CA == WR32 ||
+				lpddr5_trans.CA == WR16) begin
+				if(	($time - prev_CA_time[RD16])/`tCK > (`RL + `BL/8 + 1) || 
+					($time - prev_CA_time[RD32])/`tCK > (`RL + `BL/8 + 1)
+					) begin
+						lpddr5_cover_reqs = WR_AFTER_RD_WITH_SYNC;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//WR_AFTER_WR_NO_SYNC
+			if(	lpddr5_trans.CA == WR32 ||
+				lpddr5_trans.CA == WR16) begin
+				if(	($time - prev_CA_time[WR16])/`tCK <= `tCCD || 
+					($time - prev_CA_time[WR32])/`tCK <= `tCCD) begin
+						lpddr5_cover_reqs = WR_AFTER_WR_NO_SYNC;
+						lpddr5_trans_cg.sample();
+				end
+			end
+			
+			//WR_AFTER_WR_WITH_SYNC
+			if(	lpddr5_trans.CA == WR32 ||
+				lpddr5_trans.CA == WR16) begin
+				if(	($time - prev_CA_time[WR16])/`tCK > `tCCD || 
+					($time - prev_CA_time[WR32])/`tCK > `tCCD) begin
+						lpddr5_cover_reqs = WR_AFTER_WR_WITH_SYNC;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//MWR_SAME_BG
+			if(	lpddr5_trans.CA == MWR) begin
+				if(	($time - prev_CA_time[MWR])/`tCK > (`WL + `BL/`n_max) &&
+					(lpddr5_trans.prev_BA[3:2] == lpddr5_trans.BA[3:2])) begin
+						lpddr5_cover_reqs = MWR_SAME_BG;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//ANY_COMMAND_AFTER_CAS_FS
+			if( lpddr5_trans.CA != WR16 &&
+				lpddr5_trans.CA != WR32 ) begin
+					if(	prev_CA_time.min()[0] == prev_CA_time[CAS_FS]) begin
+						lpddr5_cover_reqs = ANY_COMMAND_AFTER_CAS_FS;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//WR_AFTER_WR_NO_CAS
+			if(	lpddr5_trans.CA == WR32 ||
+				lpddr5_trans.CA == WR16 ||
+				lpddr5_trans.CA == MWR) begin
+				if(	($time - prev_CA_time[WR16])/`tCK <= (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK)) || 
+					($time - prev_CA_time[WR32])/`tCK <= (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK)) ||
+					($time - prev_CA_time[MWR])/`tCK <= (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+						lpddr5_cover_reqs = WR_AFTER_WR_NO_CAS;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//WR_AFTER_WR_WITH_CAS
+			if(	lpddr5_trans.CA == WR32 ||
+				lpddr5_trans.CA == WR16 ||
+				lpddr5_trans.CA == MWR) begin
+				if(	($time - prev_CA_time[WR16])/`tCK > (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK)) || 
+					($time - prev_CA_time[WR32])/`tCK > (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK)) ||
+					($time - prev_CA_time[MWR])/`tCK > (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+						lpddr5_cover_reqs = WR_AFTER_WR_WITH_CAS;
+						lpddr5_trans_cg.sample();
+				end
+			end
+			
+			//IO_AFTER_RD_NO_CAS
+			if(	lpddr5_trans.CA == WR32 ||
+				lpddr5_trans.CA == WR16 ||
+				lpddr5_trans.CA == MWR ||
+				lpddr5_trans.CA == RD32 ||
+				lpddr5_trans.CA == RD16) begin
+				if(	($time - prev_CA_time[RD16])/`tCK <= (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)) || 
+					($time - prev_CA_time[RD32])/`tCK <= (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+						lpddr5_cover_reqs = IO_AFTER_RD_NO_CAS;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//WR_AFTER_RD_WITH_CAS
+			if(	lpddr5_trans.CA == WR32 ||
+				lpddr5_trans.CA == WR16 ||
+				lpddr5_trans.CA == MWR) begin
+				if(	($time - prev_CA_time[RD16])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)) || 
+					($time - prev_CA_time[RD32])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+						lpddr5_cover_reqs = WR_AFTER_RD_WITH_CAS;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//RD_AFTER_RD_WITH_CAS
+			if(	lpddr5_trans.CA == RD32 ||
+				lpddr5_trans.CA == RD16) begin
+				if(	($time - prev_CA_time[RD16])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)) || 
+					($time - prev_CA_time[RD32])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+						lpddr5_cover_reqs = RD_AFTER_RD_WITH_CAS;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//WR_AFTER_MRR_NO_CAS
+			if(	lpddr5_trans.CA == WR32 ||
+				lpddr5_trans.CA == WR16 ||
+				lpddr5_trans.CA == MWR) begin
+				if(	($time - prev_CA_time[MRR])/`tCK <= (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+						lpddr5_cover_reqs = WR_AFTER_MRR_NO_CAS;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//WR_AFTER_MRR_WITH_CAS
+			if(	lpddr5_trans.CA == WR32 ||
+				lpddr5_trans.CA == WR16 ||
+				lpddr5_trans.CA == MWR) begin
+				if(	($time - prev_CA_time[MRR])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+						lpddr5_cover_reqs = WR_AFTER_MRR_WITH_CAS;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//WFF_AFTER_WFF_NO_CAS
+			if(	lpddr5_trans.CA == WFF) begin
+				if(	($time - prev_CA_time[WFF])/`tCK <= (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+						lpddr5_cover_reqs = WFF_AFTER_WFF_NO_CAS;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//WFF_AFTER_WFF_WITH_CAS
+			if(	lpddr5_trans.CA == WFF) begin
+				if(	($time - prev_CA_time[WFF])/`tCK > (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+						lpddr5_cover_reqs = WFF_AFTER_WFF_WITH_CAS;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//WFF_RFF_AFTER_RFF_NO_CAS
+			if(	lpddr5_trans.CA == WFF ||
+				lpddr5_trans.CA == RFF) begin
+				if(	($time - prev_CA_time[RFF])/`tCK <= (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+						lpddr5_cover_reqs = WFF_RFF_AFTER_RFF_NO_CAS;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//WFF_AFTER_RFF_WITH_CAS	
+			if(	lpddr5_trans.CA == WFF) begin
+				if(	($time - prev_CA_time[RFF])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+						lpddr5_cover_reqs = WFF_AFTER_RFF_WITH_CAS;
+						lpddr5_trans_cg.sample();
+				end
+			end
+			
+			//RFF_AFTER_RFF_WITH_CAS
+			if(	lpddr5_trans.CA == RFF) begin
+				if(	($time - prev_CA_time[RFF])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+						lpddr5_cover_reqs = RFF_AFTER_RFF_WITH_CAS;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//RDC_AFTER_RDC_NO_CAS
+			if(	lpddr5_trans.CA == RDC) begin
+				if(	($time - prev_CA_time[RDC])/`tCK <= (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+						lpddr5_cover_reqs = RDC_AFTER_RDC_NO_CAS;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//RDC_AFTER_RDC_WITH_CAS
+			if(	lpddr5_trans.CA == RDC) begin
+				if(	($time - prev_CA_time[RDC])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+						lpddr5_cover_reqs = RDC_AFTER_RDC_WITH_CAS;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//DIFF_BANK_DURING_ACT
+			if( lpddr5_trans.CA == WR32 ||
+				lpddr5_trans.CA == WR16 ||
+				lpddr5_trans.CA == MWR ||
+				lpddr5_trans.CA == CAS_FS ||
+				lpddr5_trans.CA == CAS_WR ||
+				lpddr5_trans.CA == CAS_RD ||
+				lpddr5_trans.CA == RD16 ||
+				lpddr5_trans.CA == RD32 ||
+				lpddr5_trans.CA == MRR) begin
+				if( prev_CA_time.min()[0] == prev_CA_time[ACT1] &&
+					lpddr5_trans.prev_BA != lpddr5_trans.BA) begin
+						lpddr5_cover_reqs = DIFF_BANK_DURING_ACT;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//VR258
+			if( lpddr5_trans.CA == ACT2) begin
+				if( prev_CA_time.min()[0] == prev_CA_time[ACT1] &&
+					lpddr5_trans.prev_BA != lpddr5_trans.BA) begin
+						lpddr5_cover_reqs = VR258;
+						lpddr5_trans_cg.sample();
+				end 
+			end
+
+			//VR259_ab
+			if( lpddr5_trans.CA == PRE && lpddr5_trans.ALL_BANKS == 1) begin
+				lpddr5_cover_reqs = VR259_ab;
+				lpddr5_trans_cg.sample();
+			end
+
+			//VR259_pb
+			if( lpddr5_trans.CA == PRE && lpddr5_trans.ALL_BANKS == 0) begin
+				lpddr5_cover_reqs = VR259_pb;
+				lpddr5_trans_cg.sample();
+			end
+
+			//CMD_AFTER_CMD_SAME_BANK
+			if( lpddr5_trans.CA == ACT2 ||
+				lpddr5_trans.CA == WR32 ||
+				lpddr5_trans.CA == WR16 ||
+				lpddr5_trans.CA == MWR ||
+				lpddr5_trans.CA == RD16 ||
+				lpddr5_trans.CA == RD32 ||
+				lpddr5_trans.CA == PRE) begin
+				if((prev_CA_time.min()[0] == prev_CA_time[ACT1] ||
+					prev_CA_time.min()[0] == prev_CA_time[RD32] ||
+					prev_CA_time.min()[0] == prev_CA_time[RD16] ||
+					prev_CA_time.min()[0] == prev_CA_time[WR16] ||
+					prev_CA_time.min()[0] == prev_CA_time[WR32] ||
+					prev_CA_time.min()[0] == prev_CA_time[MWR] ||
+					prev_CA_time.min()[0] == prev_CA_time[PRE]) &&
+					lpddr5_trans.prev_BA == lpddr5_trans.BA) begin
+						lpddr5_cover_reqs = CMD_AFTER_CMD_SAME_BANK;
+						lpddr5_trans_cg.sample();
+				end
+			end
+
+			//CMD_AFTER_CMD_DIFF_BANK
+			if( lpddr5_trans.CA == ACT2 ||
+				lpddr5_trans.CA == WR32 ||
+				lpddr5_trans.CA == WR16 ||
+				lpddr5_trans.CA == MWR ||
+				lpddr5_trans.CA == RD16 ||
+				lpddr5_trans.CA == RD32 ||
+				lpddr5_trans.CA == PRE) begin
+				if((prev_CA_time.min()[0] == prev_CA_time[ACT1] ||
+					prev_CA_time.min()[0] == prev_CA_time[RD32] ||
+					prev_CA_time.min()[0] == prev_CA_time[RD16] ||
+					prev_CA_time.min()[0] == prev_CA_time[WR16] ||
+					prev_CA_time.min()[0] == prev_CA_time[WR32] ||
+					prev_CA_time.min()[0] == prev_CA_time[MWR] ||
+					prev_CA_time.min()[0] == prev_CA_time[PRE]) &&
+					lpddr5_trans.prev_BA != lpddr5_trans.BA) begin
+						lpddr5_cover_reqs = CMD_AFTER_CMD_DIFF_BANK;
+						lpddr5_trans_cg.sample();
+				end
+			end
+		end
 	endfunction
 
 endclass: wddr_subscriber
