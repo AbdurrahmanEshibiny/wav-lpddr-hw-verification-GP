@@ -625,9 +625,9 @@ class wav_DFI_monitor extends uvm_monitor;
             @(vif.mp_mon.cb_mon) 
             if (vif.mp_mon.cb_mon.lp_ctrl_req) begin
                 `uvm_info(get_name(), "lp_ctrl transaction is detected", UVM_MEDIUM);                
-                monitor_run_phase.raise_objection(this, "handle_lp ctrl started");
+                EventHandler::start_transaction(EventHandler::lp_ctrl);
                 handle_lp(1);
-                monitor_run_phase.drop_objection(this, "handle_lp ctrl finished");
+                EventHandler::end_transaction(EventHandler::lp_ctrl);
             end
         end      
     endtask          
@@ -637,9 +637,9 @@ class wav_DFI_monitor extends uvm_monitor;
             @(vif.mp_mon.cb_mon) 
             if (vif.mp_mon.cb_mon.lp_data_req) begin
                 `uvm_info(get_name(), "lp_data transaction is detected", UVM_MEDIUM);
-                monitor_run_phase.raise_objection(this, "handle_lp data started");
+                EventHandler::start_transaction(EventHandler::lp_data);
                 handle_lp(0);
-                monitor_run_phase.drop_objection(this, "handle_lp data started");
+                EventHandler::end_transaction(EventHandler::lp_data);
             end
         end
     endtask
@@ -649,9 +649,9 @@ class wav_DFI_monitor extends uvm_monitor;
             @(vif.mp_mon.cb_mon)     
             if (vif.mp_mon.cb_mon.phyupd_req) begin
                 `uvm_info(get_name(), "phyupd transaction is detected", UVM_MEDIUM);
-                monitor_run_phase.raise_objection(this, "handle_phyupd started");
+                EventHandler::start_transaction(EventHandler::phyupd);
                 handle_phyupd(); 
-                monitor_run_phase.drop_objection(this, "handle_phyupd finished"); 
+                EventHandler::end_transaction(EventHandler::phyupd);
             end
         end     
     endtask
@@ -661,9 +661,9 @@ class wav_DFI_monitor extends uvm_monitor;
             @(vif.mp_mon.cb_mon) 
             if (vif.mp_mon.cb_mon.ctrlupd_req) begin
                 `uvm_info(get_name(), "ctrlupd transaction is detected", UVM_MEDIUM);
-                monitor_run_phase.raise_objection(this, "handle_ctrlupd started");
+                EventHandler::start_transaction(EventHandler::ctrlupd);
                 handle_ctrlupd();
-                monitor_run_phase.drop_objection(this, "handle_ctrlupd finished"); 
+                EventHandler::end_transaction(EventHandler::ctrlupd);
             end
         end 
     endtask  
@@ -673,9 +673,9 @@ class wav_DFI_monitor extends uvm_monitor;
             @(vif.mp_mon.cb_mon)       
             if (vif.mp_mon.cb_mon.phymstr_req) begin
                 `uvm_info(get_name(), "phymstr transaction is detected", UVM_MEDIUM);
-                monitor_run_phase.raise_objection(this, "handle_phymstr started");
+                EventHandler::start_transaction(EventHandler::phymstr);
                 handle_phymstr();
-                monitor_run_phase.drop_objection(this, "handle_phymstr finished"); 
+                EventHandler::end_transaction(EventHandler::phymstr);
             end
         end    
     endtask

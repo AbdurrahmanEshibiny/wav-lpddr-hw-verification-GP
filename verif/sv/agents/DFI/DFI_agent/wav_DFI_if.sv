@@ -188,6 +188,8 @@ interface wav_DFI_if(input clock, input reset);
     item_112: assert property (@(posedge clock) ~(init_start & lp_data_req));
 
     `define address_is_idle (address[0] == 14'b0 && address[1] == 14'b0 && address[2] == 14'b0 && address[3] == 14'b0)
+    `define wrdata_en_is_idle (wrdata_en[0] == 1'b0 && wrdata_en[1] == 1'b0 && wrdata_en[2] == 1'b0 && wrdata_en[3] == 1'b0)
+    `define rddata_en_is_idle (rddata_en[0] == 1'b0 && rddata_en[1] == 1'b0 && rddata_en[2] == 1'b0 && rddata_en[3] == 1'b0)
 
     // while phyupd_req is accepted, ensure that no other commands are sent and that the DFI is idle
     item_95: assert property(@(posedge clock) phyupd_ack |-> (~lp_ctrl_req & ~lp_data_req & ~phymstr_req & ~ctrlupd_req & `address_is_idle));
@@ -195,6 +197,6 @@ interface wav_DFI_if(input clock, input reset);
     item_97: assert property(@(posedge clock) $rose(ctrlupd_req) |->##[0:$] ctrlupd_ack); 
 
     // no read or write transactions at lp mode    
-    item_30: assert property(@(posedge clock) ~(lp_data_req & ~(!(4'({>>{wrdata_en}})))) && ~(lp_data_req & ~(!(4'({>>{rddata_en}})))));
-    item_27: assert property(@(posedge clock) ~(lp_ctrl_req & ~(!(56'({>>{address}})))));
+    item_30: assert property(@(posedge clock) ~(lp_data_req & !(`wrdata_en_is_idle)) && ~(lp_data_req & !(`rddata_en_is_idle)));
+    item_27: assert property(@(posedge clock) ~(lp_ctrl_req & !(`address_is_idle)));
 endinterface

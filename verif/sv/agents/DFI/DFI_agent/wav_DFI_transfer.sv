@@ -82,7 +82,7 @@ need to ask samuel about this:
 class wav_DFI_control_transfer extends wav_DFI_transfer; 
     bit req; 
     bit ack; 
-    rand bit [15:0] cyclesCount;   // how many cycles should the trans be driven before returning to idle
+    rand bit [7:0] cyclesCount;   // how many cycles should the trans be driven before returning to idle
     
     `uvm_object_utils_begin(wav_DFI_control_transfer)
         `uvm_field_int(req, UVM_DEFAULT | UVM_NOCOMPARE)
