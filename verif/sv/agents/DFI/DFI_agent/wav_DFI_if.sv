@@ -37,7 +37,7 @@ interface wav_DFI_if(input clock, input reset);
     logic [63:0]               wrdata [0:3] = '{default:0};
     logic [1:0]                wrdata_cs [0:3] = '{default:0};
     logic [7:0]                wrdata_mask [0:3] = '{default:0};
-    logic                      wrdata_en [0:3];
+    logic                      wrdata_en [0:3] = '{default: 0};
     
 
 	//wck
@@ -197,6 +197,6 @@ interface wav_DFI_if(input clock, input reset);
     item_97: assert property(@(posedge clock) $rose(ctrlupd_req) |->##[0:$] ctrlupd_ack); 
 
     // no read or write transactions at lp mode    
-    item_30: assert property(@(posedge clock) ~(lp_data_req & !(`wrdata_en_is_idle)) && ~(lp_data_req & !(`rddata_en_is_idle)));
+    item_30: assert property(@(posedge clock) lp_data_req |-> (`wrdata_en_is_idle && `rddata_en_is_idle));
     item_27: assert property(@(posedge clock) ~(lp_ctrl_req & !(`address_is_idle)));
 endinterface
