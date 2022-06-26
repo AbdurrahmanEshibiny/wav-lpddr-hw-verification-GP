@@ -14,10 +14,8 @@ class wddr_subscriber extends uvm_component;
 
 	uvm_analysis_imp_DFI #(wav_DFI_transfer, wddr_subscriber) DFI_imp;
 	
-	// TODO wav_DFI_write_transfer is a placeholder for another transaction that will inlcue the abstracted
-	// values and datatypes from the DRAM monitor
 	gp_LPDDR5_cov_trans lpddr5_trans;
-	uvm_analysis_imp_LPDDR5 #(wav_DFI_write_transfer, wddr_subscriber) LPDDR5_imp;
+	uvm_analysis_imp_LPDDR5 #(gp_LPDDR5_cov_trans, wddr_subscriber) LPDDR5_imp;
 
 	typedef enum  {DFI_C, control_c, phyupd_c, ctrlupd_c, phymstr_c, lp_ctrl_c, lp_data_c, read_c, write_c, freq_change_c} trans_c_e;
 	trans_c_e trans_c;
