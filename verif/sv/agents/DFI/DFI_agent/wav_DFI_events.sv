@@ -9,6 +9,8 @@ class EventHandler;
 
     static event phymstr_start;
     static event phymstr_finish;
+    static event phymstr_ack_pos;    // phymstr_req posedge
+    static event phymstr_req_neg;    // phymstr_req negedge
 
     static event ctrlupd_start;
     static event ctrlupd_finish;

@@ -37,6 +37,10 @@ class wddr_DFI_lp_seq extends wddr_base_seq;
 
         `uvm_info(get_type_name(), "--------PRINTING THE REQ ITEM--------", UVM_DEBUG); 
         
+        fork
+            EventHandler::wait_for_transaction(EventHandler::lp_data);
+            EventHandler::wait_for_transaction(EventHandler::lp_ctrl);
+        join
 
         `uvm_info(get_type_name(), "done sequence", UVM_LOW);
     endtask

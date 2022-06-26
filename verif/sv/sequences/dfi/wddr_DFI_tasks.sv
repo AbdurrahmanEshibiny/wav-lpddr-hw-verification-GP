@@ -100,16 +100,17 @@ task t_dfi_phyupd;
     end
  endtask
 
-task t_dfi_phymstr;
-    output int err;
+task t_dfi_phymstr(output int err, input bit doInit = 1);
     logic ack = 0, req = 0;
     wav_DFI_phymstr_transfer trans;
     begin
-        `uvm_info(get_name(), "starting t_dfi_phymstr", UVM_MEDIUM);   
-        #1us;
+        if (doInit) begin
+            `uvm_info(get_name(), "starting t_dfi_phymstr", UVM_MEDIUM);
+            #1us;
 
-        `uvm_info(get_name(), "calling ddr_boot", UVM_MEDIUM);
-        ddr_boot(err);  
+            `uvm_info(get_name(), "calling ddr_boot", UVM_MEDIUM);
+            ddr_boot(err);  
+        end
         
         `uvm_info(get_name(), "starting t_dfi_phymstr body", UVM_MEDIUM);     
         trans = new();
@@ -119,9 +120,10 @@ task t_dfi_phymstr;
 		
         `uvm_info(get_name(), "driving the phymstr trans HIGH", UVM_MEDIUM);
         set_dfi_phymstr_req(trans);
-        do begin
-            get_dfi_phymstr_ack(ack);
-        end while (!ack);
+        // do begin
+        //     get_dfi_phymstr_ack(ack);
+        // end while (!ack);
+        EventHandler::wait_for_event(EventHandler::phymstr_ack_pos); 
         trans.req = 0;
         `uvm_info(get_name(), "driving the phymstr trans LOW", UVM_MEDIUM);
         set_dfi_phymstr_req(trans);
@@ -132,10 +134,11 @@ task t_dfi_phymstr;
                     SW_EVENT_OVR, SW_EVENT_VAL,
                     1'b1, 1'b1);
 		
-		do begin
-            get_dfi_phymstr_ack(req);
-        end while (req);
-        `uvm_info(get_name(), $psprintf("req = %0d", req), UVM_MEDIUM);
+		// do begin
+        //     get_dfi_phymstr_ack(req);
+        // end while (req);
+        // `uvm_info(get_name(), $psprintf("req = %0d", req), UVM_MEDIUM);
+        EventHandler::wait_for_event(EventHandler::phymstr_req_neg);
 		
 		`uvm_info(get_name(), "overriding phymstr event to LOW", UVM_MEDIUM);
         `CSR_WRF2(DDR_DFI_OFFSET,DDR_DFI_PHYMSTR_IF_CFG, 
@@ -143,6 +146,5 @@ task t_dfi_phymstr;
                     1'b1, 1'b0);
 
         #10ns;
-        $display("DFI phymstr test completed!!!!!!!!");
     end
 endtask
