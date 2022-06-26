@@ -9,7 +9,7 @@ class EventHandler;
 
     static event phymstr_start;
     static event phymstr_finish;
-    static event phymstr_ack_pos;    // phymstr_req posedge
+    static event phymstr_ack_pos;    // phymstr_ack posedge
     static event phymstr_req_neg;    // phymstr_req negedge
 
     static event ctrlupd_start;
@@ -17,6 +17,8 @@ class EventHandler;
 
     static event phyupd_start;
     static event phyupd_finish;
+    static event phyupd_ack_pos;    // phyupd_ack posedge
+    static event phyupd_req_neg;    // phyupd_req negedge
 
     //*********************************************//
     static task trigger_event(ref event e);
