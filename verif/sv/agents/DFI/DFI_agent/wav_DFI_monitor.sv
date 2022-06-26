@@ -734,6 +734,15 @@ class wav_DFI_monitor extends uvm_monitor;
 
     endtask
 
+    task automatic event_emitter;
+        fork
+            forever @(posedge vif.mp_mon.cb_mon.phymstr_ack) 
+                EventHandler::trigger_event(EventHandler::phymstr_ack_pos);
+            forever @(negedge vif.mp_mon.cb_mon.phymstr_req) 
+                EventHandler::trigger_event(EventHandler::phymstr_req_neg);
+        join
+    endtask
+
     //A task to call all the monitoring tasks created earlier to work in parallel 
     virtual task run_phase(uvm_phase phase);
         monitor_run_phase = phase;
@@ -745,6 +754,7 @@ class wav_DFI_monitor extends uvm_monitor;
             monitor_phyupd();         
             monitor_ctrlupd();
             monitor_write();
+            event_emitter();
 /*add monitor function to the remaining interface signals*/       
         join
     endtask
