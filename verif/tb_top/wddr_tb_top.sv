@@ -28,6 +28,7 @@
 `ifndef DDR_SYNTH
 module wddr_tb_top;
 
+`include "../sv/clock_reset_intf.sv"
 `include "ddr_tb_defines.vh"
 
 //Importing ALL Required Pkgs
@@ -517,7 +518,9 @@ wire [31:0]   s_ahb_hrdata;
 
 logic [1:0] o_irq;
 
-wav_APB_if APB_if (.reset(i_prst), .clock (i_ahb_clk));
+clock_reset_intf clk_rst_if();
+
+wav_APB_if APB_if (.reset(clk_rst_if.i_prst), .clock (clk_rst_if.i_ahb_clk));
 wav_DFI_if DFI_if (.reset(dfi_reset_sig), .clock(o_dfi_clk));
 gp_LPDDR5_channel_intf ch0_intf(
     .ddr_reset_n(pad_ddr_reset),
@@ -532,6 +535,7 @@ initial begin
     uvm_config_db#(virtual wav_APB_if)::set(uvm_root::get(), "*", "APB_vif", APB_if);
     uvm_config_db#(virtual wav_DFI_if)::set(uvm_root::get(), "*", "DFI_vif", DFI_if);
     uvm_config_db#(virtual gp_LPDDR5_channel_intf)::set(uvm_root::get(), "*", "ch0_vif", ch0_intf);
+    uvm_config_db#(virtual clock_reset_intf)::set(uvm_root::get(), "*", "clk_rst_vif", clk_rst_if);
     run_test();
 end
 
@@ -541,84 +545,90 @@ assign                         pll_clk_180  = ~pll_clk_0 ;
 assign                         pll_clk_270  = ~pll_clk_90 ;
 
 //always #(AHBCLK_PERIOD/2)      i_ahb_clk    = ~i_ahb_clk ;
-always #(REFCLK_PERIOD/2)      i_ahb_clk    = ~i_ahb_clk ;
-always #(REFCLK_PERIOD/2)      i_refclk     = ~i_refclk ;
-always #(REFCLK_ALT_PERIOD/2)  i_refclk_alt = ~i_refclk_alt ;
-always #(TCK_PERIOD/2)         i_jtag_tck   = ~i_jtag_tck ;
+// always #(REFCLK_PERIOD/2)      i_ahb_clk    = ~i_ahb_clk ;
+// always #(REFCLK_PERIOD/2)      i_refclk     = ~i_refclk ;
+// always #(REFCLK_ALT_PERIOD/2)  i_refclk_alt = ~i_refclk_alt ;
+// always #(TCK_PERIOD/2)         i_jtag_tck   = ~i_jtag_tck ;
 
 //--------------------Wait clock tasks
 //TBD Later - remove whichever taks is not required
 //TBD refer the other tasks which are part of test for config reference
 task automatic wait_tck;
     input [31:0] num_cycles;
-    begin
-        repeat (num_cycles) @(posedge i_jtag_tck);
-        #1ps;
-    end
+    // begin
+    //     repeat (num_cycles) @(posedge i_jtag_tck);
+    //     #1ps;
+    // end
+    clk_rst_if.wait_tck(num_cycles);
 endtask
 
 task automatic wait_hclk;
     input [31:0] num_cycles;
-    begin
-        repeat (num_cycles) @(posedge i_ahb_clk);
-        #1;
-    end
+    // begin
+    //     repeat (num_cycles) @(posedge i_ahb_clk);
+    //     #1;
+    // end
+    clk_rst_if.wait_hclk(num_cycles);
 endtask
 
 task automatic wait_dficlk;
     input [31:0] num_cycles;
-    begin
-        repeat (num_cycles) @(posedge o_dfi_clk);
-        #1;
-    end
+    // begin
+    //     repeat (num_cycles) @(posedge o_dfi_clk);
+    //     #1;
+    // end
+    clk_rst_if.wait_dficlk(num_cycles);
 endtask
 
 task automatic wait_refclk;
     input [31:0] num_cycles;
-    begin
-        repeat (num_cycles) @(posedge i_refclk);
-        #1;
-    end
+    // begin
+    //     repeat (num_cycles) @(posedge i_refclk);
+    //     #1;
+    // end
+    clk_rst_if.wait_refclk(num_cycles);
 endtask
 
 task automatic wait_refclk_alt;
     input [31:0] num_cycles;
-    begin
-        repeat (num_cycles) @(posedge i_refclk_alt);
-        #1;
-    end
+    // begin
+    //     repeat (num_cycles) @(posedge i_refclk_alt);
+    //     #1;
+    // end
+    clk_rst_if.wait_refclk_alt(num_cycles);
 endtask
 
 //--------------------DUT reset
 task automatic por;
-    begin
-        force wddr_tb_top.u_phy_1x32.i_ahb_clk    = '0;
-        force wddr_tb_top.u_phy_1x32.i_ana_refclk = '0;
-        force wddr_tb_top.u_phy_1x32.i_refclk     = '0;
-        force wddr_tb_top.u_phy_1x32.i_refclk_alt = '0;
-        force wddr_tb_top.u_phy_1x32.i_jtag_tck   = '0;
-        wait_refclk(2);
-        i_prst        = 1'b0;
-        i_rst         = 1'b1;
-        i_jtag_trst_n = 1'b0;
-        wait_refclk(5);
-        i_prst        = 1'b1;
-        wait_refclk(5);
-        i_rst         = 1'b0;
-        i_jtag_trst_n = 1'b1;
-        wait_refclk(5);
-        release wddr_tb_top.u_phy_1x32.i_ahb_clk    ;
-        release wddr_tb_top.u_phy_1x32.i_ana_refclk ;
-        release wddr_tb_top.u_phy_1x32.i_refclk     ;
-        release wddr_tb_top.u_phy_1x32.i_refclk_alt ;
-        release wddr_tb_top.u_phy_1x32.i_jtag_tck   ;
-        wait_refclk(10);
-    end
+    // begin
+    //     force wddr_tb_top.u_phy_1x32.i_ahb_clk    = '0;
+    //     force wddr_tb_top.u_phy_1x32.i_ana_refclk = '0;
+    //     force wddr_tb_top.u_phy_1x32.i_refclk     = '0;
+    //     force wddr_tb_top.u_phy_1x32.i_refclk_alt = '0;
+    //     force wddr_tb_top.u_phy_1x32.i_jtag_tck   = '0;
+    //     wait_refclk(2);
+    //     i_prst        = 1'b0;
+    //     i_rst         = 1'b1;
+    //     i_jtag_trst_n = 1'b0;
+    //     wait_refclk(5);
+    //     i_prst        = 1'b1;
+    //     wait_refclk(5);
+    //     i_rst         = 1'b0;
+    //     i_jtag_trst_n = 1'b1;
+    //     wait_refclk(5);
+    //     release wddr_tb_top.u_phy_1x32.i_ahb_clk    ;
+    //     release wddr_tb_top.u_phy_1x32.i_ana_refclk ;
+    //     release wddr_tb_top.u_phy_1x32.i_refclk     ;
+    //     release wddr_tb_top.u_phy_1x32.i_refclk_alt ;
+    //     release wddr_tb_top.u_phy_1x32.i_jtag_tck   ;
+    //     wait_refclk(10);
+    // end
+    clk_rst_if.por();
 endtask
 
 initial begin
     $assertoff(0,wddr_tb_top.u_phy_1x32.u_phy.u_mcu.u_ibex_core);
-    por();
+    clk_rst_if.por();
     #1000;
 end
 
@@ -1044,14 +1054,14 @@ ddr_phy_1x16 u_phy_1x16 (
 
 ddr_phy_1x32 u_phy_1x32 (
 
-    .i_phy_rst                   (i_rst             ),
+    .i_phy_rst                   (clk_rst_if.i_rst             ),
 
     .i_dfi_clk_on                ('0                ), // FIXME
     .o_dfi_clk                   (dfi_clk_nodly     ),
 
-    .i_ana_refclk                (i_refclk          ),
-    .i_refclk                    (i_refclk          ),
-    .i_refclk_alt                (i_refclk_alt      ),
+    .i_ana_refclk                (clk_rst_if.i_refclk),
+    .i_refclk                    (clk_rst_if.i_refclk),
+    .i_refclk_alt                (clk_rst_if.i_refclk_alt),
     .o_refclk_on                 (                  ),
     .o_dtst                      (                  ),
 
@@ -1078,15 +1088,15 @@ ddr_phy_1x32 u_phy_1x32 (
 
     .i_hiz_n                     (i_hiz_n),
 
-    .i_jtag_tck                  (i_jtag_tck),
-    .i_jtag_trst_n               (i_jtag_trst_n),
+    .i_jtag_tck                  (clk_rst_if.i_jtag_tck),
+    .i_jtag_trst_n               (clk_rst_if.i_jtag_trst_n),
     .i_jtag_tms                  (i_jtag_tms),
     .i_jtag_tdi                  (i_jtag_tdi),
     .o_jtag_tdo                  (o_jtag_tdo),
 
-    .i_ahb_clk                   (i_ahb_clk        ),
-    .i_ahb_rst                   (i_rst            ),
-    .i_ahb_csr_rst               (i_rst            ),
+    .i_ahb_clk                   (clk_rst_if.i_ahb_clk        ),
+    .i_ahb_rst                   (clk_rst_if.i_rst            ),
+    .i_ahb_csr_rst               (clk_rst_if.i_rst            ),
     .o_ahb_clk_on                (                 ),
 
     .i_ahb_haddr                 (haddr      ),
