@@ -477,7 +477,7 @@ class wav_DFI_monitor extends uvm_monitor;
 
         --counter;
         if (wakeup != 19 && counter > wakeup_times[wakeup]) begin
-            `uvm_error(get_name(), $psprintf("PHY stayed asleep more than the wakeup time, it should stay %0d, but it stayed %0d", wakeup_times[wakeup], counter));
+            `uvm_warning(get_name(), $psprintf("PHY stayed asleep more than the wakeup time, it should stay %0d, but it stayed %0d", wakeup_times[wakeup], counter));
 		end
 		else begin
 			`uvm_info(get_name(), $psprintf("PHY stayed asleep for %0d, with wakeup_time = %0d", counter, wakeup_times[wakeup]), UVM_MEDIUM);

@@ -78,3 +78,4 @@ import wav_DFI_pkg::*;
 `include "sv/sequences/dfi/wddr_DFI_several_lp_small_wakeup_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_several_phymstr_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_several_phyupd_seq.sv"
+`include "sv/sequences/dfi/wddr_DFI_several_control_seq.sv"

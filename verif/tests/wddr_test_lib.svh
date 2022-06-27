@@ -124,3 +124,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 `include "tests/dfi/wddr_DFI_several_lp_small_wakeup_test.sv"
 `include "tests/dfi/wddr_DFI_several_phymstr_test.sv"
 `include "tests/dfi/wddr_DFI_several_phyupd_test.sv"
+`include "tests/dfi/wddr_DFI_several_control_test.sv"
