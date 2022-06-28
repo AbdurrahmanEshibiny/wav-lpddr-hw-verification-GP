@@ -438,7 +438,7 @@ initial begin
 end
 // Added 200ps delay to account for internal clock to o_dfi_clk skew.
 // o_dfi_clk is ~110ps faster than internal clock to DFI interface flops.
-assign #200ps o_dfi_clk = dfi_clk_nodly ;
+assign #200ps clk_rst_if.o_dfi_clk = dfi_clk_nodly ;
 
 `else
 assign o_dfi_clk = dfi_clk_nodly ;
@@ -521,7 +521,7 @@ logic [1:0] o_irq;
 clock_reset_intf clk_rst_if();
 
 wav_APB_if APB_if (.reset(clk_rst_if.i_prst), .clock (clk_rst_if.i_ahb_clk));
-wav_DFI_if DFI_if (.reset(dfi_reset_sig), .clock(o_dfi_clk));
+wav_DFI_if DFI_if (.reset(dfi_reset_sig), .clock(clk_rst_if.o_dfi_clk));
 gp_LPDDR5_channel_intf ch0_intf(
     .ddr_reset_n(pad_ddr_reset),
     .ddr_rext(),
@@ -648,10 +648,10 @@ wire psel;
 wire pwrite;
 wire [31:0] pwdata;
 
-assign paddr = i_prst ? APB_if.paddr : 32'h0;
-assign pwdata = i_prst ? APB_if.pwdata : 32'h0;
-assign pwrite = i_prst  ? APB_if.pwrite : 0;
-assign psel = i_prst ? APB_if.psel : 0;
+assign paddr = clk_rst_if.i_prst ? APB_if.paddr : 32'h0;
+assign pwdata = clk_rst_if.i_prst ? APB_if.pwdata : 32'h0;
+assign pwrite = clk_rst_if.i_prst  ? APB_if.pwrite : 0;
+assign psel = clk_rst_if.i_prst ? APB_if.psel : 0;
 
 //AHB Signals
 wire           hsel;
@@ -709,8 +709,8 @@ apb_to_ahb  apb2ahb(
     //.hgrant      (1'b1 ),
     .hresp       (s_ahb_hresp      ),
     .hrdata      (s_ahb_hrdata     ),
-    .pclk        (i_ahb_clk        ),
-    .presetn     (i_prst           ),
+    .pclk        (clk_rst_if.i_ahb_clk        ),
+    .presetn     (clk_rst_if.i_prst           ),
     .psel        (psel             ),
     .penable     (APB_if.penable   ),
     .pwrite      (pwrite           ),
@@ -1464,8 +1464,8 @@ ddr_phy_1x32 u_phy_1x32 (
 
     integer rc;
 
-    lp4_debug_interface lp4_debug_ChA(.clk(o_dfi_clk),.clk1(o_dfi_clk));
-    lp4_debug_interface lp4_debug_ChB(.clk(o_dfi_clk),.clk1(o_dfi_clk));
+    lp4_debug_interface lp4_debug_ChA(.clk(clk_rst_if.o_dfi_clk),.clk1(clk_rst_if.o_dfi_clk));
+    lp4_debug_interface lp4_debug_ChB(.clk(clk_rst_if.o_dfi_clk),.clk1(clk_rst_if.o_dfi_clk));
 
     // ****************************************************************
     // Instantiate the LPDDR4 slave memory device model.
@@ -1561,7 +1561,7 @@ ddr_phy_1x32 u_phy_1x32 (
 
 `ifdef DFIMC
 
-    passiveDfi #("${verif}/sv/agents/dfimc/soma_uvm/passiveDfi.soma") passiveDfiInst( o_dfi_clk,dfi_reset,dfi_lvl_pattern,dfi_lvl_periodic,dfi_address_p0,dfi_address_p1,
+    passiveDfi #("${verif}/sv/agents/dfimc/soma_uvm/passiveDfi.soma") passiveDfiInst( clk_rst_if.o_dfi_clk,dfi_reset,dfi_lvl_pattern,dfi_lvl_periodic,dfi_address_p0,dfi_address_p1,
         dfi_address_p2,dfi_address_p3,dfi_cke_p0,dfi_cke_p1,dfi_cke_p2,dfi_cke_p3,dfi_cs_p0,dfi_cs_p1,dfi_cs_p2,dfi_cs_p3,dfi_reset_n_p0,dfi_reset_n_p1,dfi_reset_n_p2,
         dfi_reset_n_p3,dfi_wrdata_en_p0,dfi_wrdata_en_p1,dfi_wrdata_en_p2,dfi_wrdata_en_p3,dfi_wrdata_p0,dfi_wrdata_p1,dfi_wrdata_p2,dfi_wrdata_p3,dfi_wrdata_mask_p0,
         dfi_wrdata_mask_p1,dfi_wrdata_mask_p2,dfi_wrdata_mask_p3,dfi_wrdata_cs_n_p0,dfi_wrdata_cs_n_p1,dfi_wrdata_cs_n_p2,dfi_wrdata_cs_n_p3,dfi_rddata_en_p0,dfi_rddata_en_p1,
@@ -1576,7 +1576,7 @@ ddr_phy_1x32 u_phy_1x32 (
         dfi_lp_ctrl_req,dfi_lp_data_req,dfi_lp_wakeup,dfi_lp_ctrl_wakeup,dfi_lp_data_wakeup,dfi_lp_ack,dfi_lp_ctrl_ack,dfi_lp_data_ack,dfi_freq_fsp,dfi_ctrlmsg_req,
     dfi_ctrlmsg_ack,dfi_ctrlmsg,dfi_ctrlmsg_data);
 
-    activeDfiMC #("${verif}/sv/agents/dfimc/soma_uvm/activeDfiMC.soma") activeDfiMCInst( o_dfi_clk,dfi_reset,freq_change_done,dfi_address_p0,dfi_address_p1,
+    activeDfiMC #("${verif}/sv/agents/dfimc/soma_uvm/activeDfiMC.soma") activeDfiMCInst( clk_rst_if.o_dfi_clk,dfi_reset,freq_change_done,dfi_address_p0,dfi_address_p1,
         dfi_address_p2,dfi_address_p3,dfi_cke_p0,dfi_cke_p1,dfi_cke_p2,dfi_cke_p3,dfi_cs_p0,dfi_cs_p1,dfi_cs_p2,dfi_cs_p3,dfi_dram_clk_disable,dfi_parity_in_p0,
         dfi_parity_in_p1,dfi_parity_in_p2,dfi_parity_in_p3,dfi_reset_n_p0,dfi_reset_n_p1,dfi_reset_n_p2,dfi_reset_n_p3,dfi_wrdata_p0,dfi_wrdata_p1,dfi_wrdata_p2,
         dfi_wrdata_p3,dfi_wrdata_cs_n_p0,dfi_wrdata_cs_n_p1,dfi_wrdata_cs_n_p2,dfi_wrdata_cs_n_p3,dfi_wrdata_en_p0,dfi_wrdata_en_p1,dfi_wrdata_en_p2,dfi_wrdata_en_p3,
@@ -1598,13 +1598,13 @@ ddr_phy_1x32 u_phy_1x32 (
     begin
         freq_change_done = 0;
         dfi_reset = 0;
-        repeat (15) @(negedge o_dfi_clk);
+        repeat (15) @(negedge clk_rst_if.o_dfi_clk);
         dfi_reset = 1;
 
     end
 
     // Frequency change logic
-    always@ (posedge o_dfi_clk)
+    always@ (posedge clk_rst_if.o_dfi_clk)
     begin
 
         if(freq_change_done == 0) begin
@@ -1658,7 +1658,7 @@ ddr_phy_1x32 u_phy_1x32 (
 
     logic flag1  = 1'b0 ;
     logic flag2  = 1'b0 ;
-    always @ (posedge o_dfi_clk)
+    always @ (posedge clk_rst_if.o_dfi_clk)
     begin
         flag1 <= 1'b1;
         flag2 <= flag1;
