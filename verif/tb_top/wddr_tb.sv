@@ -24,6 +24,8 @@ class wddr_tb extends uvm_env;
     gp_LPDDR5_agent              lpddr5_agent;
     wddr_reg_model               reg_model;
 
+    wddr_subscriber              subscriber;
+
     //RAL declartions
     reg_to_apb_adapter                   reg2apb;
     uvm_reg_predictor#(wav_APB_transfer) apb_predictor;
@@ -42,6 +44,7 @@ class wddr_tb extends uvm_env;
         dfi_agent        = wav_DFI_agent::type_id::create("dfi_agent", this);
         reg2apb          = reg_to_apb_adapter::type_id::create("reg2apb");
 
+        subscriber        = wddr_subscriber::type_id::create("subscriber", this);
         // Predictor
         apb_predictor    = uvm_reg_predictor#(wav_APB_transfer)::type_id::create("apb_predictor", this);
 
@@ -73,6 +76,8 @@ class wddr_tb extends uvm_env;
         uvm_config_object::set(uvm_root::get(), "*", "reg_model", reg_model);
         uvm_config_object::set(uvm_root::get(), "*", "reg_map"  , reg_model.MAP_APB); //TBD Check the MAP name
 
+        // Connect the LPDDR5 monitor to the subscriber
+        lpddr5_agent.lpddr5_monitor.subscriber_port_item.connect(subscriber.LPDDR5_imp);
     endfunction
 
     function void end_of_elaboration_phase(uvm_phase phase);

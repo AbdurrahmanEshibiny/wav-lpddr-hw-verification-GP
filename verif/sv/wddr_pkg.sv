@@ -27,7 +27,7 @@ package wddr_pkg;
 
 `include "./LPDDR5/gp_lpddr5_time_defs.svh"
 
-// `include "./wddr_subscriber.sv"
+`include "./wddr_subscriber.sv"
 
 `include "ddr_global_define.vh"
 `include "ddr_cmn_csr_defs.vh"

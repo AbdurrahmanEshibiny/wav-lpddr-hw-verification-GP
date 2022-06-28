@@ -1,6 +1,9 @@
 class gp_LPDDR5_monitor extends uvm_monitor;
 	`uvm_component_utils(gp_LPDDR5_monitor)
 	
+	uvm_analysis_port #(gp_LPDDR5_cov_trans) subscriber_port_item;
+	gp_LPDDR5_cov_trans cov_trans_item;
+
 	//-------------------Start of variable declarations-------------------------------
 	//typdef command was moved to gp_lpddr5_pkg.sv
 	command CA, prev_CA, next_CA;
@@ -113,14 +116,16 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 	function new(string name = "gp_LPDDR5_monitor", uvm_component parent);
 		super.new(name, parent);
 	endfunction
-
+	
 	function void build_phase(uvm_phase phase);
 		super.build_phase(phase);
 		if(! uvm_config_db#(virtual gp_LPDDR5_channel_intf)::get(this, "", "ch0_vif", ch0_vif)) begin
 			`uvm_fatal("gp_LPDDR5_monitor", "Failed to get virtual interface from config db")
 		end
 		recieved_transaction = new("recieved_transaction", this);
-
+		subscriber_port_item = new("subscriber_port_item", this);
+		cov_trans_item = gp_LPDDR5_cov_trans::type_id::create("cov_trans_item");
+		
 		//TODO get config db for ch1_vif 	
 		act1_key = new(1);
 	endfunction: build_phase
@@ -1319,6 +1324,11 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						WFF:begin end
 						RFF:begin end
 					endcase
+					cov_trans_item.CA = CA;
+					cov_trans_item.BA = BA;
+					cov_trans_item.prev_BA = prev_BA;
+					cov_trans_item.ALL_BANKS = ALL_BANKS;
+					subscriber_port_item.write(cov_trans_item);
 				end 
 
 				//Here we put all the checkers that need to be completed after the command detection

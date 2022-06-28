@@ -28,6 +28,7 @@
 `ifndef DDR_SYNTH
 module wddr_tb_top;
 
+`include "../sv/clock_reset_intf.sv"
 `include "ddr_tb_defines.vh"
 
 //Importing ALL Required Pkgs
@@ -437,7 +438,7 @@ initial begin
 end
 // Added 200ps delay to account for internal clock to o_dfi_clk skew.
 // o_dfi_clk is ~110ps faster than internal clock to DFI interface flops.
-assign #200ps o_dfi_clk = dfi_clk_nodly ;
+assign #200ps clk_rst_if.o_dfi_clk = dfi_clk_nodly ;
 
 `else
 assign o_dfi_clk = dfi_clk_nodly ;
@@ -517,8 +518,10 @@ wire [31:0]   s_ahb_hrdata;
 
 logic [1:0] o_irq;
 
-wav_APB_if APB_if (.reset(i_prst), .clock (i_ahb_clk));
-wav_DFI_if DFI_if (.reset(dfi_reset_sig), .clock(o_dfi_clk));
+clock_reset_intf clk_rst_if();
+
+wav_APB_if APB_if (.reset(clk_rst_if.i_prst), .clock (clk_rst_if.i_ahb_clk));
+wav_DFI_if DFI_if (.reset(dfi_reset_sig), .clock(clk_rst_if.o_dfi_clk));
 gp_LPDDR5_channel_intf ch0_intf(
     .ddr_reset_n(pad_ddr_reset),
     .ddr_rext(),
@@ -532,6 +535,7 @@ initial begin
     uvm_config_db#(virtual wav_APB_if)::set(uvm_root::get(), "*", "APB_vif", APB_if);
     uvm_config_db#(virtual wav_DFI_if)::set(uvm_root::get(), "*", "DFI_vif", DFI_if);
     uvm_config_db#(virtual gp_LPDDR5_channel_intf)::set(uvm_root::get(), "*", "ch0_vif", ch0_intf);
+    uvm_config_db#(virtual clock_reset_intf)::set(uvm_root::get(), "*", "clk_rst_vif", clk_rst_if);
     run_test();
 end
 
@@ -541,84 +545,90 @@ assign                         pll_clk_180  = ~pll_clk_0 ;
 assign                         pll_clk_270  = ~pll_clk_90 ;
 
 //always #(AHBCLK_PERIOD/2)      i_ahb_clk    = ~i_ahb_clk ;
-always #(REFCLK_PERIOD/2)      i_ahb_clk    = ~i_ahb_clk ;
-always #(REFCLK_PERIOD/2)      i_refclk     = ~i_refclk ;
-always #(REFCLK_ALT_PERIOD/2)  i_refclk_alt = ~i_refclk_alt ;
-always #(TCK_PERIOD/2)         i_jtag_tck   = ~i_jtag_tck ;
+// always #(REFCLK_PERIOD/2)      i_ahb_clk    = ~i_ahb_clk ;
+// always #(REFCLK_PERIOD/2)      i_refclk     = ~i_refclk ;
+// always #(REFCLK_ALT_PERIOD/2)  i_refclk_alt = ~i_refclk_alt ;
+// always #(TCK_PERIOD/2)         i_jtag_tck   = ~i_jtag_tck ;
 
 //--------------------Wait clock tasks
 //TBD Later - remove whichever taks is not required
 //TBD refer the other tasks which are part of test for config reference
 task automatic wait_tck;
     input [31:0] num_cycles;
-    begin
-        repeat (num_cycles) @(posedge i_jtag_tck);
-        #1ps;
-    end
+    // begin
+    //     repeat (num_cycles) @(posedge i_jtag_tck);
+    //     #1ps;
+    // end
+    clk_rst_if.wait_tck(num_cycles);
 endtask
 
 task automatic wait_hclk;
     input [31:0] num_cycles;
-    begin
-        repeat (num_cycles) @(posedge i_ahb_clk);
-        #1;
-    end
+    // begin
+    //     repeat (num_cycles) @(posedge i_ahb_clk);
+    //     #1;
+    // end
+    clk_rst_if.wait_hclk(num_cycles);
 endtask
 
 task automatic wait_dficlk;
     input [31:0] num_cycles;
-    begin
-        repeat (num_cycles) @(posedge o_dfi_clk);
-        #1;
-    end
+    // begin
+    //     repeat (num_cycles) @(posedge o_dfi_clk);
+    //     #1;
+    // end
+    clk_rst_if.wait_dficlk(num_cycles);
 endtask
 
 task automatic wait_refclk;
     input [31:0] num_cycles;
-    begin
-        repeat (num_cycles) @(posedge i_refclk);
-        #1;
-    end
+    // begin
+    //     repeat (num_cycles) @(posedge i_refclk);
+    //     #1;
+    // end
+    clk_rst_if.wait_refclk(num_cycles);
 endtask
 
 task automatic wait_refclk_alt;
     input [31:0] num_cycles;
-    begin
-        repeat (num_cycles) @(posedge i_refclk_alt);
-        #1;
-    end
+    // begin
+    //     repeat (num_cycles) @(posedge i_refclk_alt);
+    //     #1;
+    // end
+    clk_rst_if.wait_refclk_alt(num_cycles);
 endtask
 
 //--------------------DUT reset
 task automatic por;
-    begin
-        force wddr_tb_top.u_phy_1x32.i_ahb_clk    = '0;
-        force wddr_tb_top.u_phy_1x32.i_ana_refclk = '0;
-        force wddr_tb_top.u_phy_1x32.i_refclk     = '0;
-        force wddr_tb_top.u_phy_1x32.i_refclk_alt = '0;
-        force wddr_tb_top.u_phy_1x32.i_jtag_tck   = '0;
-        wait_refclk(2);
-        i_prst        = 1'b0;
-        i_rst         = 1'b1;
-        i_jtag_trst_n = 1'b0;
-        wait_refclk(5);
-        i_prst        = 1'b1;
-        wait_refclk(5);
-        i_rst         = 1'b0;
-        i_jtag_trst_n = 1'b1;
-        wait_refclk(5);
-        release wddr_tb_top.u_phy_1x32.i_ahb_clk    ;
-        release wddr_tb_top.u_phy_1x32.i_ana_refclk ;
-        release wddr_tb_top.u_phy_1x32.i_refclk     ;
-        release wddr_tb_top.u_phy_1x32.i_refclk_alt ;
-        release wddr_tb_top.u_phy_1x32.i_jtag_tck   ;
-        wait_refclk(10);
-    end
+    // begin
+    //     force wddr_tb_top.u_phy_1x32.i_ahb_clk    = '0;
+    //     force wddr_tb_top.u_phy_1x32.i_ana_refclk = '0;
+    //     force wddr_tb_top.u_phy_1x32.i_refclk     = '0;
+    //     force wddr_tb_top.u_phy_1x32.i_refclk_alt = '0;
+    //     force wddr_tb_top.u_phy_1x32.i_jtag_tck   = '0;
+    //     wait_refclk(2);
+    //     i_prst        = 1'b0;
+    //     i_rst         = 1'b1;
+    //     i_jtag_trst_n = 1'b0;
+    //     wait_refclk(5);
+    //     i_prst        = 1'b1;
+    //     wait_refclk(5);
+    //     i_rst         = 1'b0;
+    //     i_jtag_trst_n = 1'b1;
+    //     wait_refclk(5);
+    //     release wddr_tb_top.u_phy_1x32.i_ahb_clk    ;
+    //     release wddr_tb_top.u_phy_1x32.i_ana_refclk ;
+    //     release wddr_tb_top.u_phy_1x32.i_refclk     ;
+    //     release wddr_tb_top.u_phy_1x32.i_refclk_alt ;
+    //     release wddr_tb_top.u_phy_1x32.i_jtag_tck   ;
+    //     wait_refclk(10);
+    // end
+    clk_rst_if.por();
 endtask
 
 initial begin
     $assertoff(0,wddr_tb_top.u_phy_1x32.u_phy.u_mcu.u_ibex_core);
-    por();
+    clk_rst_if.por();
     #1000;
 end
 
@@ -638,10 +648,10 @@ wire psel;
 wire pwrite;
 wire [31:0] pwdata;
 
-assign paddr = i_prst ? APB_if.paddr : 32'h0;
-assign pwdata = i_prst ? APB_if.pwdata : 32'h0;
-assign pwrite = i_prst  ? APB_if.pwrite : 0;
-assign psel = i_prst ? APB_if.psel : 0;
+assign paddr = clk_rst_if.i_prst ? APB_if.paddr : 32'h0;
+assign pwdata = clk_rst_if.i_prst ? APB_if.pwdata : 32'h0;
+assign pwrite = clk_rst_if.i_prst  ? APB_if.pwrite : 0;
+assign psel = clk_rst_if.i_prst ? APB_if.psel : 0;
 
 //AHB Signals
 wire           hsel;
@@ -699,8 +709,8 @@ apb_to_ahb  apb2ahb(
     //.hgrant      (1'b1 ),
     .hresp       (s_ahb_hresp      ),
     .hrdata      (s_ahb_hrdata     ),
-    .pclk        (i_ahb_clk        ),
-    .presetn     (i_prst           ),
+    .pclk        (clk_rst_if.i_ahb_clk        ),
+    .presetn     (clk_rst_if.i_prst           ),
     .psel        (psel             ),
     .penable     (APB_if.penable   ),
     .pwrite      (pwrite           ),
@@ -1044,14 +1054,14 @@ ddr_phy_1x16 u_phy_1x16 (
 
 ddr_phy_1x32 u_phy_1x32 (
 
-    .i_phy_rst                   (i_rst             ),
+    .i_phy_rst                   (clk_rst_if.i_rst             ),
 
     .i_dfi_clk_on                ('0                ), // FIXME
     .o_dfi_clk                   (dfi_clk_nodly     ),
 
-    .i_ana_refclk                (i_refclk          ),
-    .i_refclk                    (i_refclk          ),
-    .i_refclk_alt                (i_refclk_alt      ),
+    .i_ana_refclk                (clk_rst_if.i_refclk),
+    .i_refclk                    (clk_rst_if.i_refclk),
+    .i_refclk_alt                (clk_rst_if.i_refclk_alt),
     .o_refclk_on                 (                  ),
     .o_dtst                      (                  ),
 
@@ -1078,15 +1088,15 @@ ddr_phy_1x32 u_phy_1x32 (
 
     .i_hiz_n                     (i_hiz_n),
 
-    .i_jtag_tck                  (i_jtag_tck),
-    .i_jtag_trst_n               (i_jtag_trst_n),
+    .i_jtag_tck                  (clk_rst_if.i_jtag_tck),
+    .i_jtag_trst_n               (clk_rst_if.i_jtag_trst_n),
     .i_jtag_tms                  (i_jtag_tms),
     .i_jtag_tdi                  (i_jtag_tdi),
     .o_jtag_tdo                  (o_jtag_tdo),
 
-    .i_ahb_clk                   (i_ahb_clk        ),
-    .i_ahb_rst                   (i_rst            ),
-    .i_ahb_csr_rst               (i_rst            ),
+    .i_ahb_clk                   (clk_rst_if.i_ahb_clk        ),
+    .i_ahb_rst                   (clk_rst_if.i_rst            ),
+    .i_ahb_csr_rst               (clk_rst_if.i_rst            ),
     .o_ahb_clk_on                (                 ),
 
     .i_ahb_haddr                 (haddr      ),
@@ -1454,8 +1464,8 @@ ddr_phy_1x32 u_phy_1x32 (
 
     integer rc;
 
-    lp4_debug_interface lp4_debug_ChA(.clk(o_dfi_clk),.clk1(o_dfi_clk));
-    lp4_debug_interface lp4_debug_ChB(.clk(o_dfi_clk),.clk1(o_dfi_clk));
+    lp4_debug_interface lp4_debug_ChA(.clk(clk_rst_if.o_dfi_clk),.clk1(clk_rst_if.o_dfi_clk));
+    lp4_debug_interface lp4_debug_ChB(.clk(clk_rst_if.o_dfi_clk),.clk1(clk_rst_if.o_dfi_clk));
 
     // ****************************************************************
     // Instantiate the LPDDR4 slave memory device model.
@@ -1551,7 +1561,7 @@ ddr_phy_1x32 u_phy_1x32 (
 
 `ifdef DFIMC
 
-    passiveDfi #("${verif}/sv/agents/dfimc/soma_uvm/passiveDfi.soma") passiveDfiInst( o_dfi_clk,dfi_reset,dfi_lvl_pattern,dfi_lvl_periodic,dfi_address_p0,dfi_address_p1,
+    passiveDfi #("${verif}/sv/agents/dfimc/soma_uvm/passiveDfi.soma") passiveDfiInst( clk_rst_if.o_dfi_clk,dfi_reset,dfi_lvl_pattern,dfi_lvl_periodic,dfi_address_p0,dfi_address_p1,
         dfi_address_p2,dfi_address_p3,dfi_cke_p0,dfi_cke_p1,dfi_cke_p2,dfi_cke_p3,dfi_cs_p0,dfi_cs_p1,dfi_cs_p2,dfi_cs_p3,dfi_reset_n_p0,dfi_reset_n_p1,dfi_reset_n_p2,
         dfi_reset_n_p3,dfi_wrdata_en_p0,dfi_wrdata_en_p1,dfi_wrdata_en_p2,dfi_wrdata_en_p3,dfi_wrdata_p0,dfi_wrdata_p1,dfi_wrdata_p2,dfi_wrdata_p3,dfi_wrdata_mask_p0,
         dfi_wrdata_mask_p1,dfi_wrdata_mask_p2,dfi_wrdata_mask_p3,dfi_wrdata_cs_n_p0,dfi_wrdata_cs_n_p1,dfi_wrdata_cs_n_p2,dfi_wrdata_cs_n_p3,dfi_rddata_en_p0,dfi_rddata_en_p1,
@@ -1566,7 +1576,7 @@ ddr_phy_1x32 u_phy_1x32 (
         dfi_lp_ctrl_req,dfi_lp_data_req,dfi_lp_wakeup,dfi_lp_ctrl_wakeup,dfi_lp_data_wakeup,dfi_lp_ack,dfi_lp_ctrl_ack,dfi_lp_data_ack,dfi_freq_fsp,dfi_ctrlmsg_req,
     dfi_ctrlmsg_ack,dfi_ctrlmsg,dfi_ctrlmsg_data);
 
-    activeDfiMC #("${verif}/sv/agents/dfimc/soma_uvm/activeDfiMC.soma") activeDfiMCInst( o_dfi_clk,dfi_reset,freq_change_done,dfi_address_p0,dfi_address_p1,
+    activeDfiMC #("${verif}/sv/agents/dfimc/soma_uvm/activeDfiMC.soma") activeDfiMCInst( clk_rst_if.o_dfi_clk,dfi_reset,freq_change_done,dfi_address_p0,dfi_address_p1,
         dfi_address_p2,dfi_address_p3,dfi_cke_p0,dfi_cke_p1,dfi_cke_p2,dfi_cke_p3,dfi_cs_p0,dfi_cs_p1,dfi_cs_p2,dfi_cs_p3,dfi_dram_clk_disable,dfi_parity_in_p0,
         dfi_parity_in_p1,dfi_parity_in_p2,dfi_parity_in_p3,dfi_reset_n_p0,dfi_reset_n_p1,dfi_reset_n_p2,dfi_reset_n_p3,dfi_wrdata_p0,dfi_wrdata_p1,dfi_wrdata_p2,
         dfi_wrdata_p3,dfi_wrdata_cs_n_p0,dfi_wrdata_cs_n_p1,dfi_wrdata_cs_n_p2,dfi_wrdata_cs_n_p3,dfi_wrdata_en_p0,dfi_wrdata_en_p1,dfi_wrdata_en_p2,dfi_wrdata_en_p3,
@@ -1588,13 +1598,13 @@ ddr_phy_1x32 u_phy_1x32 (
     begin
         freq_change_done = 0;
         dfi_reset = 0;
-        repeat (15) @(negedge o_dfi_clk);
+        repeat (15) @(negedge clk_rst_if.o_dfi_clk);
         dfi_reset = 1;
 
     end
 
     // Frequency change logic
-    always@ (posedge o_dfi_clk)
+    always@ (posedge clk_rst_if.o_dfi_clk)
     begin
 
         if(freq_change_done == 0) begin
@@ -1648,7 +1658,7 @@ ddr_phy_1x32 u_phy_1x32 (
 
     logic flag1  = 1'b0 ;
     logic flag2  = 1'b0 ;
-    always @ (posedge o_dfi_clk)
+    always @ (posedge clk_rst_if.o_dfi_clk)
     begin
         flag1 <= 1'b1;
         flag2 <= flag1;

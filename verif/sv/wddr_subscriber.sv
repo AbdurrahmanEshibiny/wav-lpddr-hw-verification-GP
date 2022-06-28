@@ -14,10 +14,8 @@ class wddr_subscriber extends uvm_component;
 
 	uvm_analysis_imp_DFI #(wav_DFI_transfer, wddr_subscriber) DFI_imp;
 	
-	// TODO wav_DFI_write_transfer is a placeholder for another transaction that will inlcue the abstracted
-	// values and datatypes from the DRAM monitor
-	wav_DFI_write_transfer lpddr5_trans;
-	uvm_analysis_imp_LPDDR5 #(wav_DFI_write_transfer, wddr_subscriber) LPDDR5_imp;
+	gp_LPDDR5_cov_trans lpddr5_trans;
+	uvm_analysis_imp_LPDDR5 #(gp_LPDDR5_cov_trans, wddr_subscriber) LPDDR5_imp;
 
 	typedef enum  {DFI_C, control_c, phyupd_c, ctrlupd_c, phymstr_c, lp_ctrl_c, lp_data_c, read_c, write_c, freq_change_c} trans_c_e;
 	trans_c_e trans_c;
@@ -320,7 +318,7 @@ class wddr_subscriber extends uvm_component;
 	endfunction
 	
 	//TODO UNCOMMENT ALL OF THIS AFTER DEFINING THE PROPER TRANSACTION (SEQUENCE ITEM) CLASS
-	function void write_LPDDR5(wav_DFI_write_transfer lpddr5_trans);
+	function void write_LPDDR5(gp_LPDDR5_cov_trans lpddr5_trans);
 		
 		if(lpddr5_trans.CA != DES && lpddr5_trans.CA != NOP) begin
 			prev_CA_time[lpddr5_trans.CA] = $time;
@@ -331,7 +329,7 @@ class wddr_subscriber extends uvm_component;
 				if(	($time - prev_CA_time[RD16])/`tCK <= `tCCD || 
 					($time - prev_CA_time[RD32])/`tCK <= `tCCD) begin
 						lpddr5_cover_reqs = RD_AFTER_RD_NO_SYNC;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -341,7 +339,7 @@ class wddr_subscriber extends uvm_component;
 				if(	($time - prev_CA_time[RD16])/`tCK > `tCCD || 
 					($time - prev_CA_time[RD32])/`tCK > `tCCD) begin
 						lpddr5_cover_reqs = RD_AFTER_RD_WITH_SYNC;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -352,7 +350,7 @@ class wddr_subscriber extends uvm_component;
 					($time - prev_CA_time[RD32])/`tCK > (`RL + `BL/8 + 1)
 					) begin
 						lpddr5_cover_reqs = WR_AFTER_RD_WITH_SYNC;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -362,7 +360,7 @@ class wddr_subscriber extends uvm_component;
 				if(	($time - prev_CA_time[WR16])/`tCK <= `tCCD || 
 					($time - prev_CA_time[WR32])/`tCK <= `tCCD) begin
 						lpddr5_cover_reqs = WR_AFTER_WR_NO_SYNC;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 			
@@ -372,7 +370,7 @@ class wddr_subscriber extends uvm_component;
 				if(	($time - prev_CA_time[WR16])/`tCK > `tCCD || 
 					($time - prev_CA_time[WR32])/`tCK > `tCCD) begin
 						lpddr5_cover_reqs = WR_AFTER_WR_WITH_SYNC;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -381,16 +379,16 @@ class wddr_subscriber extends uvm_component;
 				if(	($time - prev_CA_time[MWR])/`tCK > (`WL + `BL/`n_max) &&
 					(lpddr5_trans.prev_BA[3:2] == lpddr5_trans.BA[3:2])) begin
 						lpddr5_cover_reqs = MWR_SAME_BG;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
 			//ANY_COMMAND_AFTER_CAS_FS
 			if( lpddr5_trans.CA != WR16 &&
 				lpddr5_trans.CA != WR32 ) begin
-					if(	prev_CA_time.min()[0] == prev_CA_time[CAS_FS]) begin
+					if(	prev_CA_time.max()[0] == prev_CA_time[CAS_FS]) begin
 						lpddr5_cover_reqs = ANY_COMMAND_AFTER_CAS_FS;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -402,7 +400,7 @@ class wddr_subscriber extends uvm_component;
 					($time - prev_CA_time[WR32])/`tCK <= (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK)) ||
 					($time - prev_CA_time[MWR])/`tCK <= (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
 						lpddr5_cover_reqs = WR_AFTER_WR_NO_CAS;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -414,7 +412,7 @@ class wddr_subscriber extends uvm_component;
 					($time - prev_CA_time[WR32])/`tCK > (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK)) ||
 					($time - prev_CA_time[MWR])/`tCK > (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
 						lpddr5_cover_reqs = WR_AFTER_WR_WITH_CAS;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 			
@@ -427,7 +425,7 @@ class wddr_subscriber extends uvm_component;
 				if(	($time - prev_CA_time[RD16])/`tCK <= (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)) || 
 					($time - prev_CA_time[RD32])/`tCK <= (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
 						lpddr5_cover_reqs = IO_AFTER_RD_NO_CAS;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -438,7 +436,7 @@ class wddr_subscriber extends uvm_component;
 				if(	($time - prev_CA_time[RD16])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)) || 
 					($time - prev_CA_time[RD32])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
 						lpddr5_cover_reqs = WR_AFTER_RD_WITH_CAS;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -448,7 +446,7 @@ class wddr_subscriber extends uvm_component;
 				if(	($time - prev_CA_time[RD16])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)) || 
 					($time - prev_CA_time[RD32])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
 						lpddr5_cover_reqs = RD_AFTER_RD_WITH_CAS;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -458,7 +456,7 @@ class wddr_subscriber extends uvm_component;
 				lpddr5_trans.CA == MWR) begin
 				if(	($time - prev_CA_time[MRR])/`tCK <= (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
 						lpddr5_cover_reqs = WR_AFTER_MRR_NO_CAS;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -468,7 +466,7 @@ class wddr_subscriber extends uvm_component;
 				lpddr5_trans.CA == MWR) begin
 				if(	($time - prev_CA_time[MRR])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
 						lpddr5_cover_reqs = WR_AFTER_MRR_WITH_CAS;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -476,7 +474,7 @@ class wddr_subscriber extends uvm_component;
 			if(	lpddr5_trans.CA == WFF) begin
 				if(	($time - prev_CA_time[WFF])/`tCK <= (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
 						lpddr5_cover_reqs = WFF_AFTER_WFF_NO_CAS;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -484,7 +482,7 @@ class wddr_subscriber extends uvm_component;
 			if(	lpddr5_trans.CA == WFF) begin
 				if(	($time - prev_CA_time[WFF])/`tCK > (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
 						lpddr5_cover_reqs = WFF_AFTER_WFF_WITH_CAS;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -493,7 +491,7 @@ class wddr_subscriber extends uvm_component;
 				lpddr5_trans.CA == RFF) begin
 				if(	($time - prev_CA_time[RFF])/`tCK <= (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
 						lpddr5_cover_reqs = WFF_RFF_AFTER_RFF_NO_CAS;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -501,7 +499,7 @@ class wddr_subscriber extends uvm_component;
 			if(	lpddr5_trans.CA == WFF) begin
 				if(	($time - prev_CA_time[RFF])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
 						lpddr5_cover_reqs = WFF_AFTER_RFF_WITH_CAS;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 			
@@ -509,7 +507,7 @@ class wddr_subscriber extends uvm_component;
 			if(	lpddr5_trans.CA == RFF) begin
 				if(	($time - prev_CA_time[RFF])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
 						lpddr5_cover_reqs = RFF_AFTER_RFF_WITH_CAS;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -517,7 +515,7 @@ class wddr_subscriber extends uvm_component;
 			if(	lpddr5_trans.CA == RDC) begin
 				if(	($time - prev_CA_time[RDC])/`tCK <= (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
 						lpddr5_cover_reqs = RDC_AFTER_RDC_NO_CAS;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -525,7 +523,7 @@ class wddr_subscriber extends uvm_component;
 			if(	lpddr5_trans.CA == RDC) begin
 				if(	($time - prev_CA_time[RDC])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
 						lpddr5_cover_reqs = RDC_AFTER_RDC_WITH_CAS;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -539,32 +537,32 @@ class wddr_subscriber extends uvm_component;
 				lpddr5_trans.CA == RD16 ||
 				lpddr5_trans.CA == RD32 ||
 				lpddr5_trans.CA == MRR) begin
-				if( prev_CA_time.min()[0] == prev_CA_time[ACT1] &&
+				if( prev_CA_time.max()[0] == prev_CA_time[ACT1] &&
 					lpddr5_trans.prev_BA != lpddr5_trans.BA) begin
 						lpddr5_cover_reqs = DIFF_BANK_DURING_ACT;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
 			//VR258
 			if( lpddr5_trans.CA == ACT2) begin
-				if( prev_CA_time.min()[0] == prev_CA_time[ACT1] &&
+				if( prev_CA_time.max()[0] == prev_CA_time[ACT1] &&
 					lpddr5_trans.prev_BA != lpddr5_trans.BA) begin
 						lpddr5_cover_reqs = VR258;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end 
 			end
 
 			//VR259_ab
 			if( lpddr5_trans.CA == PRE && lpddr5_trans.ALL_BANKS == 1) begin
 				lpddr5_cover_reqs = VR259_ab;
-				lpddr5_trans_cg.sample();
+				lpddr5_cg.sample();
 			end
 
 			//VR259_pb
 			if( lpddr5_trans.CA == PRE && lpddr5_trans.ALL_BANKS == 0) begin
 				lpddr5_cover_reqs = VR259_pb;
-				lpddr5_trans_cg.sample();
+				lpddr5_cg.sample();
 			end
 
 			//CMD_AFTER_CMD_SAME_BANK
@@ -575,16 +573,16 @@ class wddr_subscriber extends uvm_component;
 				lpddr5_trans.CA == RD16 ||
 				lpddr5_trans.CA == RD32 ||
 				lpddr5_trans.CA == PRE) begin
-				if((prev_CA_time.min()[0] == prev_CA_time[ACT1] ||
-					prev_CA_time.min()[0] == prev_CA_time[RD32] ||
-					prev_CA_time.min()[0] == prev_CA_time[RD16] ||
-					prev_CA_time.min()[0] == prev_CA_time[WR16] ||
-					prev_CA_time.min()[0] == prev_CA_time[WR32] ||
-					prev_CA_time.min()[0] == prev_CA_time[MWR] ||
-					prev_CA_time.min()[0] == prev_CA_time[PRE]) &&
+				if((prev_CA_time.max()[0] == prev_CA_time[ACT1] ||
+					prev_CA_time.max()[0] == prev_CA_time[RD32] ||
+					prev_CA_time.max()[0] == prev_CA_time[RD16] ||
+					prev_CA_time.max()[0] == prev_CA_time[WR16] ||
+					prev_CA_time.max()[0] == prev_CA_time[WR32] ||
+					prev_CA_time.max()[0] == prev_CA_time[MWR] ||
+					prev_CA_time.max()[0] == prev_CA_time[PRE]) &&
 					lpddr5_trans.prev_BA == lpddr5_trans.BA) begin
 						lpddr5_cover_reqs = CMD_AFTER_CMD_SAME_BANK;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 
@@ -596,16 +594,16 @@ class wddr_subscriber extends uvm_component;
 				lpddr5_trans.CA == RD16 ||
 				lpddr5_trans.CA == RD32 ||
 				lpddr5_trans.CA == PRE) begin
-				if((prev_CA_time.min()[0] == prev_CA_time[ACT1] ||
-					prev_CA_time.min()[0] == prev_CA_time[RD32] ||
-					prev_CA_time.min()[0] == prev_CA_time[RD16] ||
-					prev_CA_time.min()[0] == prev_CA_time[WR16] ||
-					prev_CA_time.min()[0] == prev_CA_time[WR32] ||
-					prev_CA_time.min()[0] == prev_CA_time[MWR] ||
-					prev_CA_time.min()[0] == prev_CA_time[PRE]) &&
+				if((prev_CA_time.max()[0] == prev_CA_time[ACT1] ||
+					prev_CA_time.max()[0] == prev_CA_time[RD32] ||
+					prev_CA_time.max()[0] == prev_CA_time[RD16] ||
+					prev_CA_time.max()[0] == prev_CA_time[WR16] ||
+					prev_CA_time.max()[0] == prev_CA_time[WR32] ||
+					prev_CA_time.max()[0] == prev_CA_time[MWR] ||
+					prev_CA_time.max()[0] == prev_CA_time[PRE]) &&
 					lpddr5_trans.prev_BA != lpddr5_trans.BA) begin
 						lpddr5_cover_reqs = CMD_AFTER_CMD_DIFF_BANK;
-						lpddr5_trans_cg.sample();
+						lpddr5_cg.sample();
 				end
 			end
 		end
