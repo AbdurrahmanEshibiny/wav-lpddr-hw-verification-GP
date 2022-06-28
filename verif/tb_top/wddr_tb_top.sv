@@ -441,7 +441,7 @@ end
 assign #200ps clk_rst_if.o_dfi_clk = dfi_clk_nodly ;
 
 `else
-assign o_dfi_clk = dfi_clk_nodly ;
+assign clk_rst_if.o_dfi_clk = dfi_clk_nodly ;
 
 `endif
 
