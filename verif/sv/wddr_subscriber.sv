@@ -285,7 +285,7 @@ class wddr_subscriber extends uvm_component;
 		// To ensure that we are not counting the same transaction twice
 		reset_DFI_objects();
 
-		if ($cast(dfi_trans, trans.clone())) begin
+		if (!$cast(dfi_trans, trans.clone())) begin
 			`uvm_fatal(get_name(), "Coverage collector cannot cast wav_DFI_transfer object");			
 		end
 		case(trans.tr_type)

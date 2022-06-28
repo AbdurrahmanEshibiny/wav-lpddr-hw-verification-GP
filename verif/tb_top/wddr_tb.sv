@@ -78,6 +78,8 @@ class wddr_tb extends uvm_env;
 
         // Connect the LPDDR5 monitor to the subscriber
         lpddr5_agent.lpddr5_monitor.subscriber_port_item.connect(subscriber.LPDDR5_imp);
+        // Connect the DFI monitor to the subscriber
+        dfi_agent.monitor.subscriber_port_item.connect(subscriber.DFI_imp);
     endfunction
 
     function void end_of_elaboration_phase(uvm_phase phase);
