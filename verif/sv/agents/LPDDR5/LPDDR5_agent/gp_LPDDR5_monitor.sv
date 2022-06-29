@@ -80,13 +80,33 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 	int i;
 	int j = 0;
 	logic [0: 15]DQ;
-	int tWCK2CK, tWCKDQO, tWCKDQI, tCK, nWR, tCMDPD,tMRWPD, tESPD, tRFCab, tRFCpb, tpbR2pbR, delay, tRP, tRRD,
-	tCSPD, tPDN, tXSR_DSM, tSR;
+	int tWCK2CK = 0;
+	int tWCKDQO = `tWCKDQO;
+	int tWCKDQI = `tWCKDQI;
+	int tCK = `tCK;
+	int nWR = `nWR;
+	int tCMDPD = `max(1.75ns, 2*`tCK);
+	int tMRWPD = `max(14ns, 6*`tCK);
+	int tESPD = 2;
+	int tRFCab = 210;
+	int tRFCpb = 100;
+	int tpbR2pbR = 90;
+	int tRP = `tRP;
+	int tRRD = `tRRD;
+	int	tCSPD = `max(7.5ns, 3*`tCK);
+	int tPDN = 0;
+	int tXSR_DSM = 200*1000;
+	int tWCKPRE_Static = 2;
+	int tWCKPRE_Toggle_WR = 2;
+	int tSR = `max(15ns, 2*`tCK);
+	int nck = `tCK;
+	int WL = `WL;
+	int RU = 1;
+	int delay;
 	int BL = 16;
 	int time_refresh_all_bank, time_prev_CA, time_SRE,time_last_MRR, time_last_MRW, time_last_write, time_last_read, time_DSE, time_DSX,
-	time_last_MW_with_auto, time_last_command, time_SRX, time_bank_precharge, time_bank_activate, time_WR_command, tWCKPRE_Static,
-	tWCKPRE_Toggle_WR, time_SE, time_PDX, time_PDE, time_last_refresh_per_bank,flag_BG_refresh_commands_done;
-	int nck, RL, RU, WL;
+	time_last_MW_with_auto, time_last_command, time_SRX, time_bank_precharge, time_bank_activate, time_WR_command,
+	time_SE, time_PDX, time_PDE, time_last_refresh_per_bank,flag_BG_refresh_commands_done;
  	/*assign DQ = {ch0_vif.dq0_dq0, ch0_vif.dq0_dq1, ch0_vif.dq0_dq2, ch0_vif.dq0_dq3, ch0_vif.dq0_dq4, ch0_vif.dq0_dq5,
 	ch0_vif.dq0_dq6, ch0_vif.dq0_dq7,ch1_vif.dq1_dq0, ch1_vif.dq1_dq1, ch1_vif.dq1_dq2, ch1_vif.dq1_dq3,
 	ch1_vif.dq1_dq4, ch1_vif.dq1_dq5,ch1_vif.dq1_dq6, ch1_vif.dq1_dq7};*/
@@ -1048,10 +1068,10 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						PDE:begin
 							if((($time - time_SRE) <2*nck )
 								|| ((CA != (REF || PRE)) && !AUTO_PRECHARGE)
-								|| (($time - time_last_read) < (RL + RU*((tWCK2CK + tWCKDQO)/tCK) + BL/8 +1))
+								|| (($time - time_last_read) < (`RL + RU*((tWCK2CK + tWCKDQO)/tCK) + BL/8 +1))
 								|| (($time - time_last_write) < (WL + RU*((tWCK2CK + tWCKDQI)/tCK) + BL/8 +1)) 
 								|| (($time - time_last_MW_with_auto) < ( WL + RU*((tWCK2CK + tWCKDQI)/tCK) + nWR + BL/8 +1))
-								|| (($time - time_last_MRR) < (RL + RU*((tWCK2CK + tWCKDQO)/tCK) + nWR + BL/8 +1)) 
+								|| (($time - time_last_MRR) < (`RL + RU*((tWCK2CK + tWCKDQO)/tCK) + nWR + BL/8 +1)) 
 								|| (($time - time_last_command) < (tCMDPD)) 
 								|| (($time - time_last_MRW) < (tMRWPD))
 								|| (($time - time_SRE) < tESPD) )
@@ -1638,7 +1658,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 									end
 								end
 								if(CA==WR16 || CA==WR32 || CA==MWR) begin
-									if(($time - start)/int'(`tCK) < (`BLn_max + `RL + $ceil(real'(`tWCQDQO_max)/`tCK) - `WL)) begin
+									if(($time - start)/int'(`tCK) < (`BLn_max + `RL + $ceil(real'(`tWCKDQO_max)/`tCK) - `WL)) begin
 										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between RD16/RD32(with AP) and WR16/WR32/MWR (different bank)")
 									end
 								end
@@ -1651,7 +1671,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 									end
 								end
 								if(CA==WR16 || CA==WR32 || CA==MWR) begin
-									if(($time - start)/int'(`tCK) < (`BLn_min + `RL + $ceil(real'(`tWCQDQO_max)/`tCK) - `WL)) begin
+									if(($time - start)/int'(`tCK) < (`BLn_min + `RL + $ceil(real'(`tWCKDQO_max)/`tCK) - `WL)) begin
 										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between RD16/RD32(with AP) and WR16/WR32/MWR (different group)")
 									end
 								end
@@ -1671,7 +1691,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 									end
 								end
 								else if (CA==PRE) begin
-									if(($time - start)/int'(`tCK) < (`WR + 1 + `BLn_min + `nWR)) begin
+									if(($time - start)/int'(`tCK) < (`WL + 1 + `BLn_min + `nWR)) begin
 										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between WR16/WR32/MWR(with AP) and PRE (same bank)")
 									end
 								end
@@ -1736,7 +1756,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 									end
 								end
 								if(CA==WR16 || CA==WR32 || CA==MWR) begin
-									if(($time - start)/int'(`tCK) < (`BLn + `RL + $ceil(real'(`tWCQDQO)/`tCK) - `WL)) begin
+									if(($time - start)/int'(`tCK) < (`BLn + `RL + $ceil(real'(`tWCKDQO)/`tCK) - `WL)) begin
 										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between RD16/RD32(with AP) and WR16/WR32/MWR (different group)")
 									end
 								end
