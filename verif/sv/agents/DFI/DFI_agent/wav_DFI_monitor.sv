@@ -1,20 +1,37 @@
 class wav_DFI_monitor extends uvm_monitor;
 
+    `uvm_component_utils_begin(wav_DFI_monitor)
+    `uvm_component_utils_end
+
     wav_DFI_vif vif;
     uvm_phase monitor_run_phase;
 
-    uvm_analysis_port #( wav_DFI_transfer) item_collected_port; 
+    uvm_analysis_port #(wav_DFI_transfer) subscriber_port_item;
+
+
+    semaphore subscriber_port_item_sem;
+    task automatic write_to_port(wav_DFI_transfer trans);
+        subscriber_port_item_sem.get();
+        `uvm_info(get_name(), "The object written to DFI subscriber port:", UVM_MEDIUM);
+        trans.print();
+        subscriber_port_item.write(trans);
+        subscriber_port_item_sem.put();
+    endtask
 
     const int wakeup_times[20] = '{1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144,-1};
     const int phyupd_types[4] = '{`tphyupd_type0, `tphyupd_type1, `tphyupd_type2, `tphyupd_type3};
-    const int phymstr_types[4] = '{`tphymstr_type0, `tphymstr_type1, `tphymstr_type2, `tphymstr_type3};
-
-    `uvm_component_utils_begin(wav_DFI_monitor)
-    `uvm_component_utils_end
+    const int phymstr_types[4] = '{`tphymstr_type0, `tphymstr_type1, `tphymstr_type2, `tphymstr_type3};  
 
     function new (string name = "wav_DFI_monitor", uvm_component parent = null);
         super.new(name, parent);
     endfunction
+
+    function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        subscriber_port_item = new("subscriber_port_item", this);
+        subscriber_port_item_sem = new(1);
+    endfunction
+
 	/*add collect for remaining interface signals*/
     //each task samples a single packet from the corresponding sub-interface 
     task automatic collect_write(ref wav_DFI_write_transfer trans); 
@@ -443,6 +460,7 @@ class wav_DFI_monitor extends uvm_monitor;
         bit isAcked = 0;
         trans = new();
         if (is_ctrl) collect_lp_ctrl(trans); else collect_lp_data(trans);
+        write_to_port(trans);
         wakeup = trans.wakeup;
         `uvm_info(get_name(), $psprintf("Detected lp transaction with is_ctrl:%0d wakeup:%0d and wakeup_time: %0d", is_ctrl, wakeup, wakeup_times[wakeup]), UVM_MEDIUM);                
         forever begin
@@ -461,6 +479,7 @@ class wav_DFI_monitor extends uvm_monitor;
                 else if (wakeup < trans.wakeup) begin
                     `uvm_info(get_name(), $psprintf("wakeup time has been INCREASED from %0d to %0d", wakeup, trans.wakeup), UVM_MEDIUM);                    
                     wakeup = trans.wakeup;
+                    write_to_port(trans);
                 end
                 ++steadyCounter;
             end
@@ -491,6 +510,7 @@ class wav_DFI_monitor extends uvm_monitor;
         trans = new();
         original = new();
         collect_phyupd(original);
+        write_to_port(original);
         forever begin
             @(vif.mp_mon.cb_mon);
             collect_phyupd(trans);
@@ -537,6 +557,8 @@ class wav_DFI_monitor extends uvm_monitor;
         wav_DFI_update_transfer trans = new();
         int counter = 0, steadyCounter = 0;
         bit isAcked = 0;
+        collect_ctrlupd(trans);
+        write_to_port(trans);
         forever begin
             @(vif.mp_mon.cb_mon);
             collect_ctrlupd(trans);
@@ -581,6 +603,7 @@ class wav_DFI_monitor extends uvm_monitor;
         trans = new();
         original = new();
         collect_phymstr(original);
+        write_to_port(original);
         forever begin
             @(vif.mp_mon.cb_mon);
             collect_phymstr(trans);
