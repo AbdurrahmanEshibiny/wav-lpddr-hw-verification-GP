@@ -1,12 +1,10 @@
 `ifndef WAV_DFI_TRANSFER_H_
 `define WAV_DFI_TRANSFER_H_
 
-// ensure this line does not make problems
 `include "wav_DFI_defines.svh"
 
-/// ask samuel about this
 typedef enum {
-    DFI, control, lp, phymstr, update, status_freq, read, write
+    DFI, cmd, control, lp, phymstr, update, status_freq, read, write
     } type_e;
 
 
@@ -25,6 +23,7 @@ class wav_DFI_transfer extends uvm_sequence_item;
     endfunction
 
 endclass
+
 
 // Base class for DFI write transactions 
 class wav_DFI_write_transfer extends wav_DFI_transfer; 
@@ -139,28 +138,98 @@ class wav_DFI_update_transfer extends wav_DFI_control_transfer;
     endfunction
 endclass
 
+// the unassigned (i.e., = x) bits should be assigned
+// by the driver before sending them to the interface
+// N.B. the bits are reversed from the order of
+// the JEDEC in order to account for this reversed
+// order in the DFI
+typedef enum logic [13:0] {
+    DES = 14'bxxxxxxx_xxxxxxx,
+    NOP = 14'bxxxxxxx_0000000,
+    PDE = 14'bxxxxxxx_1000000,
+    ACT1 = 14'bxxxxxxx_xxxx111,
+    ACT2 = 14'bxxxxxxx_xxxx011,
+    PRE = 14'bxxxxxxx_1111000,
+    REF = 14'bxxxxxxx_0111000,
+    MWR = 14'bxxxxxxx_xxxx010,
+    WR16 = 14'bxxxxxxx_xxxx110,
+    WR32 = 14'bxxxxxxx_xxx0100,
+    RD16 = 14'bxxxxxxx_xxxx001,
+    RD32 = 14'bxxxxxxx_xxxx101,
+	CAS_WR = 14'b0000000_0011100,
+    CAS_RD = 14'b0000000_0011010,
+    CAS_FS = 14'b0000000_0011001,
+    CAS_OFF = 14'b0000000_0011111,
+    MPC = 14'bxxxxxxx_x110000,
+    SRE = 14'bxxxxxxx_1101000,
+    SRX = 14'bxxxxxxx_0101000,
+    MRW1 = 14'bxxxxxxx_1011000,
+    MRW2 = 14'bxxxxxxx_x001000,
+    MRR = 14'bxxxxxxx_0011000,
+    WFF = 14'b0000000_1100000,
+    RFF = 14'b0000000_0100000,
+    RDC = 14'b0000000_1010000    
+} cmd_t;
+
+class wav_DFI_cmd_transfer extends wav_DFI_transfer;
+    cmd_t cmd_mc[$]; // commmand coming from MC
+
+    // TODO: modify the factory appropriately
+    // TODO: add print function
+    `uvm_object_utils(wav_DFI_cmd_transfer)
+
+    function new(string name="wav_DFI_cmd_transfer"); 
+        super.new(name); 
+        tr_type = cmd;
+    endfunction
+
+endclass
+
 typedef struct {
     bit [63:0] data;
     bit [7:0] dbi;
 } read_data_t;
 
-
+typedef struct {
+    bit [17:0] row;
+    bit [6:0] col;
+    bit [1:0] bg;
+    bit [3:0] ba;
+} address_t;
+// TODO: we can turn the read_sequence_item into an array of sequence items
+// to ease things in the driver and the sequence 
 class wav_DFI_read_transfer extends wav_DFI_transfer;
     
-    // TODO: add address here
-
+    address_t address;
+    // wav_DFI_cmd_transfer cmd_seq_item;
+    // acts as preamble to the read transaction
+    cmd_t cmd_mc[$]; // commmand coming from MC
     bit [1:0] cs;
     read_data_t rd [$];
-
     // TODO: modify the factory appropriately
-    `uvm_object_utils(wav_DFI_read_transfer);
+    // TODO: add print function
+    `uvm_object_utils(wav_DFI_read_transfer)
 
     function new(string name="wav_DFI_read_transfer");
         super.new(name);
         tr_type = read;
+        // cmd_seq_item = wav_DFI_cmd_transfer::type_id::create(cmd_seq_item);
     endfunction
 endclass
 
-//extend the base class to implement remaining interfaces
+class wav_DFI_status_transfer extends wav_DFI_transfer;
+    bit [1:0] freq_fsp;
+    bit [1:0] freq_ratio;
+    bit [4:0] frequency;
 
+    `uvm_object_utils(wav_DFI_status_transfer)
+    // TODO: modify the factory appropriately
+    // TODO: add print function
+    function new(string name = "wav_DFI_status_transfer"); 
+        super.new(name);
+        tr_type = status_freq;
+    endfunction
+endclass
+
+// TODO: create a generic data class to unify write and read data
 `endif
