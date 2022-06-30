@@ -1,23 +1,40 @@
 class wav_DFI_monitor extends uvm_monitor;
 
+    `uvm_component_utils_begin(wav_DFI_monitor)
+    `uvm_component_utils_end
+
     wav_DFI_vif vif;
     uvm_phase monitor_run_phase;
 
-    uvm_analysis_port #( wav_DFI_transfer) item_collected_port; 
+    uvm_analysis_port #(wav_DFI_transfer) subscriber_port_item;
+
+
+    semaphore subscriber_port_item_sem;
+    task automatic write_to_port(wav_DFI_transfer trans);
+        subscriber_port_item_sem.get();
+        `uvm_info(get_name(), "The object written to DFI subscriber port:", UVM_MEDIUM);
+        trans.print();
+        subscriber_port_item.write(trans);
+        subscriber_port_item_sem.put();
+    endtask
 
     const int wakeup_times[20] = '{1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144,-1};
     const int phyupd_types[4] = '{`tphyupd_type0, `tphyupd_type1, `tphyupd_type2, `tphyupd_type3};
-    const int phymstr_types[4] = '{`tphymstr_type0, `tphymstr_type1, `tphymstr_type2, `tphymstr_type3};
-
-    `uvm_component_utils_begin(wav_DFI_monitor)
-    `uvm_component_utils_end
+    const int phymstr_types[4] = '{`tphymstr_type0, `tphymstr_type1, `tphymstr_type2, `tphymstr_type3};  
 
     function new (string name = "wav_DFI_monitor", uvm_component parent = null);
         super.new(name, parent);
     endfunction
+
+    function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        subscriber_port_item = new("subscriber_port_item", this);
+        subscriber_port_item_sem = new(1);
+    endfunction
+
 	/*add collect for remaining interface signals*/
     //each task samples a single packet from the corresponding sub-interface 
-    task collect_write(ref wav_DFI_write_transfer trans); 
+    task automatic collect_write(ref wav_DFI_write_transfer trans); 
         foreach(vif.mp_mon.cb_mon.wrdata[i])
             trans.wrdata[i] = vif.mp_mon.cb_mon.wrdata[i];
         foreach(vif.mp_mon.cb_mon.parity_in[i]) 
@@ -38,21 +55,21 @@ class wav_DFI_monitor extends uvm_monitor;
             trans.wck_toggle[i] = vif.mp_mon.cb_mon.wck_toggle[i];
     endtask
 
-    task collect_lp_ctrl(ref wav_DFI_lp_transfer trans); 
+    task automatic collect_lp_ctrl(ref wav_DFI_lp_transfer trans); 
         trans.req = vif.mp_mon.cb_mon.lp_ctrl_req; 
         trans.ack = vif.mp_mon.cb_mon.lp_ctrl_ack; 
         trans.wakeup = vif.mp_mon.cb_mon.lp_ctrl_wakeup; 
         trans.is_ctrl = 1; 
     endtask
           
-    task collect_lp_data(ref wav_DFI_lp_transfer trans); 
+    task automatic collect_lp_data(ref wav_DFI_lp_transfer trans); 
         trans.req = vif.mp_mon.cb_mon.lp_data_req; 
         trans.ack = vif.mp_mon.cb_mon.lp_data_ack; 
         trans.wakeup = vif.mp_mon.cb_mon.lp_data_wakeup; 
         trans.is_ctrl = 0; 
     endtask    
           
-    task collect_phymstr(ref wav_DFI_phymstr_transfer trans);     
+    task automatic collect_phymstr(ref wav_DFI_phymstr_transfer trans);     
         trans.req = vif.mp_mon.cb_mon.phymstr_req; 
         trans.ack = vif.mp_mon.cb_mon.phymstr_ack; 
         trans._type = vif.mp_mon.cb_mon.phymstr_type; 
@@ -60,13 +77,13 @@ class wav_DFI_monitor extends uvm_monitor;
         trans.cs_state = vif.mp_mon.cb_mon.phymstr_cs_state; 
     endtask  
           
-    task collect_phyupd(ref wav_DFI_update_transfer trans); 
+    task automatic collect_phyupd(ref wav_DFI_update_transfer trans); 
         trans.req = vif.mp_mon.cb_mon.phyupd_req; 
         trans.ack = vif.mp_mon.cb_mon.phyupd_ack; 
         trans._type = vif.mp_mon.cb_mon.phyupd_type; 
     endtask
     
-    task collect_ctrlupd(ref wav_DFI_update_transfer trans); 
+    task automatic collect_ctrlupd(ref wav_DFI_update_transfer trans); 
         trans.req = vif.mp_mon.cb_mon.ctrlupd_req; 
         trans.ack = vif.mp_mon.cb_mon.ctrlupd_ack; 
     endtask
@@ -337,7 +354,7 @@ class wav_DFI_monitor extends uvm_monitor;
     endtask
 
     /* add handles for the remaining interface signals*/
-    task handle_write();
+    task automatic handle_write();
         wav_DFI_write_transfer trans;
         int clkticks_wrcsgab=0;
         int clkticks_wrcslat=0;
@@ -492,13 +509,14 @@ class wav_DFI_monitor extends uvm_monitor;
     
 
     //Handles a single request and performs any required checking throughout the transaction
-    task handle_lp(bit is_ctrl);
+    task automatic handle_lp(bit is_ctrl);
         wav_DFI_lp_transfer trans;
         int wakeup = -1;
         int counter = 0, steadyCounter = 0;
         bit isAcked = 0;
         trans = new();
         if (is_ctrl) collect_lp_ctrl(trans); else collect_lp_data(trans);
+        write_to_port(trans);
         wakeup = trans.wakeup;
         `uvm_info(get_name(), $psprintf("Detected lp transaction with is_ctrl:%0d wakeup:%0d and wakeup_time: %0d", is_ctrl, wakeup, wakeup_times[wakeup]), UVM_MEDIUM);                
         forever begin
@@ -517,6 +535,7 @@ class wav_DFI_monitor extends uvm_monitor;
                 else if (wakeup < trans.wakeup) begin
                     `uvm_info(get_name(), $psprintf("wakeup time has been INCREASED from %0d to %0d", wakeup, trans.wakeup), UVM_MEDIUM);                    
                     wakeup = trans.wakeup;
+                    write_to_port(trans);
                 end
                 ++steadyCounter;
             end
@@ -531,18 +550,23 @@ class wav_DFI_monitor extends uvm_monitor;
                 break;
         end
 
+        --counter;
         if (wakeup != 19 && counter > wakeup_times[wakeup]) begin
-            `uvm_error(get_name(), $psprintf("PHY stayed asleep more than the wakeup time, it should stay %0d, but it stayed %0d", wakeup_times[wakeup], counter));
+            `uvm_warning(get_name(), $psprintf("PHY stayed asleep more than the wakeup time, it should stay %0d, but it stayed %0d", wakeup_times[wakeup], counter));
+		end
+		else begin
+			`uvm_info(get_name(), $psprintf("PHY stayed asleep for %0d, with wakeup_time = %0d", counter, wakeup_times[wakeup]), UVM_MEDIUM);
         end
     endtask
 
-    task handle_phyupd();
+    task automatic handle_phyupd();
         wav_DFI_update_transfer trans, original;
         int counter = 0, steadyCounter = 0;
         bit next_should_be_idle = 0, count = 0;
         trans = new();
         original = new();
         collect_phyupd(original);
+        write_to_port(original);
         forever begin
             @(vif.mp_mon.cb_mon);
             collect_phyupd(trans);
@@ -585,10 +609,12 @@ class wav_DFI_monitor extends uvm_monitor;
         end
     endtask
 
-    task handle_ctrlupd();
+    task automatic handle_ctrlupd();
         wav_DFI_update_transfer trans = new();
         int counter = 0, steadyCounter = 0;
         bit isAcked = 0;
+        collect_ctrlupd(trans);
+        write_to_port(trans);
         forever begin
             @(vif.mp_mon.cb_mon);
             collect_ctrlupd(trans);
@@ -626,13 +652,14 @@ class wav_DFI_monitor extends uvm_monitor;
         end
     endtask
 
-    task handle_phymstr();
+    task automatic handle_phymstr();
         wav_DFI_phymstr_transfer trans, original;
         int counter = 0, steadyCounter = 0;
         bit next_should_be_idle = 0, count = 0;
         trans = new();
         original = new();
         collect_phymstr(original);
+        write_to_port(original);
         forever begin
             @(vif.mp_mon.cb_mon);
             collect_phymstr(trans);
@@ -673,67 +700,67 @@ class wav_DFI_monitor extends uvm_monitor;
     //each task goes in a forever loop that monitors a specific sub-interface, collects 
     //a packet whenever it detects a change, and then it write the packet in the analysis 
     //port for the scoreboard to perform its checks 
-    task monitor_lp_ctrl(); 
+    task automatic monitor_lp_ctrl(); 
         forever begin 
             @(vif.mp_mon.cb_mon) 
             if (vif.mp_mon.cb_mon.lp_ctrl_req) begin
                 `uvm_info(get_name(), "lp_ctrl transaction is detected", UVM_MEDIUM);                
-                monitor_run_phase.raise_objection(this, "handle_lp ctrl started");
+                EventHandler::start_transaction(EventHandler::lp_ctrl);
                 handle_lp(1);
-                monitor_run_phase.drop_objection(this, "handle_lp ctrl finished");
+                EventHandler::end_transaction(EventHandler::lp_ctrl);
             end
         end      
     endtask          
         
-    task monitor_lp_data();         
+    task automatic monitor_lp_data();         
         forever begin                 
             @(vif.mp_mon.cb_mon) 
             if (vif.mp_mon.cb_mon.lp_data_req) begin
                 `uvm_info(get_name(), "lp_data transaction is detected", UVM_MEDIUM);
-                monitor_run_phase.raise_objection(this, "handle_lp data started");
+                EventHandler::start_transaction(EventHandler::lp_data);
                 handle_lp(0);
-                monitor_run_phase.drop_objection(this, "handle_lp data started");
+                EventHandler::end_transaction(EventHandler::lp_data);
             end
         end
     endtask
 
-    task monitor_phyupd ();           
+    task automatic monitor_phyupd ();           
         forever begin                
             @(vif.mp_mon.cb_mon)     
             if (vif.mp_mon.cb_mon.phyupd_req) begin
                 `uvm_info(get_name(), "phyupd transaction is detected", UVM_MEDIUM);
-                monitor_run_phase.raise_objection(this, "handle_phyupd started");
+                EventHandler::start_transaction(EventHandler::phyupd);
                 handle_phyupd(); 
-                monitor_run_phase.drop_objection(this, "handle_phyupd finished"); 
+                EventHandler::end_transaction(EventHandler::phyupd);
             end
         end     
     endtask
     
-    task monitor_ctrlupd ();                 
+    task automatic monitor_ctrlupd ();                 
         forever begin            
             @(vif.mp_mon.cb_mon) 
             if (vif.mp_mon.cb_mon.ctrlupd_req) begin
                 `uvm_info(get_name(), "ctrlupd transaction is detected", UVM_MEDIUM);
-                monitor_run_phase.raise_objection(this, "handle_ctrlupd started");
+                EventHandler::start_transaction(EventHandler::ctrlupd);
                 handle_ctrlupd();
-                monitor_run_phase.drop_objection(this, "handle_ctrlupd finished"); 
+                EventHandler::end_transaction(EventHandler::ctrlupd);
             end
         end 
     endtask  
     
-    task monitor_phymstr();                 
+    task automatic monitor_phymstr();                 
         forever begin         
             @(vif.mp_mon.cb_mon)       
             if (vif.mp_mon.cb_mon.phymstr_req) begin
                 `uvm_info(get_name(), "phymstr transaction is detected", UVM_MEDIUM);
-                monitor_run_phase.raise_objection(this, "handle_phymstr started");
+                EventHandler::start_transaction(EventHandler::phymstr);
                 handle_phymstr();
-                monitor_run_phase.drop_objection(this, "handle_phymstr finished"); 
+                EventHandler::end_transaction(EventHandler::phymstr);
             end
         end    
     endtask
 
-    task monitor_write();                 
+    task automatic monitor_write();                 
         forever begin         
             @(vif.mp_mon.cb_mon) 
             foreach(vif.mp_mon.cb_mon.wrdata_en[i])
@@ -746,7 +773,7 @@ class wav_DFI_monitor extends uvm_monitor;
         end    
     endtask
 
-    task monitor_initiailization();
+    task automatic monitor_initiailization();
         wav_DFI_lp_transfer lp_ctrl = new(), lp_data = new();
         wav_DFI_phymstr_transfer phymstr = new();
         wav_DFI_update_transfer ctrlupd = new(), phyupd = new();
@@ -786,6 +813,20 @@ class wav_DFI_monitor extends uvm_monitor;
 
     endtask
 
+    task automatic event_emitter;
+        fork
+            forever @(posedge vif.mp_mon.cb_mon.phymstr_ack) 
+                EventHandler::trigger_event(EventHandler::phymstr_ack_pos);
+            forever @(negedge vif.mp_mon.cb_mon.phymstr_req) 
+                EventHandler::trigger_event(EventHandler::phymstr_req_neg);
+            
+            forever @(posedge vif.mp_mon.cb_mon.phyupd_ack) 
+                EventHandler::trigger_event(EventHandler::phyupd_ack_pos);
+            forever @(negedge vif.mp_mon.cb_mon.phyupd_req) 
+                EventHandler::trigger_event(EventHandler::phyupd_req_neg);
+        join
+    endtask
+
     //A task to call all the monitoring tasks created earlier to work in parallel 
     virtual task run_phase(uvm_phase phase);
         monitor_run_phase = phase;
@@ -797,11 +838,13 @@ class wav_DFI_monitor extends uvm_monitor;
             monitor_phyupd();         
             monitor_ctrlupd();
             monitor_write();
-            monitor_read();
-            monitor_status();
+            // monitor_read();
+            // monitor_status();
 /*add monitor function to the remaining interface signals*/    
         join    // FIXME: should we use it as join_none to prevent latencies in each of them?
                 // probably not because they are all forever loops so once they are launched
                 // they will never come out of their loops  
+            event_emitter();
+/*add monitor function to the remaining interface signals*/       
     endtask
 endclass

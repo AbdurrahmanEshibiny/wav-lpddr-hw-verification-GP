@@ -1,114 +1,11 @@
-//TODO we need to define tMRD, tRAS, tRP, tCK, RL, WL
-`define tCKPGM_min 1.25ns
-`define tCKPGM_max 200ns
-`define tPGM 2000ms
-`define tPGM_EXIT 15ns
-`define tPGM_PST 500us
-int place_holder = 1;
-`define tMRD place_holder
-`define tRAS place_holder
-`define tRP place_holder
-`define tCK place_holder
-`define RL place_holder
-`define WL place_holder
-`define BLn place_holder
-`define BLn_min place_holder
-`define nWR place_holder
-`define tRBTP place_holder
-`define tWR place_holder
-`define tWCQDQO place_holder
-`define nRBTP place_holder
-`define tRPpb place_holder
-`define nRBTP place_holder
-`define WR place_holder
-`define tWTR_L place_holder
-//Ziad's timing params
-/// defines
-`define max_WR32_after_WR32_ANB 16
-`define min_WR32_after_WR32_ANB 4
-`define max_WR16_after_WR32_ANB 16
-`define min_WR16_after_WR32_ANB 4
-`define max_MWR_after_WR32_SB 16
-`define min_MWR_after_WR32_SB 16
-`define max_MWR_after_WR32_DB 16
-`define min_MWR_after_WR32_DB 16
-`define max_RD32_after_WR32_ANB 16
-`define min_RD32_after_WR32_ANB 4
-`define max_RD16_after_WR32_ANB 16
-`define min_RD16_after_WR32_ANB 4
-//current command is WR16
-`define max_WR32_after_WR16_ANB 16
-`define min_WR32_after_WR16_ANB 4
-`define max_WR16_after_WR16_ANB 16
-`define min_WR16_after_WR16_ANB 4
-`define max_MWR_after_WR16_SB 16
-`define min_MWR_after_WR16_SB 16
-`define max_MWR_after_WR16_DB 16
-`define min_MWR_after_WR16_DB 16
-`define max_RD32_after_WR16_ANB 16
-`define min_RD32_after_WR16_ANB 4
-`define max_RD16_after_WR16_ANB 16
-`define min_RD16_after_WR16_ANB 4
-//current command is MWR
-`define max_WR32_after_MWR_ANB 16
-`define min_WR32_after_MWR_ANB 4
-`define max_WR16_after_MWR_ANB 16
-`define min_WR16_after_MWR_ANB 4
-`define max_MWR_after_MWR_SB 16
-`define min_MWR_after_MWR_SB 16
-`define max_MWR_after_MWR_DB 16
-`define min_MWR_after_MWR_DB 16
-`define max_RD32_after_MWR_ANB 16
-`define min_RD32_after_MWR_ANB 4
-`define max_RD16_after_MWR_ANB 16
-`define min_RD16_after_MWR_ANB 4
-//current command is RD32
-`define max_WR32_after_RD32_ANB 16
-`define min_WR32_after_RD32_ANB 4
-`define max_WR16_after_RD32_ANB 16
-`define min_WR16_after_RD32_ANB 4
-`define max_MWR_after_RD32_ANB 16
-`define min_MWR_after_RD32_ANB 16
-`define max_RD32_after_RD32_ANB 16
-`define min_RD32_after_RD32_ANB 4
-`define max_RD16_after_RD32_ANB 16
-`define min_RD16_after_RD32_ANB 4
-//current command is RD16
-`define max_WR32_after_RD16_ANB 16
-`define min_WR32_after_RD16_ANB 4
-`define max_WR16_after_RD16_ANB 16
-`define min_WR16_after_RD16_ANB 4
-`define max_MWR_after_RD16_ANB 16
-`define min_MWR_after_RD16_ANB 16
-`define max_RD32_after_RD16_ANB 16
-`define min_RD32_after_RD16_ANB 4
-`define max_RD16_after_RD16_ANB 16
-`define min_RD16_after_RD16_ANB 4
-`define tAAD 8
-`define tRRD 4
-`define tRC 12
-`define BL 4
-`define tWCKENL_RD
-`define tWCKENL_WR
-`define tWCKPRE_STATIC_RD
-`define tWCKPRE_STATIC_WR
-`define tWCK_TOGGLE_RD
-`define tWCK_TOGGLE_WR
-`define tWCKDQO
-`define tWCKDQI
-`define tXSR
-
-import uvm_pkg::*;
-`include "uvm_macros.svh"
-
 class gp_LPDDR5_monitor extends uvm_monitor;
 	`uvm_component_utils(gp_LPDDR5_monitor)
 	
+	uvm_analysis_port #(gp_LPDDR5_cov_trans) subscriber_port_item;
+	gp_LPDDR5_cov_trans cov_trans_item;
+
 	//-------------------Start of variable declarations-------------------------------
-	typedef enum {	DES, NOP, PDE, ACT1, ACT2, PRE, REF, MWR, WR16, WR32, RD16, RD32,
-					CAS_WR,CAS_RD,CAS_FS,CAS_OFF, MPC, SRE, SRX, MRW1, MRW2, MRR, WFF, RFF, RDC
-	} command;
-	
+	//typdef command was moved to gp_lpddr5_pkg.sv
 	command CA, prev_CA, next_CA;
 	bit [17:0] ROW;
 	
@@ -183,13 +80,33 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 	int i;
 	int j = 0;
 	logic [0: 15]DQ;
-	int tWCK2CK, tWCKDQO, tWCKDQI, tCK, nWR, tCMDPD,tMRWPD, tESPD, tRFCab, tRFCpb, tpbR2pbR, delay, tRP, tRRD,
-	tCSPD, tPDN, tXSR_DSM, tSR;
+	int tWCK2CK = 0;
+	int tWCKDQO = `tWCKDQO;
+	int tWCKDQI = `tWCKDQI;
+	int tCK = `tCK;
+	int nWR = `nWR;
+	int tCMDPD = `max(1.75ns, 2*`tCK);
+	int tMRWPD = `max(14ns, 6*`tCK);
+	int tESPD = 2;
+	int tRFCab = 210;
+	int tRFCpb = 100;
+	int tpbR2pbR = 90;
+	int tRP = `tRP;
+	int tRRD = `tRRD;
+	int	tCSPD = `max(7.5ns, 3*`tCK);
+	int tPDN = 0;
+	int tXSR_DSM = 200*1000;
+	int tWCKPRE_Static = 2;
+	int tWCKPRE_Toggle_WR = 2;
+	int tSR = `max(15ns, 2*`tCK);
+	int nck = `tCK;
+	int WL = `WL;
+	int RU = 1;
+	int delay;
 	int BL = 16;
 	int time_refresh_all_bank, time_prev_CA, time_SRE,time_last_MRR, time_last_MRW, time_last_write, time_last_read, time_DSE, time_DSX,
-	time_last_MW_with_auto, time_last_command, time_SRX, time_bank_precharge, time_bank_activate, time_WR_command, tWCKPRE_Static,
-	tWCKPRE_Toggle_WR, time_SE, time_PDX, time_PDE, time_last_refresh_per_bank,flag_BG_refresh_commands_done;
-	int nck, RL, RU, WL;
+	time_last_MW_with_auto, time_last_command, time_SRX, time_bank_precharge, time_bank_activate, time_WR_command,
+	time_SE, time_PDX, time_PDE, time_last_refresh_per_bank,flag_BG_refresh_commands_done;
  	/*assign DQ = {ch0_vif.dq0_dq0, ch0_vif.dq0_dq1, ch0_vif.dq0_dq2, ch0_vif.dq0_dq3, ch0_vif.dq0_dq4, ch0_vif.dq0_dq5,
 	ch0_vif.dq0_dq6, ch0_vif.dq0_dq7,ch1_vif.dq1_dq0, ch1_vif.dq1_dq1, ch1_vif.dq1_dq2, ch1_vif.dq1_dq3,
 	ch1_vif.dq1_dq4, ch1_vif.dq1_dq5,ch1_vif.dq1_dq6, ch1_vif.dq1_dq7};*/
@@ -219,14 +136,16 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 	function new(string name = "gp_LPDDR5_monitor", uvm_component parent);
 		super.new(name, parent);
 	endfunction
-
+	
 	function void build_phase(uvm_phase phase);
 		super.build_phase(phase);
 		if(! uvm_config_db#(virtual gp_LPDDR5_channel_intf)::get(this, "", "ch0_vif", ch0_vif)) begin
 			`uvm_fatal("gp_LPDDR5_monitor", "Failed to get virtual interface from config db")
 		end
 		recieved_transaction = new("recieved_transaction", this);
-
+		subscriber_port_item = new("subscriber_port_item", this);
+		cov_trans_item = gp_LPDDR5_cov_trans::type_id::create("cov_trans_item");
+		
 		//TODO get config db for ch1_vif 	
 		act1_key = new(1);
 	endfunction: build_phase
@@ -1149,10 +1068,10 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						PDE:begin
 							if((($time - time_SRE) <2*nck )
 								|| ((CA != (REF || PRE)) && !AUTO_PRECHARGE)
-								|| (($time - time_last_read) < (RL + RU*((tWCK2CK + tWCKDQO)/tCK) + BL/8 +1))
+								|| (($time - time_last_read) < (`RL + RU*((tWCK2CK + tWCKDQO)/tCK) + BL/8 +1))
 								|| (($time - time_last_write) < (WL + RU*((tWCK2CK + tWCKDQI)/tCK) + BL/8 +1)) 
 								|| (($time - time_last_MW_with_auto) < ( WL + RU*((tWCK2CK + tWCKDQI)/tCK) + nWR + BL/8 +1))
-								|| (($time - time_last_MRR) < (RL + RU*((tWCK2CK + tWCKDQO)/tCK) + nWR + BL/8 +1)) 
+								|| (($time - time_last_MRR) < (`RL + RU*((tWCK2CK + tWCKDQO)/tCK) + nWR + BL/8 +1)) 
 								|| (($time - time_last_command) < (tCMDPD)) 
 								|| (($time - time_last_MRW) < (tMRWPD))
 								|| (($time - time_SRE) < tESPD) )
@@ -1425,6 +1344,11 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						WFF:begin end
 						RFF:begin end
 					endcase
+					cov_trans_item.CA = CA;
+					cov_trans_item.BA = BA;
+					cov_trans_item.prev_BA = prev_BA;
+					cov_trans_item.ALL_BANKS = ALL_BANKS;
+					subscriber_port_item.write(cov_trans_item);
 				end 
 
 				//Here we put all the checkers that need to be completed after the command detection
@@ -1734,7 +1658,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 									end
 								end
 								if(CA==WR16 || CA==WR32 || CA==MWR) begin
-									if(($time - start)/int'(`tCK) < (`BLn_max + `RL + $ceil(real'(`tWCQDQO_max)/`tCK) - `WL)) begin
+									if(($time - start)/int'(`tCK) < (`BLn_max + `RL + $ceil(real'(`tWCKDQO_max)/`tCK) - `WL)) begin
 										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between RD16/RD32(with AP) and WR16/WR32/MWR (different bank)")
 									end
 								end
@@ -1747,7 +1671,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 									end
 								end
 								if(CA==WR16 || CA==WR32 || CA==MWR) begin
-									if(($time - start)/int'(`tCK) < (`BLn_min + `RL + $ceil(real'(`tWCQDQO_max)/`tCK) - `WL)) begin
+									if(($time - start)/int'(`tCK) < (`BLn_min + `RL + $ceil(real'(`tWCKDQO_max)/`tCK) - `WL)) begin
 										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between RD16/RD32(with AP) and WR16/WR32/MWR (different group)")
 									end
 								end
@@ -1767,7 +1691,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 									end
 								end
 								else if (CA==PRE) begin
-									if(($time - start)/int'(`tCK) < (`WR + 1 + `BLn_min + `nWR)) begin
+									if(($time - start)/int'(`tCK) < (`WL + 1 + `BLn_min + `nWR)) begin
 										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between WR16/WR32/MWR(with AP) and PRE (same bank)")
 									end
 								end
@@ -1832,7 +1756,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 									end
 								end
 								if(CA==WR16 || CA==WR32 || CA==MWR) begin
-									if(($time - start)/int'(`tCK) < (`BLn + `RL + $ceil(real'(`tWCQDQO)/`tCK) - `WL)) begin
+									if(($time - start)/int'(`tCK) < (`BLn + `RL + $ceil(real'(`tWCKDQO)/`tCK) - `WL)) begin
 										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between RD16/RD32(with AP) and WR16/WR32/MWR (different group)")
 									end
 								end

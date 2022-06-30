@@ -68,11 +68,11 @@ interface clock_reset_intf;
 
 	task automatic por;
 		begin
-			force i_ahb_clk    = '0;
-			force i_ana_refclk = '0;
-			force i_refclk     = '0;
-			force i_refclk_alt = '0;
-			force i_jtag_tck   = '0;
+			force wddr_tb_top.u_phy_1x32.i_ahb_clk    = '0;
+			force wddr_tb_top.u_phy_1x32.i_ana_refclk = '0;
+			force wddr_tb_top.u_phy_1x32.i_refclk     = '0;
+			force wddr_tb_top.u_phy_1x32.i_refclk_alt = '0;
+			force wddr_tb_top.u_phy_1x32.i_jtag_tck   = '0;
 			wait_refclk(2);
 			i_prst        = 1'b0;
 			i_rst         = 1'b1;
@@ -83,11 +83,11 @@ interface clock_reset_intf;
 			i_rst         = 1'b0;
 			i_jtag_trst_n = 1'b1;
 			wait_refclk(5);
-			release i_ahb_clk    ;
-			release i_ana_refclk ;
-			release i_refclk     ;
-			release i_refclk_alt ;
-			release i_jtag_tck   ;
+			release wddr_tb_top.u_phy_1x32.i_ahb_clk    ;
+			release wddr_tb_top.u_phy_1x32.i_ana_refclk ;
+			release wddr_tb_top.u_phy_1x32.i_refclk     ;
+			release wddr_tb_top.u_phy_1x32.i_refclk_alt ;
+			release wddr_tb_top.u_phy_1x32.i_jtag_tck   ;
 			wait_refclk(10);
 		end
 	endtask

@@ -2,6 +2,21 @@ Requirements:
 1- Windows 10/11
 2- questa sim simulator (tested with version 2021.1)
 
+To collect coverage steps:
+1- >> add all the required tests' names into "testcases.txt"
+2- >> collect_coverage.bat
+- the project will be compiled with the required options for coverage
+- each testcase listed in "testcases.txt" will be executed
+- "coverage_output" directory will be created containing a report (.ucdb file) 
+  per test
+- all the reports (the .ucdb files) will be merged into the final report "final.ucdb"
+- the final report will be converted into html files for easy access and browsing
+- NOTICE!!:
+	to view a (.ucdb) file you can use the following command:
+	vsim -viewcov REPORT_NAME.ucdb
+
+notice, you can view a specific
+
 Steps:
 In a windows terminal (or powershell) write the following commands:
 1- >> cd <repo path>/verif

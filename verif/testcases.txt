@@ -1,0 +1,2 @@
+wddr_DFI_lp_ctrl_test
+wddr_DFI_several_phymstr_test

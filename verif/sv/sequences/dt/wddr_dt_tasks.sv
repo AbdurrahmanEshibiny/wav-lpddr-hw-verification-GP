@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------
 // Test Cases
 //------------------------------------------------------
+`define RAMFILEPATH "..\\sw\\tests\\wddr_boot\\ramfiles\\"
 
 int x;
 integer ddrfreq_MHz;

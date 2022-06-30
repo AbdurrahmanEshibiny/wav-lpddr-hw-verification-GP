@@ -22,6 +22,9 @@ class wav_DFI_transfer extends uvm_sequence_item;
         tr_type = DFI;
     endfunction
 
+    virtual function void reset();
+
+    endfunction
 endclass
 
 
@@ -37,6 +40,7 @@ class wav_DFI_write_transfer extends wav_DFI_transfer;
     bit [1:0]                wck_cs [0:3];
     bit                      wck_en [0:3];
     bit [1:0]                wck_toggle [0:3];
+    bit                     dram_clk_disable [0:3];
 
     `uvm_object_utils_begin(wav_DFI_write_transfer)
         `uvm_field_sarray_int(wrdata, UVM_DEFAULT | UVM_NOCOMPARE)
@@ -54,6 +58,20 @@ class wav_DFI_write_transfer extends wav_DFI_transfer;
         super.new(name); 
         super.tr_type = write; 
     endfunction
+
+    virtual function void reset();
+        wrdata = '{default:0};
+        parity_in = '{default:0};
+        wrdata_cs = '{default:0};
+        wrdata_mask = '{default:0};
+        wrdata_en = '{default:0};
+        address = '{default:0};
+        cs = '{default:0};
+        wck_cs = '{default:0};
+        wck_en = '{default:0};
+        wck_toggle = '{default:0};
+        dram_clk_disable = '{default:0};
+    endfunction
 endclass
 
 // Base class for DFI control transactions (status, update, phymstr, lp)
@@ -63,7 +81,7 @@ need to ask samuel about this:
 class wav_DFI_control_transfer extends wav_DFI_transfer; 
     bit req; 
     bit ack; 
-    rand bit [15:0] cyclesCount;   // how many cycles should the trans be driven before returning to idle
+    rand bit [7:0] cyclesCount;   // how many cycles should the trans be driven before returning to idle
     
     `uvm_object_utils_begin(wav_DFI_control_transfer)
         `uvm_field_int(req, UVM_DEFAULT | UVM_NOCOMPARE)
@@ -74,6 +92,13 @@ class wav_DFI_control_transfer extends wav_DFI_transfer;
     function new(string name=" wav_DFI_control_transfer"); 
         super.new(name); 
         super.tr_type = control; 
+        reset();
+    endfunction
+
+    virtual function void reset();
+        this.req = 0;
+        this.ack = 0;
+        this.cyclesCount = 0;
     endfunction
 endclass
     
@@ -97,6 +122,13 @@ class wav_DFI_lp_transfer extends wav_DFI_control_transfer;
     function new(string name="wav_DFI_lp_transfer"); 
         super.new(name); 
         super.tr_type = lp;
+        reset();
+    endfunction
+
+    virtual function void reset();
+        super.reset();
+        this.wakeup = 0;
+        this.is_ctrl = 0;
     endfunction
 endclass
     
@@ -115,6 +147,14 @@ class wav_DFI_phymstr_transfer extends wav_DFI_control_transfer;
     function new(string name = "wav_DFI_phymstr_transfer"); 
         super.new(name); 
         super.tr_type = phymstr; 
+        this.reset();
+    endfunction
+
+    virtual function void reset();
+        super.reset();
+        this._type = 0;
+        this.cs_state = 0;
+        this.state_sel = 0;
     endfunction
 endclass
       
@@ -135,6 +175,13 @@ class wav_DFI_update_transfer extends wav_DFI_control_transfer;
     function new(string name = "wav_DFI_update_transfer"); 
         super.new(name); 
         super.tr_type = update; 
+        this.reset();
+    endfunction
+
+    virtual function void reset();
+        super.reset();
+        this._type = 0;
+        this.is_ctrl = 0;
     endfunction
 endclass
 

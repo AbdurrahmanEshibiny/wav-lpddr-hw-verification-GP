@@ -25,6 +25,10 @@ package wddr_pkg;
 
 `include "uvm_macros.svh"
 
+`include "./LPDDR5/gp_lpddr5_time_defs.svh"
+
+`include "./wddr_subscriber.sv"
+
 `include "ddr_global_define.vh"
 `include "ddr_cmn_csr_defs.vh"
 `include "ddr_fsw_csr_defs.vh"
