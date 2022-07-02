@@ -768,6 +768,21 @@ class wav_DFI_monitor extends uvm_monitor;
                 EventHandler::trigger_event(EventHandler::phyupd_ack_pos);
             forever @(negedge vif.mp_mon.cb_mon.phyupd_req) 
                 EventHandler::trigger_event(EventHandler::phyupd_req_neg);
+
+            forever @(posedge vif.mp_mon.cb_mon.lp_ctrl_ack) 
+                EventHandler::trigger_event(EventHandler::lp_ctrl_ack_pos);
+            forever @(negedge vif.mp_mon.cb_mon.lp_ctrl_req) 
+                EventHandler::trigger_event(EventHandler::lp_ctrl_req_neg);
+            
+            forever @(posedge vif.mp_mon.cb_mon.lp_data_ack) 
+                EventHandler::trigger_event(EventHandler::lp_data_ack_pos);
+            forever @(negedge vif.mp_mon.cb_mon.lp_data_req) 
+                EventHandler::trigger_event(EventHandler::lp_data_req_neg);
+
+            forever @(posedge vif.mp_mon.cb_mon.ctrlupd_ack) 
+                EventHandler::trigger_event(EventHandler::ctrlupd_ack_pos);
+            forever @(negedge vif.mp_mon.cb_mon.ctrlupd_req) 
+                EventHandler::trigger_event(EventHandler::ctrlupd_req_neg);
         join
     endtask
 
