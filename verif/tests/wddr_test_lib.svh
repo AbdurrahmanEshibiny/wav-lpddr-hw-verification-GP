@@ -125,3 +125,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 `include "tests/dfi/wddr_DFI_several_phymstr_test.sv"
 `include "tests/dfi/wddr_DFI_several_phyupd_test.sv"
 `include "tests/dfi/wddr_DFI_several_control_test.sv"
+`include "tests/dfi/wddr_DFI_access_control_regs_test.sv"
+`include "tests/dfi/wddr_DFI_power_down_test.sv"
+`include "tests/dfi/wddr_DFI_control_with_regs_test.sv"
