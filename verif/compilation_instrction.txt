@@ -5,6 +5,10 @@ Requirements:
 To collect coverage steps:
 1- >> add all the required tests' names into "testcases.txt"
 2- >> collect_coverage.bat
+	or
+   >> collect_coverage.bat -short
+- PLEASE note: using "-short" will collect coverage of the DUT and wddr_pkg only, which makes the size of the coverage report smaller, however, anything outside these two will not be covered.
+
 - the project will be compiled with the required options for coverage
 - each testcase listed in "testcases.txt" will be executed
 - "coverage_output" directory will be created containing a report (.ucdb file) 

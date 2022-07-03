@@ -1,9 +1,9 @@
-set %1
+REM set %1
 set instances=
 set testcases=testcases.txt
 
 for %%x in (%*) do (
-    if "%%x" == "-short" (set instances=-instance /wddr_tb_top/u_phy_1x32) 
+    if "%%x" == "-short" (set instances=-instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg) 
 REM    if "%%x" == "-append" (set testcases=appendcases.txt)
 )
 
