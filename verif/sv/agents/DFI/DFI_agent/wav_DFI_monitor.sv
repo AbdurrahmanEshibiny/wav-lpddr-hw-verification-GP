@@ -300,154 +300,154 @@ class wav_DFI_monitor extends uvm_monitor;
     /* add handles for the remaining interface signals*/
     task automatic handle_write();
         wav_DFI_write_transfer trans;
-        int clkticks_wrcsgab=0;
-        int clkticks_wrcslat=0;
-        int clkticks_wrdata=0;
-        int clkticks_wrdatalat=0;
-        int clkticks_wrdata_delay=0;
+        // int clkticks_wrcsgab=0;
+        // int clkticks_wrcslat=0;
+        // int clkticks_wrdata=0;
+        // int clkticks_wrdatalat=0;
+        // int clkticks_wrdata_delay=0;
 
-        int clkticks_wckdis=0;
-        int clkticks_wcktoggle=0;
-        int clkticks_wckfast_toggle=0;
-        int clkticks_wcktoggle_cs=0;
-        int clkticks_wcktoggle_rd=0;
-        int clkticks_wcktoggle_wr=0;
+        // int clkticks_wckdis=0;
+        // int clkticks_wcktoggle=0;
+        // int clkticks_wckfast_toggle=0;
+        // int clkticks_wcktoggle_cs=0;
+        // int clkticks_wcktoggle_rd=0;
+        // int clkticks_wcktoggle_wr=0;
 
-        logic [1:0]temp_wrdata_cs[0:3] = '{default:0};
-        trans = new();
-        forever begin
-            foreach(trans.wck_en[i])
-            begin
-                if(trans.wck_en[i] != 1'b0) 
-                begin
-                    @(vif.mp_mon.cb_mon)
-                    begin
-                       ++clkticks_wcktoggle;
-                       ++clkticks_wckfast_toggle;
-                    end
-                    @(vif.mp_mon.cb_mon);
-                    if(trans.wck_toggle[i]==2'b10)
-                    begin
-                        if(`twck_toggle != clkticks_wcktoggle)
-                        begin
-                            `uvm_error(get_name(), $psprintf("The time between the wck enable to toggle command (%d)is not equal to twck_toggle(%d)",clkticks_wcktoggle,`twck_toggle));                        
-                        end
-                        else
-                        begin
-                            clkticks_wcktoggle=0;
-                        end 
-                    end
-                    if(trans.wck_toggle[i]==2'b11)
-                    begin
-                        if(`twck_fast_toggle != clkticks_wckfast_toggle)
-                        begin
-                            `uvm_error(get_name(), $psprintf("The time between the wck toggle command to wck fast toggle command (%d)is not equal to twck_toggle(%d)",clkticks_wckfast_toggle,`twck_fast_toggle));                        
-                        end
-                        else
-                        begin
-                            clkticks_wckfast_toggle=0;
-                        end
-                    end
-                end
-            end
-            /*checks for all write data timing parameters*/
-            foreach(trans.address[i])
-            begin
-                if(trans.address[i] != 14'b0) 
-                begin
-                    @(vif.mp_mon.cb_mon)
-                    begin
-                        ++clkticks_wrcsgab;
-                        ++clkticks_wrcslat;
-                        ++clkticks_wrdata;
-                        ++clkticks_wrdatalat;
-                        ++clkticks_wrdata_delay;
-                    end
-                    @(vif.mp_mon.cb_mon);
-                    if(trans.wck_cs[i] != 2'bxx)
-                    begin
-                        if(`twck_toggle_cs != clkticks_wcktoggle_cs)
-                        begin
-                           `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the write cs (%d)is not equal to tphy_wrcslat(%d)",clkticks_wcktoggle_cs,`tphy_wrcslat));                         
-                        end
-                        else 
-                        begin
-                            clkticks_wcktoggle_cs=0;
-                        end
-                    end
-                    if(trans.wrdata_cs[i] != 2'b0)  
-                    begin
-                        temp_wrdata_cs[i] = trans.wrdata_cs[i];
-                        if(`tphy_wrcslat != clkticks_wrcslat) 
-                        begin
-                            `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the write cs (%d)is not equal to tphy_wrcslat(%d)",clkticks_wrcslat,`tphy_wrcslat));                        
-                        end
-                        else 
-                        begin
-                            clkticks_wrcslat=0;
-                        end
-                        if(`tphy_wrlat != clkticks_wrdatalat) 
-                        begin
-                            `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the write en (%d)is not equal to tphy_wrlat(%d)",clkticks_wrdatalat,`tphy_wrlat));                        
-                        end
-                        else 
-                        begin
-                            clkticks_wrdatalat=0;
-                        end    
-                    end
-                    if(trans.address[i] != 14'b0)
-                    begin
-                        if(trans.wrdata_cs[i] != 2'b0) 
-                        begin
-                            if(temp_wrdata_cs[i] != trans.wrdata_cs[i])
-                            begin
-                                if(`tphy_wrcsgap != clkticks_wrcsgab) 
-                                begin
-                                    `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the next dfi command write if changeing cs (%d)is not equal to tphy_wrcsgap(%d)",clkticks_wrcsgab,`tphy_wrcsgap));                        
-                                end
-                                else 
-                                begin
-                                    clkticks_wrcsgab=0;
-                                end
-                            end
-                        end
-                    end
-                end
-                if(trans.wrdata_en[i] != 4'b0) 
-                begin
-                    @(vif.mp_mon.cb_mon)
-                    begin
-                        ++clkticks_wrcsgab;
-                        ++clkticks_wrcslat;
-                        ++clkticks_wrdata;
-                        ++clkticks_wrdatalat;
-                        ++clkticks_wrdata_delay;
-                    end 
-                    if(trans.wrdata[i] != 64'b0)
-                    begin
-                        if(`tphy_wrdata != clkticks_wrdata)
-                        begin
-                            `uvm_error(get_name(), $psprintf("The gap between the write enable and the write data (%d)is not equal to tphy_wrdata(%d)",clkticks_wrdata,`tphy_wrdata));                        
-                        end
-                        else 
-                        begin
-                            clkticks_wrdata=0;
-                        end
-                    end
-                    if(trans.wrdata[i] == 64'b0)
-                    begin
-                        if(`tphy_wrdatadelay != clkticks_wrdata_delay)
-                        begin
-                            `uvm_error(get_name(), $psprintf("The gap between the write enable and the write data completes transfer (%d)is not equal to tphy_wrdatadelay(%d)",clkticks_wrdata_delay,`tphy_wrdatadelay));                        
-                        end
-                        else 
-                        begin
-                            clkticks_wrdata_delay=0;
-                        end
-                    end
-                end
-            end
-        end
+        // logic [1:0]temp_wrdata_cs[0:3] = '{default:0};
+        // trans = new();
+        // forever begin
+        //     foreach(trans.wck_en[i])
+        //     begin
+        //         if(trans.wck_en[i] != 1'b0) 
+        //         begin
+        //             @(vif.mp_mon.cb_mon)
+        //             begin
+        //                ++clkticks_wcktoggle;
+        //                ++clkticks_wckfast_toggle;
+        //             end
+        //             @(vif.mp_mon.cb_mon);
+        //             if(trans.wck_toggle[i]==2'b10)
+        //             begin
+        //                 if(`twck_toggle != clkticks_wcktoggle)
+        //                 begin
+        //                     `uvm_error(get_name(), $psprintf("The time between the wck enable to toggle command (%d)is not equal to twck_toggle(%d)",clkticks_wcktoggle,`twck_toggle));                        
+        //                 end
+        //                 else
+        //                 begin
+        //                     clkticks_wcktoggle=0;
+        //                 end 
+        //             end
+        //             if(trans.wck_toggle[i]==2'b11)
+        //             begin
+        //                 if(`twck_fast_toggle != clkticks_wckfast_toggle)
+        //                 begin
+        //                     `uvm_error(get_name(), $psprintf("The time between the wck toggle command to wck fast toggle command (%d)is not equal to twck_toggle(%d)",clkticks_wckfast_toggle,`twck_fast_toggle));                        
+        //                 end
+        //                 else
+        //                 begin
+        //                     clkticks_wckfast_toggle=0;
+        //                 end
+        //             end
+        //         end
+        //     end
+        //     /*checks for all write data timing parameters*/
+        //     foreach(trans.address[i])
+        //     begin
+        //         if(trans.address[i] != 14'b0) 
+        //         begin
+        //             @(vif.mp_mon.cb_mon)
+        //             begin
+        //                 ++clkticks_wrcsgab;
+        //                 ++clkticks_wrcslat;
+        //                 ++clkticks_wrdata;
+        //                 ++clkticks_wrdatalat;
+        //                 ++clkticks_wrdata_delay;
+        //             end
+        //             @(vif.mp_mon.cb_mon);
+        //             if(trans.wck_cs[i] != 2'bxx)
+        //             begin
+        //                 if(`twck_toggle_cs != clkticks_wcktoggle_cs)
+        //                 begin
+        //                    `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the write cs (%d)is not equal to tphy_wrcslat(%d)",clkticks_wcktoggle_cs,`tphy_wrcslat));                         
+        //                 end
+        //                 else 
+        //                 begin
+        //                     clkticks_wcktoggle_cs=0;
+        //                 end
+        //             end
+        //             if(trans.wrdata_cs[i] != 2'b0)  
+        //             begin
+        //                 temp_wrdata_cs[i] = trans.wrdata_cs[i];
+        //                 if(`tphy_wrcslat != clkticks_wrcslat) 
+        //                 begin
+        //                     `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the write cs (%d)is not equal to tphy_wrcslat(%d)",clkticks_wrcslat,`tphy_wrcslat));                        
+        //                 end
+        //                 else 
+        //                 begin
+        //                     clkticks_wrcslat=0;
+        //                 end
+        //                 if(`tphy_wrlat != clkticks_wrdatalat) 
+        //                 begin
+        //                     `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the write en (%d)is not equal to tphy_wrlat(%d)",clkticks_wrdatalat,`tphy_wrlat));                        
+        //                 end
+        //                 else 
+        //                 begin
+        //                     clkticks_wrdatalat=0;
+        //                 end    
+        //             end
+        //             if(trans.address[i] != 14'b0)
+        //             begin
+        //                 if(trans.wrdata_cs[i] != 2'b0) 
+        //                 begin
+        //                     if(temp_wrdata_cs[i] != trans.wrdata_cs[i])
+        //                     begin
+        //                         if(`tphy_wrcsgap != clkticks_wrcsgab) 
+        //                         begin
+        //                             `uvm_error(get_name(), $psprintf("The gap between the dfi command write and the next dfi command write if changeing cs (%d)is not equal to tphy_wrcsgap(%d)",clkticks_wrcsgab,`tphy_wrcsgap));                        
+        //                         end
+        //                         else 
+        //                         begin
+        //                             clkticks_wrcsgab=0;
+        //                         end
+        //                     end
+        //                 end
+        //             end
+        //         end
+        //         if(trans.wrdata_en[i] != 4'b0) 
+        //         begin
+        //             @(vif.mp_mon.cb_mon)
+        //             begin
+        //                 ++clkticks_wrcsgab;
+        //                 ++clkticks_wrcslat;
+        //                 ++clkticks_wrdata;
+        //                 ++clkticks_wrdatalat;
+        //                 ++clkticks_wrdata_delay;
+        //             end 
+        //             if(trans.wrdata[i] != 64'b0)
+        //             begin
+        //                 if(`tphy_wrdata != clkticks_wrdata)
+        //                 begin
+        //                     `uvm_error(get_name(), $psprintf("The gap between the write enable and the write data (%d)is not equal to tphy_wrdata(%d)",clkticks_wrdata,`tphy_wrdata));                        
+        //                 end
+        //                 else 
+        //                 begin
+        //                     clkticks_wrdata=0;
+        //                 end
+        //             end
+        //             if(trans.wrdata[i] == 64'b0)
+        //             begin
+        //                 if(`tphy_wrdatadelay != clkticks_wrdata_delay)
+        //                 begin
+        //                     `uvm_error(get_name(), $psprintf("The gap between the write enable and the write data completes transfer (%d)is not equal to tphy_wrdatadelay(%d)",clkticks_wrdata_delay,`tphy_wrdatadelay));                        
+        //                 end
+        //                 else 
+        //                 begin
+        //                     clkticks_wrdata_delay=0;
+        //                 end
+        //             end
+        //         end
+        //     end
+        // end
     endtask
 
     
@@ -705,16 +705,16 @@ class wav_DFI_monitor extends uvm_monitor;
     endtask
 
     task automatic monitor_write();                 
-        forever begin         
-            @(vif.mp_mon.cb_mon) 
-            foreach(vif.mp_mon.cb_mon.wrdata_en[i])
-            begin      
-                if (vif.mp_mon.cb_mon.wrdata_en[i]) begin
-                    `uvm_info(get_name(), "write transaction is detected", UVM_MEDIUM);
-                    handle_write();
-                end
-            end
-        end    
+        // forever begin         
+        //     @(vif.mp_mon.cb_mon) 
+        //     foreach(vif.mp_mon.cb_mon.wrdata_en[i])
+        //     begin      
+        //         if (vif.mp_mon.cb_mon.wrdata_en[i]) begin
+        //             `uvm_info(get_name(), "write transaction is detected", UVM_MEDIUM);
+        //             handle_write();
+        //         end
+        //     end
+        // end    
     endtask
 
     task automatic monitor_initiailization();

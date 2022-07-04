@@ -1044,15 +1044,15 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 					endcase
 					if(ch0_vif.DQ !== 16'hzzzz) begin 
 						counter += 1;
-						`uvm_info("gp_LPDDR5_monitor", $psprintf("counter = %d", counter), UVM_NONE)
+						//`uvm_info("gp_LPDDR5_monitor", $psprintf("counter = %d", counter), UVM_NONE)
 					end
-					`uvm_info("gp_LPDDR5_monitor", $psprintf("DQ = %h", ch0_vif.DQ), UVM_NONE)
-					`uvm_info("gp_LPDDR5_monitor", $psprintf("next_CA %b", ch0_vif.ca), UVM_NONE)
-					`uvm_info("gp_LPDDR5_monitor", next_CA.name, UVM_NONE)
+					//`uvm_info("gp_LPDDR5_monitor", $psprintf("DQ = %h", ch0_vif.DQ), UVM_NONE)
+					//`uvm_info("gp_LPDDR5_monitor", $psprintf("next_CA %b", ch0_vif.ca), UVM_NONE)
+					//`uvm_info("gp_LPDDR5_monitor", next_CA.name, UVM_NONE)
 				end 
 				@(negedge ch0_vif.ck_t) begin
 					//TODO COMPLETE ASSIGNMENT OF ALL VARIABLES
-					ziad_checks();
+					//ziad_checks();
 					case(next_CA)
 						PRE: begin
 							prev_CA = CA;

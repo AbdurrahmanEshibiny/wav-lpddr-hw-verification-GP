@@ -213,6 +213,18 @@ interface gp_LPDDR5_channel_intf(
 	assign DQ = {	dq1_dq7,dq1_dq6,dq1_dq5,dq1_dq4,dq1_dq3,dq1_dq2,dq1_dq1,dq1_dq0,
 					dq0_dq7,dq0_dq6,dq0_dq5,dq0_dq4,dq0_dq3,dq0_dq2,dq0_dq1,dq0_dq0
 				};
+				
+	logic [7:0] clocks_ch0;
+	assign clocks_ch0 = {
+	dq0_wck_t,
+    dq1_wck_t,
+    dq0_wck_c,
+    dq1_wck_c,
+    dq0_dqs_t,
+    dq1_dqs_t,
+    dq0_dqs_c,
+    dq1_dqs_c
+	};
 	//assertions layer
 	//NOTE `uvm_error needs to be tested outside of uvm class
 	
