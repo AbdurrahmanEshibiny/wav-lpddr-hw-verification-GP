@@ -535,6 +535,7 @@ gp_LPDDR5_channel_intf ch1_intf(
 );
 
 initial begin
+    //$monitor("%0t the ch0 intf = %b dq=%h", $time, ch0_intf.clocks_ch0, ch0_intf.DQ);
     $timeformat(-9, 0, " ns", 10);
     //uvm_config_db #(virtual wav_AHB_if)::set(uvm_root::get(), "*tb.AHB_agent*" , "AHB_vif", AHB_if);
     //uvm_config_db #(virtual ahb_if)::set(uvm_root::get(), "*tb.ahb_agent*" , "ahb_if", AHB_if);
