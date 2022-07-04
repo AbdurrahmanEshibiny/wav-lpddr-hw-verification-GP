@@ -120,18 +120,18 @@ class wav_DFI_driver extends uvm_driver; // use default value to adhere to the w
             vif.mp_drv.cb_drv.cke[0] <= 2'b01;
             vif.mp_drv.cb_drv.cke[2] <= 2'b01;
             //wck
-            vif.mp_drv.cb_drv.wck_cs[0] <= 2'b01; 
-            vif.mp_drv.cb_drv.wck_cs[1] <= 2'b01;  
-            vif.mp_drv.cb_drv.wck_cs[2] <= 2'b01; 
-            vif.mp_drv.cb_drv.wck_cs[3] <= 2'b01;  
+            vif.mp_drv.cb_drv.wck_cs[0] <= 2'b11; 
+            vif.mp_drv.cb_drv.wck_cs[1] <= 2'b11;  
+            vif.mp_drv.cb_drv.wck_cs[2] <= 2'b11; 
+            vif.mp_drv.cb_drv.wck_cs[3] <= 2'b11;  
             vif.mp_drv.cb_drv.wck_en[0] <= 1; 
             vif.mp_drv.cb_drv.wck_en[1] <= 1;
             vif.mp_drv.cb_drv.wck_en[2] <= 1; 
             vif.mp_drv.cb_drv.wck_en[3] <= 1;
-            vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b00;
-            vif.mp_drv.cb_drv.wck_toggle[1] <= 2'b00;
-            vif.mp_drv.cb_drv.wck_toggle[2] <= 2'b00;
-            vif.mp_drv.cb_drv.wck_toggle[3] <= 2'b00;
+            vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b01;
+            vif.mp_drv.cb_drv.wck_toggle[1] <= 2'b01;
+            vif.mp_drv.cb_drv.wck_toggle[2] <= 2'b01;
+            vif.mp_drv.cb_drv.wck_toggle[3] <= 2'b01;
             
         @(posedge vif.mp_drv.cb_drv);
             //ACT1
@@ -176,6 +176,7 @@ class wav_DFI_driver extends uvm_driver; // use default value to adhere to the w
             vif.mp_drv.cb_drv.address[2] <= 14'b0000000_0000000;
 
 
+           #100ns;
            
         
            
