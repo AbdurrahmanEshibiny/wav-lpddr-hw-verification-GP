@@ -71,6 +71,7 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
             vif.address[2] <= {3'b000, random.ba};
         end     
 
+		@(posedge vif.clock);
         vif.address[0] <= 0;
         vif.address[2] <= 0;
         
@@ -81,7 +82,10 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
         vif.address[0] <= 7'b0111000;
         vif.address[2] <= 7'b1111000;
 
-
+		@(posedge vif.clock);
+        vif.address[0] <= 0;
+        vif.address[2] <= 0;
+		
         //////////////////////////Deep Sleep Entry with power down/////////////////////////////////
         repeat(4) @(posedge vif.clock);
         @(posedge vif.clock);
@@ -134,6 +138,9 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
         `uvm_info(get_name(), "Deep Sleep Exit", UVM_MEDIUM);
         vif.address[0] <= 7'b0101000;
 
+		@(posedge vif.clock);
+		vif.address[0] <= 0;
+        vif.address[2] <= 0;
         repeat(4) @(posedge vif.clock); 
     endtask
 
