@@ -277,3 +277,16 @@ task t_dfi_ctrlupd(output int err, input bit doInit = 1);
         #10ns;
     end
 endtask
+
+
+virtual wav_DFI_if vif;
+
+task automatic init_vif;
+    if (!uvm_config_db#(virtual wav_DFI_if)::get(uvm_root::get(), "*", "DFI_vif", vif)) begin
+        `uvm_fatal("NOVIF",{"virtual interface must be set for: ",get_full_name(),".DFI_vif"});
+    end
+endtask
+
+task automatic wait_dfi_cycles(int count);
+    repeat(count) @(posedge vif.clock);
+endtask
