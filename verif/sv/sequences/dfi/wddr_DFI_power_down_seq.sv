@@ -58,21 +58,24 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
             1) at posedge send all bank refresh command
             2) at nededge randomize the bank address and send it on the CA Bus
         */
-        repeat(4) @(posedge vif.clock);
+        repeat(10) @(posedge vif.clock);
         @(posedge vif.clock);
         `uvm_info(get_name(), "Per Bank refresh ", UVM_MEDIUM);
-        vif.address[0] <= 0;
-        vif.address[2] <= 7'b0111000;
+        vif.address[0] <= 7'b0111000;
+        vif.address[2] <= 0;
         for(int i = 0; i < 16; i++) begin
             assert(random.randomize());
             @(posedge vif.clock);
             `uvm_info(get_name(), $psprintf("Per Bank refresh, bank=%0h", random.ba), UVM_MEDIUM);
-            vif.address[0] <= {7'b000, random.ba};
-            vif.address[2] <= 7'b0111000;
+            vif.address[0] <= 7'b0111000;
+            vif.address[2] <= {3'b000, random.ba};
         end     
+
+        vif.address[0] <= 0;
+        vif.address[2] <= 0;
         
         //////////////////////////All Bank Refresh /////////////////////////////////
-        repeat(4) @(posedge vif.clock);
+        repeat(10) @(posedge vif.clock);
         @(posedge vif.clock);
         `uvm_info(get_name(), "All Bank refresh ", UVM_MEDIUM);
         vif.address[0] <= 7'b0111000;
@@ -95,9 +98,12 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
         `uvm_info(get_name(), "Deep Sleep Exit with power down", UVM_MEDIUM);
         vif.cs[0] <= 2'b10;
         vif.cs[2] <= 2'b10;
+
+        vif.address[0] <= 0;
+        vif.address[2] <= 0;
         
         //////////////////////////Deep Sleep Entry with self refresh /////////////////////////////////
-        repeat(4) @(posedge vif.clock);
+        repeat(10) @(posedge vif.clock);
         @(posedge vif.clock);
         `uvm_info(get_name(), "Deep Sleep Entry with self refresh", UVM_MEDIUM);
         vif.address[0] <= 7'b1101000;
@@ -112,9 +118,12 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
         vif.cs[0] <= 2'b10;
         vif.cs[2] <= 2'b10;
 
+        vif.address[0] <= 0;
+        vif.address[2] <= 0;
+
 
         //////////////////////////Deep Sleep Entry  /////////////////////////////////
-        repeat(4) @(posedge vif.clock);        
+        repeat(10) @(posedge vif.clock);        
         @(posedge vif.clock);
         `uvm_info(get_name(), "Deep Sleep Entry", UVM_MEDIUM);
         vif.address[0] <= 7'b1101000;
