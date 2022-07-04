@@ -134,14 +134,14 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
         vif.address[2] <= 7'b0000000;
         
         //////////////////////////Deep Sleep Exit /////////////////////////////////
-        repeat(4) @(posedge vif.clock);  
+        @(posedge vif.clock);
+        vif.address[0] <= 7'b0000000;
+        vif.address[2] <= 7'b0000000;
+        repeat(4)  @(posedge vif.clock);
         `uvm_info(get_name(), "Deep Sleep Exit", UVM_MEDIUM);
         vif.address[0] <= 7'b0101000;
 
-		@(posedge vif.clock);
-		vif.address[0] <= 0;
-        vif.address[2] <= 0;
-        repeat(4) @(posedge vif.clock); 
+        repeat(2) @(posedge vif.clock); 
     endtask
 
 endclass
