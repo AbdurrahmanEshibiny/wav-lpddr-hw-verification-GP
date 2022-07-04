@@ -11,6 +11,7 @@ class wddr_DFI_write_seq extends wddr_base_seq;
         int err;
         super.body();
         ddr_boot(err);
+        set_dfi_wck_mode(1);
         if (err != 0) begin
             `uvm_error(get_name(), $sformatf("sequence err_cnt = %d ", err_cnt));
         end
