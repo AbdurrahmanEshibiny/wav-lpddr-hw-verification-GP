@@ -98,7 +98,7 @@ class wav_DFI_driver extends uvm_driver; // use default value to adhere to the w
 			forever begin
 				@(posedge vif.mp_drv.cb_drv);
 				++timer;
-				if (vif.mp_drv.cb_drv.ctrlupd_ack == 0 || timer > `tctrlupd_min)
+				if (vif.mp_drv.cb_drv.ctrlupd_ack == 0 || timer >= trans.cyclesCount)
 					break;
 			end
 			
