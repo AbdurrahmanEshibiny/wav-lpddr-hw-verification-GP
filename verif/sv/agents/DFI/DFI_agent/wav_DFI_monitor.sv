@@ -101,6 +101,8 @@ class wav_DFI_monitor extends uvm_monitor;
         int timestamp;
    } read_slice_st;
 
+
+/*
     task automatic serialize_read(
         ref read_slice_st slices[$]
     );
@@ -300,7 +302,14 @@ class wav_DFI_monitor extends uvm_monitor;
         end
     endtask
 
+*/
+
     task monitor_status();
+        int init_complete_cntr;
+        int t_init_start;
+        bit is_PHY_accept;
+        string msg;
+        string freq_details;
         forever begin
             @(vif.mp_mon.cb_mon) begin
                 // TODO: add detection `uvm_info
@@ -309,13 +318,13 @@ class wav_DFI_monitor extends uvm_monitor;
                     trans.freq_fsp = vif.mp_mon.cb_mon.freq_fsp;
                     trans.freq_ratio = vif.mp_mon.cb_mon.freq_ratio;
                     trans.frequency = vif.mp_mon.cb_mon.frequency;
-                    int init_complete_cntr = 0;
+                    init_complete_cntr = 0;
                     // TODO: modify this timing parameter
-                    int t_init_start = 0;
-
-                    bit is_PHY_accept = 0;
-                    string msg;
-                    string freq_details = $sformatf (
+                    
+                      
+                    t_init_start = 0;
+                    is_PHY_accept = 0;
+                    freq_details = $sformatf (
                         "Frequency# = %5d, ", trans.frequency,
                         "Freq Ratio = %1d, ", trans.freq_ratio,
                         "FSP# = %1d", trans.freq_fsp

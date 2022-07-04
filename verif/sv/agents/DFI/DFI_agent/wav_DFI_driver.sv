@@ -1,3 +1,7 @@
+// import wav_DFI_pkg::*;
+`include "wddr_config.sv"
+`include "wav_DFI_transfer.sv"
+
 class wav_DFI_driver extends uvm_driver;
 // use default value to adhere to the wavious standard, not #(wav_DFI_transfer); 
 
@@ -10,7 +14,8 @@ class wav_DFI_driver extends uvm_driver;
 
     function new (string name = "wav_DFI_driver", uvm_component parent=null);
         super.new(name, parent);
-        uvm_config_db#(wddr_config)::get(this, "", "cfg_obj", cfg);
+        // FIXME: we need to solve the cfg problem
+        uvm_config_db#(wddr_config)::get(null, "*", "cfg_obj", cfg);
     endfunction
 
     // function void connect_phase(uvm_phase phase);
@@ -19,6 +24,7 @@ class wav_DFI_driver extends uvm_driver;
 
     virtual task run_phase(uvm_phase phase);
         driver_run_phase = phase;
+        
         fork
             get_and_drive();
             respond_to_phyupd();
@@ -133,45 +139,53 @@ class wav_DFI_driver extends uvm_driver;
     endtask
 
     task automatic drive_status(wav_DFI_status_transfer trans);
-        vif.mp_drv.cb_drv.init_start <= 0;
-        vif.mp_drv.cb_drv.freq_fsp <= trans.freq_fsp;
-        vif.mp_drv.cb_drv.freq_ratio <= freq_ratio;
-        vif.mp_drv.cb_drv.frequency <= frequency;
-        @(vif.mp_drv.cb_drv);
-        vif.mp_drv.cb_drv.init_start <= 1;
-        @(vif.mp_drv.cb_drv);
+        string msg;
+        string freq_details;
+        int tinit_start;
+        vif.cb_drv.init_start <= 0;
+        vif.cb_drv.freq_fsp <= trans.freq_fsp;
+        vif.cb_drv.freq_ratio <= trans.freq_ratio;
+        vif.cb_drv.frequency <= trans.frequency;
+        @(vif.cb_drv);
+
+        while (!vif.cb_drv.init_complete);
+        vif.cb_drv.init_start <= 1;
+
+        freq_details = $sformatf (
+            "Frequency# = %0d, ", trans.frequency,
+            "Freq Ratio = %0d, ", trans.freq_ratio,
+            "FSP# = %0d", trans.freq_fsp
+        );
+        tinit_start = 1;
+
+        while (tinit_start != 0) begin
+            @(vif.cb_drv) begin
+                if (vif.mp_drv.cb_drv.init_complete == 1'b0) begin
+                    break;
+                end
+            end
+            tinit_start++;
+        end
+        // vif.cb_drv.init_start <= 0;
+
+        if (tinit_start == 0) begin
+            msg = "PHY rejects new freq setting";
+        end else begin
+            msg = $sformatf (
+                "PHY accepts new freq setting, tinit_start = %d", tinit_start);
+        end
+        `uvm_info (get_name(), {msg, "\n", freq_details}, UVM_MEDIUM)
+        
 
         // need to drive dfi_cke and dfi_reset_n
         // until the dfi_init_complete signal is asserted.
 
 
         /*
-        string msg;
-        string freq_details = $sformatf (
-            "Frequency# = %5d, ", trans.frequency,
-            "Freq Ratio = %1d, ", trans.freq_ratio,
-            "FSP# = %1d", trans.freq_fsp
-        );
+        
         // FIXME: WE ARE TESTING FOR THE FREQUENCIES HERE
         // TODO: print the count of the timing if it succeeds
-        int t_init_start = 1;
-        while (t_init_start != 0) begin
-            if (vif.mp_drv.cb_drv.init_complete == 1'b0) begin
-                break;
-            end
-            t_init_start++;
-            @(vif.mp_drv.cb_drv);
-        end
-        if (t_init_start == 0) begin
-            msg = "PHY rejects new freq setting";
-        end else begin
-            msg = "PHY accepts new freq setting";
-        end
-        `uvm_info (
-            get_name(), {msg, "\n", freq_details}, UVM_MEDIUM
-        )
         */
-
     endtask
 
     // TODO: we need to declare variables for the current phase and the data
@@ -204,89 +218,104 @@ class wav_DFI_driver extends uvm_driver;
     // to send multiple consecutive read instructions. the above idea
     // should solve it
 
-    task drive_read (wav_DFI_read_transfer trans);
-    // we will assume the frequency ratio is 1:1 for now
-        `uvm_info(get_name(), "Driving read", UVM_MEDIUM);
-        foreach (trans.cmd_mc[i]) begin
-            @(vif.mp_drv.cb_drv) begin
-                vif.mp_drv.cb_drv.address[0] <= trans.cmd_mc[i];
+    task drive_data (dfi_data_seq_item trans);
+        // we will assume the frequency ratio is 1:1 for now
+        // `uvm_info(get_name(), "Driving data", UVM_MEDIUM);
+        data_trans curr_rw_item;
+        data_trans next_rw_item;
+        dfi_cmd_t cmd_;
+        int rd_cmd_dly0;
+        int rd_cmd_dly1;
+        int j;
+        for (j = 0; j < trans.data_items.size(); j++) begin
+            curr_rw_item = trans.data_items[j];
+            // write preamble to address bus
+            foreach (curr_rw_item.preamble[i]) begin
+                @(vif.mp_drv.cb_drv) begin
+                    vif.mp_drv.cb_drv.address[0] <= curr_rw_item.preamble[i];
+                end
+            end
+            // preamble done. choose which instruction to make
+            if (curr_rw_item.dir == read_dir) begin
+                cmd_ = DFI_RD16;
+                cmd_[6:4] = curr_rw_item.address.col[5:3];
+                cmd_[10:7] = curr_rw_item.address.ba;
+                cmd_[12:11] = curr_rw_item.address.col[2:1];
+                cmd_[3] = curr_rw_item.address.col[0];
+                cmd_[13] = 1;
+                if (j != (trans.data_items.size() - 1)) begin
+                    next_rw_item = trans.data_items[j+1];
+                end
+                fork
+                    begin
+                        // write read instruction then NOP
+                        // TODO: handle the problem of consectuive
+                        // reads writes
+                        @(vif.mp_drv.cb_drv) begin
+                            vif.mp_drv.cb_drv.address[0] <= cmd_;                            
+                        end
+                        if (j == (trans.data_items.size() - 1)) begin
+                            @(vif.mp_drv.cb_drv) begin
+                                vif.mp_drv.cb_drv.address[0] <= DFI_NOP;
+                            end
+                        end else begin
+                            if (next_rw_item.dir == read_dir) begin
+                                rd_cmd_dly0 =
+                                curr_rw_item.data_len
+                                - next_rw_item.preamble.size() - 1;
+                                if (rd_cmd_dly0 > 0) begin
+                                    vif.mp_drv.cb_drv.address[0] <= DFI_NOP;
+                                    repeat (rd_cmd_dly0) begin
+                                        @(vif.mp_drv.cb_drv);
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    begin
+                        repeat (cfg.tphy_rdcslat) begin
+                            @(vif.mp_drv.cb_drv);
+                        end
+                        vif.mp_drv.cb_drv.rddata_cs[0] <= curr_rw_item.cs;
+                    end
+                    begin
+                        repeat (cfg.trddata_en) begin
+                            @(vif.mp_drv.cb_drv);
+                        end
+                        vif.mp_drv.cb_drv.rddata_en[0] <= 1;
+                        // cycles needed for rddata_en to stay 1
+                        repeat (curr_rw_item.data_len) begin
+                            @(vif.mp_drv.cb_drv);
+                        end
+                        if (j != (trans.data_items.size() - 1)) begin
+                            next_rw_item = trans.data_items[j+1];
+                            rd_cmd_dly1 =
+                            curr_rw_item.data_len
+                            - next_rw_item.preamble.size() - 1;
+                            if (rd_cmd_dly1 < 0) begin
+                                vif.mp_drv.cb_drv.rddata_en[0] <= 0;
+                            end
+                        end else begin
+                            vif.mp_drv.cb_drv.rddata_en[0] <= 0;
+                        end
+                    end      
+                join_any
             end
         end
-        // preamble and read instruction is done
-        // next put dfi_address in NOP
-        @(vif.mp_drv.cb_drv) begin
-            vif.mp_drv.cb_drv.address[0] <= 14'bxxxxxxx_0000000;
-        end
-        // assign the pins of the read interface
-        fork
-            begin
-                // -2 because we already skipped a cycle and because we want to
-                // set the signal on this cycle not the next cycle (the
-                // clocking block will delay the assignment by a small amount of
-                // time such that the assignment is captured on the next cycle)
-                repeat ((cfg.trddata_en)-2) begin
-                    @(vif.mp_drv.cb_drv);
-                end
-                vif.vif.mp_drv.cb_drv.rddata_en <= 1;
-
-                // cycles needed for rddata_en to stay 1
-                repeat (trans.rd.size()-1) begin
-                    @(vif.mp_drv.cb_drv);
-                end
-                vif.vif.mp_drv.cb_drv.rddata_en <= 0;
-            end
-            begin
-                repeat ((cfg.tphy_rdcslat)-2) begin
-                    @(vif.mp_drv.cb_drv);
-                end
-                vif.vif.mp_drv.cb_drv.rddata_cs[0] <= trans.cs;
-            end
-        join
     endtask
 
     //there are different types of DFI transactions 
     //this task checks the tr_type in the transaction and call the corresponding task 
-<<<<<<< HEAD
-    task drive_transaction(wav_DFI_transfer trans);
-        wav_DFI_lp_transfer lp_trans;
-        wav_DFI_update_transfer update_trans;
-        wav_DFI_write_transfer write_trans;
-        wav_DFI_status_transfer status_trans;
-        wav_DFI_read_transfer read_trans;
-    //add the remaining interface cases
-        driver_run_phase.raise_objection(this, "start driving transaction");
-        case(trans.tr_type)
-            lp: begin
-                $cast(lp_trans, trans);
-                drive_lp(lp_trans);
-            end 
-            update: begin     
-                $cast(update_trans, trans);
-                drive_ctrlupd(update_trans); 
-            end
-            write: begin     
-                $cast(write_trans, trans);
-                drive_write(write_trans); 
-            end
-            // status_freq: begin
-               //  $cast(status_trans, trans);
-                // drive_status;
-            // end
-            read: begin
-                $cast(read_trans, trans);
-                drive_read(read_trans);
-            end
-        endcase    
-        driver_run_phase.drop_objection(this, "done driving transaction");
-=======
+
     task automatic drive_transaction(wav_DFI_transfer trans);
         `uvm_info(get_name(), "write xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", UVM_MEDIUM); 
         trans.print();
-		fork 
-		begin
+		fork begin
 			wav_DFI_lp_transfer lp_trans;
 			wav_DFI_update_transfer update_trans;
 			wav_DFI_write_transfer write_trans;
+            dfi_data_seq_item read_trans;
+            wav_DFI_status_transfer status_trans;
 		//add the remaining interface cases
 			driver_run_phase.raise_objection(this, "start driving transaction");
 			case(trans.tr_type)
@@ -302,11 +331,18 @@ class wav_DFI_driver extends uvm_driver;
 					$cast(write_trans, trans);
 					drive_write(write_trans); 
 				end
-			endcase    
+                status_freq: begin
+                    $cast(status_trans, trans);
+                    drive_status(status_trans);
+                end
+                data: begin
+                    $cast(read_trans, trans);
+                    drive_data(read_trans);
+                end
+			endcase
 			driver_run_phase.drop_objection(this, "done driving transaction");
 		end
         join_none
->>>>>>> 564243e49a4943e81be71a9eb17d337decd6aa7b
     endtask
 
     //monitors requests from the PHY on phyupd interface and grant them

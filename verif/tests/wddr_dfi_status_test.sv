@@ -15,13 +15,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 *********************************************************************************/
-`ifndef WDDR_DFI_STATUS_TEST
-`define WDDR_DFI_STATUS_TEST
+// `ifndef WDDR_DFI_STATUS_TEST
+// `define WDDR_DFI_STATUS_TEST
 
 // ****************************************************************************
 // Class : baseTest
 // Desc. : Send a basic DFI frame
 // ****************************************************************************
+/*
 class wddr_dfi_status_test extends wddr_base_test;
 
     //cdnDfimcUvmUserSve dfimcSve0;
@@ -72,4 +73,7 @@ class wddr_dfi_status_test extends wddr_base_test;
 
 endclass : wddr_dfi_status_test
 
-`endif
+*/
+
+
+// `endif

@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 *********************************************************************************/
+`ifndef WDDR_CONFIG_
+`define WDDR_CONFIG_
 
 class wddr_config extends uvm_object;
 
@@ -260,3 +262,5 @@ class wddr_config extends uvm_object;
     endfunction
 
 endclass
+
+`endif
