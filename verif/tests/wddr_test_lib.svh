@@ -128,3 +128,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 `include "tests/dfi/wddr_DFI_access_control_regs_test.sv"
 `include "tests/dfi/wddr_DFI_power_down_test.sv"
 `include "tests/dfi/wddr_DFI_control_with_regs_test.sv"
+`include "tests/dfi/wddr_DFI_wck_test.sv"
