@@ -77,6 +77,7 @@ class wav_DFI_driver extends uvm_driver; // use default value to adhere to the w
         
     //drive ctrlupd interface according to the specified transaction
     task automatic drive_ctrlupd(wav_DFI_update_transfer trans);   
+		int timer = 0;
         `uvm_info(get_name(), "Driving ctrlupd", UVM_MEDIUM);              
         @(posedge vif.mp_drv.cb_drv)         
         if (trans.is_ctrl) begin
@@ -85,9 +86,21 @@ class wav_DFI_driver extends uvm_driver; // use default value to adhere to the w
             // if (trans.cyclesCount > 0) begin
             
 			`uvm_info(get_name(), "wait for ctrlupd_ack goes HIGH", UVM_MEDIUM);
-            wait(vif.mp_drv.cb_drv.ctrlupd_ack == 1);   
-			`uvm_info(get_name(), "wait for ctrlupd_ack goes LOW", UVM_MEDIUM);
-            wait(vif.mp_drv.cb_drv.ctrlupd_ack == 0);
+			forever begin
+				@(posedge vif.mp_drv.cb_drv);
+				++timer;
+				if (vif.mp_drv.cb_drv.ctrlupd_ack == 1)
+					break;
+			end
+            //wait(vif.mp_drv.cb_drv.ctrlupd_ack == 1);   
+			`uvm_info(get_name(), "wait for ctrlupd_ack goes LOW, or timer to goes off", UVM_MEDIUM);
+            //wait(vif.mp_drv.cb_drv.ctrlupd_ack == 0);
+			forever begin
+				@(posedge vif.mp_drv.cb_drv);
+				++timer;
+				if (vif.mp_drv.cb_drv.ctrlupd_ack == 0 || timer > `tctrlupd_min)
+					break;
+			end
 			
 			vif.mp_drv.cb_drv.ctrlupd_req <= 0;
 			`uvm_info(get_name(), "done resetting ctrlupd", UVM_MEDIUM);  
