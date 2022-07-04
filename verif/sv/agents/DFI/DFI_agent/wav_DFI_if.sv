@@ -41,9 +41,9 @@ interface wav_DFI_if(input clock, input reset);
     
 
 	//wck
-    logic [1:0]                wck_cs [0:3] = '{default:0};
-    logic                      wck_en [0:3] = '{default:0};
-    logic [1:0]                wck_toggle [0:3] = '{default:0};
+    logic [1:0]                wck_cs [0:3];
+    logic                      wck_en [0:3];
+    logic [1:0]                wck_toggle [0:3];
     
     // read
     logic [63:0]               rddata [0:3] = '{default:0};
