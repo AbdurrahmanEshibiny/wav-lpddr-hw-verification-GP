@@ -528,13 +528,21 @@ gp_LPDDR5_channel_intf ch0_intf(
     .ddr_test()
 );
 
+gp_LPDDR5_channel_intf ch1_intf(
+    .ddr_reset_n(pad_ddr_reset),
+    .ddr_rext(),
+    .ddr_test()
+);
+
 initial begin
+    //$monitor("%0t the ch0 intf = %b dq=%h", $time, ch0_intf.clocks_ch0, ch0_intf.DQ);
     $timeformat(-9, 0, " ns", 10);
     //uvm_config_db #(virtual wav_AHB_if)::set(uvm_root::get(), "*tb.AHB_agent*" , "AHB_vif", AHB_if);
     //uvm_config_db #(virtual ahb_if)::set(uvm_root::get(), "*tb.ahb_agent*" , "ahb_if", AHB_if);
     uvm_config_db#(virtual wav_APB_if)::set(uvm_root::get(), "*", "APB_vif", APB_if);
     uvm_config_db#(virtual wav_DFI_if)::set(uvm_root::get(), "*", "DFI_vif", DFI_if);
     uvm_config_db#(virtual gp_LPDDR5_channel_intf)::set(uvm_root::get(), "*", "ch0_vif", ch0_intf);
+    uvm_config_db#(virtual gp_LPDDR5_channel_intf)::set(uvm_root::get(), "*", "ch1_vif", ch1_intf);
     uvm_config_db#(virtual clock_reset_intf)::set(uvm_root::get(), "*", "clk_rst_vif", clk_rst_if);
     run_test();
 end
@@ -1412,46 +1420,46 @@ ddr_phy_1x32 u_phy_1x32 (
     .pad_ch0_ddr_dq1_dq7             (ch0_intf.dq1_dq7),
     .pad_ch0_ddr_dq1_dbim            (ch0_intf.dq1_dbim),
 
-    .pad_ch1_ddr_ca_ca0              (/*OPEN*/),
-    .pad_ch1_ddr_ca_ca1              (/*OPEN*/),
-    .pad_ch1_ddr_ca_ca2              (/*OPEN*/),
-    .pad_ch1_ddr_ca_ca3              (/*OPEN*/),
-    .pad_ch1_ddr_ca_ca4              (/*OPEN*/),
-    .pad_ch1_ddr_ca_ca5              (/*OPEN*/),
-    .pad_ch1_ddr_ca_ca6              (/*OPEN*/),
-    .pad_ch1_ddr_ca_cs0              (/*OPEN*/),
-    .pad_ch1_ddr_ca_cs1              (/*OPEN*/),
+    .pad_ch1_ddr_ca_ca0              (ch1_intf.ca0  ),
+    .pad_ch1_ddr_ca_ca1              (ch1_intf.ca1  ),
+    .pad_ch1_ddr_ca_ca2              (ch1_intf.ca2  ),
+    .pad_ch1_ddr_ca_ca3              (ch1_intf.ca3  ),
+    .pad_ch1_ddr_ca_ca4              (ch1_intf.ca4  ),
+    .pad_ch1_ddr_ca_ca5              (ch1_intf.ca5  ),
+    .pad_ch1_ddr_ca_ca6              (ch1_intf.ca6  ),
+    .pad_ch1_ddr_ca_cs0              (ch1_intf.cs0  ),
+    .pad_ch1_ddr_ca_cs1              (ch1_intf.cs1  ),
     .pad_ch1_ddr_ca_cke0             (/*OPEN*/),
     .pad_ch1_ddr_ca_cke1             (/*OPEN*/),
-    .pad_ch1_ddr_ca_ck_c             (/*OPEN*/),
-    .pad_ch1_ddr_ca_ck_t             (/*OPEN*/),
+    .pad_ch1_ddr_ca_ck_c             (ch1_intf.ck_c),
+    .pad_ch1_ddr_ca_ck_t             (ch1_intf.ck_t),
 
-    .pad_ch1_ddr_dq0_wck_t           (/*OPEN*/),
-    .pad_ch1_ddr_dq1_wck_t           (/*OPEN*/),
-    .pad_ch1_ddr_dq0_wck_c           (/*OPEN*/),
-    .pad_ch1_ddr_dq1_wck_c           (/*OPEN*/),
-    .pad_ch1_ddr_dq0_dqs_t           (/*OPEN*/),
-    .pad_ch1_ddr_dq1_dqs_t           (/*OPEN*/),
-    .pad_ch1_ddr_dq0_dqs_c           (/*OPEN*/),
-    .pad_ch1_ddr_dq1_dqs_c           (/*OPEN*/),
-    .pad_ch1_ddr_dq0_dq0             (/*OPEN*/),
-    .pad_ch1_ddr_dq0_dq1             (/*OPEN*/),
-    .pad_ch1_ddr_dq0_dq2             (/*OPEN*/),
-    .pad_ch1_ddr_dq0_dq3             (/*OPEN*/),
-    .pad_ch1_ddr_dq0_dq4             (/*OPEN*/),
-    .pad_ch1_ddr_dq0_dq5             (/*OPEN*/),
-    .pad_ch1_ddr_dq0_dq6             (/*OPEN*/),
-    .pad_ch1_ddr_dq0_dq7             (/*OPEN*/),
-    .pad_ch1_ddr_dq0_dbim            (/*OPEN*/),
-    .pad_ch1_ddr_dq1_dq0             (/*OPEN*/),
-    .pad_ch1_ddr_dq1_dq1             (/*OPEN*/),
-    .pad_ch1_ddr_dq1_dq2             (/*OPEN*/),
-    .pad_ch1_ddr_dq1_dq3             (/*OPEN*/),
-    .pad_ch1_ddr_dq1_dq4             (/*OPEN*/),
-    .pad_ch1_ddr_dq1_dq5             (/*OPEN*/),
-    .pad_ch1_ddr_dq1_dq6             (/*OPEN*/),
-    .pad_ch1_ddr_dq1_dq7             (/*OPEN*/),
-    .pad_ch1_ddr_dq1_dbim            (/*OPEN*/),
+    .pad_ch1_ddr_dq0_wck_t           (ch1_intf.dq0_wck_t),
+    .pad_ch1_ddr_dq1_wck_t           (ch1_intf.dq1_wck_t),
+    .pad_ch1_ddr_dq0_wck_c           (ch1_intf.dq0_wck_c),
+    .pad_ch1_ddr_dq1_wck_c           (ch1_intf.dq1_wck_c),
+    .pad_ch1_ddr_dq0_dqs_t           (ch1_intf.dq0_dqs_t),
+    .pad_ch1_ddr_dq1_dqs_t           (ch1_intf.dq1_dqs_t),
+    .pad_ch1_ddr_dq0_dqs_c           (ch1_intf.dq0_dqs_c),
+    .pad_ch1_ddr_dq1_dqs_c           (ch1_intf.dq1_dqs_c),
+    .pad_ch1_ddr_dq0_dq0             (ch1_intf.dq0_dq0),
+    .pad_ch1_ddr_dq0_dq1             (ch1_intf.dq0_dq1),
+    .pad_ch1_ddr_dq0_dq2             (ch1_intf.dq0_dq2),
+    .pad_ch1_ddr_dq0_dq3             (ch1_intf.dq0_dq3),
+    .pad_ch1_ddr_dq0_dq4             (ch1_intf.dq0_dq4),
+    .pad_ch1_ddr_dq0_dq5             (ch1_intf.dq0_dq5),
+    .pad_ch1_ddr_dq0_dq6             (ch1_intf.dq0_dq6),
+    .pad_ch1_ddr_dq0_dq7             (ch1_intf.dq0_dq7),
+    .pad_ch1_ddr_dq0_dbim            (ch1_intf.dq0_dbim),
+    .pad_ch1_ddr_dq1_dq0             (ch1_intf.dq1_dq0),
+    .pad_ch1_ddr_dq1_dq1             (ch1_intf.dq1_dq1),
+    .pad_ch1_ddr_dq1_dq2             (ch1_intf.dq1_dq2),
+    .pad_ch1_ddr_dq1_dq3             (ch1_intf.dq1_dq3),
+    .pad_ch1_ddr_dq1_dq4             (ch1_intf.dq1_dq4),
+    .pad_ch1_ddr_dq1_dq5             (ch1_intf.dq1_dq5),
+    .pad_ch1_ddr_dq1_dq6             (ch1_intf.dq1_dq6),
+    .pad_ch1_ddr_dq1_dq7             (ch1_intf.dq1_dq7),
+    .pad_ch1_ddr_dq1_dbim            (ch1_intf.dq1_dbim),
 
     .o_debug                     ()
 );
@@ -1710,13 +1718,16 @@ ddr_phy_1x32 u_phy_1x32 (
     reset_item_58: assert property (csr_is_resetted(`dfi_csr_v.dfi_phymstr_if_sta_q));
 
     // assertions that the status registers actually reflect the value
-    property sta_reflects_sig(sta, sig);
-        @(posedge `ahb_clk_v) disable iff (`ahb_rst_v) ((sta != 0) |->##[0:20] (sta == sig));
+    property sta_reflects_sig(sta, sig, t=0);
+        @(posedge `ahb_clk_v) disable iff (`ahb_rst_v | t) ((sta != 0) |->##[0:20] (sta == sig));
     endproperty;
 
-    lp_ctrl_status:  assert property(sta_reflects_sig(`dfi_csr_v.dfi_lp_ctrl_if_sta_q, {DFI_if.lp_ctrl_wakeup, 2'b0, DFI_if.lp_ctrl_ack, DFI_if.lp_ctrl_req}));
-    lp_data_status:  assert property(sta_reflects_sig(`dfi_csr_v.dfi_lp_data_if_sta_q, {DFI_if.lp_data_wakeup, 2'b0, DFI_if.lp_data_ack, DFI_if.lp_data_req}));
-    ctrlupd_status:  assert property(sta_reflects_sig(`dfi_csr_v.dfi_ctrlupd_if_sta_q, {DFI_if.ctrlupd_ack, DFI_if.ctrlupd_req}));
+    lp_ctrl_status:  assert property(sta_reflects_sig(`dfi_csr_v.dfi_lp_ctrl_if_sta_q, {DFI_if.lp_ctrl_wakeup, 2'b0, DFI_if.lp_ctrl_ack, DFI_if.lp_ctrl_req}, 
+    `dfi_csr_v.dfi_lp_ctrl_if_cfg_q[2] | `dfi_csr_v.dfi_lp_ctrl_if_cfg_q[0]));
+    lp_data_status:  assert property(sta_reflects_sig(`dfi_csr_v.dfi_lp_data_if_sta_q, {DFI_if.lp_data_wakeup, 2'b0, DFI_if.lp_data_ack, DFI_if.lp_data_req},
+    `dfi_csr_v.dfi_lp_data_if_cfg_q[2] | `dfi_csr_v.dfi_lp_data_if_cfg_q[0]));
+    ctrlupd_status:  assert property(sta_reflects_sig(`dfi_csr_v.dfi_ctrlupd_if_sta_q, {DFI_if.ctrlupd_ack, DFI_if.ctrlupd_req},
+    `dfi_csr_v.dfi_ctrlupd_if_cfg_q[2] | `dfi_csr_v.dfi_ctrlupd_if_cfg_q[0]));
     phyupd_status:   assert property(sta_reflects_sig(`dfi_csr_v.dfi_phyupd_if_sta_q[1:0], {DFI_if.phyupd_ack, DFI_if.phyupd_req}));
     phymstr_status:   assert property(sta_reflects_sig(`dfi_csr_v.dfi_phymstr_if_sta_q[1:0], {DFI_if.phymstr_ack, DFI_if.phymstr_req}));
 endmodule

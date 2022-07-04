@@ -3,9 +3,13 @@ class EventHandler;
 
     static event lp_ctrl_start;
     static event lp_ctrl_finish;
+    static event lp_ctrl_ack_pos;
+    static event lp_ctrl_req_neg;
 
     static event lp_data_start;
     static event lp_data_finish;
+    static event lp_data_ack_pos;
+    static event lp_data_req_neg;
 
     static event phymstr_start;
     static event phymstr_finish;
@@ -14,6 +18,8 @@ class EventHandler;
 
     static event ctrlupd_start;
     static event ctrlupd_finish;
+    static event ctrlupd_ack_pos;
+    static event ctrlupd_req_neg;
 
     static event phyupd_start;
     static event phyupd_finish;

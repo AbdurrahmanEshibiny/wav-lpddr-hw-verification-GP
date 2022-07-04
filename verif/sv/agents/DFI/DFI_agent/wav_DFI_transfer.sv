@@ -31,16 +31,19 @@ endclass
 // Base class for DFI write transactions 
 class wav_DFI_write_transfer extends wav_DFI_transfer; 
     bit [63:0]               wrdata [0:3];
+
     bit                      parity_in [0:3];
-    bit [1:0]                wrdata_cs [0:3];
     bit [7:0]                wrdata_mask [0:3];
-    bit                           wrdata_en [0:3];
+
+    bit [1:0]                wrdata_cs [0:3];
+    bit                      wrdata_en [0:3];
     bit [13:0]               address [0:3];
     bit [1:0]                cs [0:3];
+    bit [1:0]                cke [0:3];
     bit [1:0]                wck_cs [0:3];
     bit                      wck_en [0:3];
     bit [1:0]                wck_toggle [0:3];
-    bit                     dram_clk_disable [0:3];
+    bit                      dram_clk_disable [0:3];
 
     `uvm_object_utils_begin(wav_DFI_write_transfer)
         `uvm_field_sarray_int(wrdata, UVM_DEFAULT | UVM_NOCOMPARE)
@@ -52,6 +55,9 @@ class wav_DFI_write_transfer extends wav_DFI_transfer;
         `uvm_field_sarray_int(wck_cs, UVM_DEFAULT | UVM_NOCOMPARE)
         `uvm_field_sarray_int(wck_en, UVM_DEFAULT | UVM_NOCOMPARE)
         `uvm_field_sarray_int(wck_toggle, UVM_DEFAULT | UVM_NOCOMPARE)
+        `uvm_field_sarray_int(cs, UVM_DEFAULT | UVM_NOCOMPARE)
+        `uvm_field_sarray_int(cke, UVM_DEFAULT | UVM_NOCOMPARE)
+        `uvm_field_sarray_int(dram_clk_disable, UVM_DEFAULT | UVM_NOCOMPARE)
     `uvm_object_utils_end
     
     function new(string name=" wav_DFI_write_transfer"); 

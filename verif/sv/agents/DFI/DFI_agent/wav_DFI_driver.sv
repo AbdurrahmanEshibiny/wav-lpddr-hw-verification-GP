@@ -89,6 +89,7 @@ class wav_DFI_driver extends uvm_driver;
         
     //drive ctrlupd interface according to the specified transaction
     task automatic drive_ctrlupd(wav_DFI_update_transfer trans);   
+		int timer = 0;
         `uvm_info(get_name(), "Driving ctrlupd", UVM_MEDIUM);              
         @(posedge vif.mp_drv.cb_drv)         
         if (trans.is_ctrl) begin
@@ -97,9 +98,21 @@ class wav_DFI_driver extends uvm_driver;
             // if (trans.cyclesCount > 0) begin
             
 			`uvm_info(get_name(), "wait for ctrlupd_ack goes HIGH", UVM_MEDIUM);
-            wait(vif.mp_drv.cb_drv.ctrlupd_ack == 1);   
-			`uvm_info(get_name(), "wait for ctrlupd_ack goes LOW", UVM_MEDIUM);
-            wait(vif.mp_drv.cb_drv.ctrlupd_ack == 0);
+			forever begin
+				@(posedge vif.mp_drv.cb_drv);
+				++timer;
+				if (vif.mp_drv.cb_drv.ctrlupd_ack == 1)
+					break;
+			end
+            //wait(vif.mp_drv.cb_drv.ctrlupd_ack == 1);   
+			`uvm_info(get_name(), "wait for ctrlupd_ack goes LOW, or timer to goes off", UVM_MEDIUM);
+            //wait(vif.mp_drv.cb_drv.ctrlupd_ack == 0);
+			forever begin
+				@(posedge vif.mp_drv.cb_drv);
+				++timer;
+				if (vif.mp_drv.cb_drv.ctrlupd_ack == 0 || timer >= trans.cyclesCount)
+					break;
+			end
 			
 			vif.mp_drv.cb_drv.ctrlupd_req <= 0;
 			`uvm_info(get_name(), "done resetting ctrlupd", UVM_MEDIUM);  
@@ -109,33 +122,105 @@ class wav_DFI_driver extends uvm_driver;
         end
     endtask
 
-    task automatic drive_write(wav_DFI_write_transfer trans);         
+    task automatic drive_write(wav_DFI_write_transfer trans);  
+        //trans.print();
         @(posedge vif.mp_drv.cb_drv);
-        `uvm_info(get_name(), "write xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", UVM_MEDIUM); 
-        trans.print();
-        // For arrays
-        foreach(trans.address[i])
-            vif.mp_drv.cb_drv.address[i] <= trans.address[i]; 
-        foreach(trans.wrdata[i])
-            vif.mp_drv.cb_drv.wrdata[i] <= trans.wrdata[i];
-        foreach(trans.parity_in[i])
-            vif.mp_drv.cb_drv.parity_in[i] <= trans.parity_in[i]; 
-        foreach(trans.wrdata_cs[i])
-            vif.mp_drv.cb_drv.wrdata_cs[i] <= trans.wrdata_cs[i]; 
-        foreach(trans.wrdata_en[i])
-            vif.mp_drv.cb_drv.wrdata_en[i] <= trans.wrdata_en[i];   
-        foreach(trans.wrdata_mask[i])              
-            vif.mp_drv.cb_drv.wrdata_mask[i] <= trans.wrdata_mask[i]; 
-        foreach(trans.wck_cs[i])
-            vif.mp_drv.cb_drv.wck_cs[i] <= trans.wck_cs[i];  
-        foreach(trans.wck_en[i])
-            vif.mp_drv.cb_drv.wck_en[i] <= trans.wck_en[i]; 
-        foreach(trans.wck_toggle[i])        
-            vif.mp_drv.cb_drv.wck_toggle[i] <= trans.wck_toggle[i];
-        foreach(trans.cs[i])        
-            vif.mp_drv.cb_drv.cs[i] <= trans.cs[i];
-        foreach(trans.dram_clk_disable[i])        
-            vif.mp_drv.cb_drv.dram_clk_disable[i] <= trans.dram_clk_disable[i];  
+            vif.mp_drv.cb_drv.dram_clk_disable[0] <= 0;
+            vif.mp_drv.cb_drv.dram_clk_disable[1] <= 1;
+            vif.mp_drv.cb_drv.dram_clk_disable[2] <= 1;
+            vif.mp_drv.cb_drv.dram_clk_disable[3] <= 1;
+            vif.mp_drv.cb_drv.cke[0] <= 2'b01;
+            vif.mp_drv.cb_drv.cke[2] <= 2'b01;
+            //wck
+            vif.mp_drv.cb_drv.wck_cs[0] <= 2'b01; 
+            vif.mp_drv.cb_drv.wck_cs[1] <= 2'b01;  
+            vif.mp_drv.cb_drv.wck_cs[2] <= 2'b01; 
+            vif.mp_drv.cb_drv.wck_cs[3] <= 2'b01;  
+            vif.mp_drv.cb_drv.wck_en[0] <= 1; 
+            vif.mp_drv.cb_drv.wck_en[1] <= 1;
+            vif.mp_drv.cb_drv.wck_en[2] <= 1; 
+            vif.mp_drv.cb_drv.wck_en[3] <= 1;
+            vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b00;
+            vif.mp_drv.cb_drv.wck_toggle[1] <= 2'b00;
+            vif.mp_drv.cb_drv.wck_toggle[2] <= 2'b00;
+            vif.mp_drv.cb_drv.wck_toggle[3] <= 2'b00;
+            
+        @(posedge vif.mp_drv.cb_drv);
+            //ACT1
+            vif.mp_drv.cb_drv.address[0] <= 14'b0000000_0000111;
+            vif.mp_drv.cb_drv.address[2] <= 14'b0000000_0000000;
+            // cs
+            vif.mp_drv.cb_drv.cs[0] <= 2'b01;
+            vif.mp_drv.cb_drv.cs[2] <= 2'b01;
+        @(posedge vif.mp_drv.cb_drv);
+            //ACT2
+            vif.mp_drv.cb_drv.address[0] <= 14'b0000000_0000011;
+            vif.mp_drv.cb_drv.address[2] <= 14'b0000000_0000000;
+        @(posedge vif.mp_drv.cb_drv);
+            //CAS_WR
+            vif.mp_drv.cb_drv.address[0] <= 14'b0000000_0011100;
+            vif.mp_drv.cb_drv.address[2] <= 14'b0000000_0000000;
+            
+        @(posedge vif.mp_drv.cb_drv);
+            //WR32
+            vif.mp_drv.cb_drv.address[0] <= 14'b0000000_0000100;
+            vif.mp_drv.cb_drv.address[2] <= 14'b0000000_1000000;
+            //wck
+            vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b10;
+            vif.mp_drv.cb_drv.wck_toggle[1] <= 2'b10;
+            vif.mp_drv.cb_drv.wck_toggle[2] <= 2'b10;
+            vif.mp_drv.cb_drv.wck_toggle[3] <= 2'b10;
+        @(posedge vif.mp_drv.cb_drv);
+            vif.mp_drv.cb_drv.wrdata_en[0] <= 1;
+            vif.mp_drv.cb_drv.wrdata_en[1] <= 1;
+            vif.mp_drv.cb_drv.wrdata_en[2] <= 1;
+            vif.mp_drv.cb_drv.wrdata_en[3] <= 1;
+            vif.mp_drv.cb_drv.wrdata[0] <= 64'habcd_ef98_1234_5678;
+            vif.mp_drv.cb_drv.wrdata[2] <= 64'h1234_5678_abcd_ef98;
+            vif.mp_drv.cb_drv.wrdata_cs[0] <= 2'b01;
+            vif.mp_drv.cb_drv.wrdata_cs[2] <= 2'b01;
+            
+            
+            
+            vif.mp_drv.cb_drv.cs[0] <= 2'b00;
+            vif.mp_drv.cb_drv.cs[2] <= 2'b00;
+            vif.mp_drv.cb_drv.address[0] <= 14'b0000000_0000000;
+            vif.mp_drv.cb_drv.address[2] <= 14'b0000000_0000000;
+
+
+           
+        
+           
+        // @(posedge vif.mp_drv.cb_drv);
+        //     //DES
+        //     vif.mp_drv.cb_drv.address[0] <= 14'b0000000_0000000;
+        
+            
+            //vif.mp_drv.cb_drv.parity_in[0] <= trans.parity_in[0]; 
+               
+            //vif.mp_drv.cb_drv.wrdata_mask[0] <= trans.wrdata_mask[0]; 
+            
+            //vif.mp_drv.cb_drv.dram_clk_disable[0] <= trans.dram_clk_disable[0];
+            
+            //vif.mp_drv.cb_drv.cke[0] <= trans.cke[0];
+            
+            
+        // @(posedge vif.mp_drv.cb_drv);
+        //     vif.mp_drv.cb_drv.address[0] <= 14'b0;
+        //     vif.mp_drv.cb_drv.wrdata[0] <= 64'b0;
+        //     //vif.mp_drv.cb_drv.parity_in[0] <= trans.parity_in[0]; 
+        //     vif.mp_drv.cb_drv.wrdata_en[0] <= 0;   
+        //     //vif.mp_drv.cb_drv.wrdata_mask[0] <= trans.wrdata_mask[0]; 
+        //     vif.mp_drv.cb_drv.wck_cs[0] <= 2'b00;  
+        //     vif.mp_drv.cb_drv.wck_en[0] <= 0; 
+        //     vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b00;
+        //     vif.mp_drv.cb_drv.dram_clk_disable[0] <= 1;
+        //     vif.mp_drv.cb_drv.wrdata_cs[0] <= 2'b00; 
+        //     vif.mp_drv.cb_drv.cke[0] <= 0;
+        //     vif.mp_drv.cb_drv.cs[0] <= 2'b00;
+        
+        
+          
     endtask
 
     task automatic drive_status(wav_DFI_status_transfer trans);

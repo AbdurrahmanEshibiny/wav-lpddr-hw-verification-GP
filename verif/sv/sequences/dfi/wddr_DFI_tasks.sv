@@ -37,6 +37,54 @@ task automatic set_dfi_phyupd_req;
     end
 endtask
 
+task automatic set_dfi_ctrlupd_req;
+    input wav_DFI_update_transfer trans;
+    static bit val = 1;
+    begin
+        `CSR_WRF4(DDR_DFI_OFFSET, DDR_DFI_CTRLUPD_IF_CFG, 
+        SW_EVENT_0_OVR, SW_EVENT_0_VAL, SW_EVENT_1_OVR, SW_EVENT_1_VAL,
+        1'b1, (val ? 1'b1 : 1'b0), 1'b1, (val ? 1'b1 : 1'b0));
+
+        val = ~val;
+
+        trans.print();
+        `CSR_WRF4(DDR_DFI_OFFSET,DDR_DFI_CTRLUPD_IF_CFG, 
+                    SW_REQ_OVR, SW_REQ_VAL, SW_ACK_OVR, SW_ACK_OVR,
+                    1'b1, trans.req, 1'b1, trans.ack);
+    end
+endtask
+
+task automatic set_dfi_lp_req;
+    input wav_DFI_lp_transfer trans;
+    static bit val = 1;
+    begin
+        trans.print();
+
+        if (trans.is_ctrl) begin
+            `CSR_WRF4(DDR_DFI_OFFSET, DDR_DFI_LP_CTRL_IF_CFG, 
+            SW_EVENT_0_OVR, SW_EVENT_0_VAL, SW_EVENT_1_OVR, SW_EVENT_1_VAL,
+            1'b1, (val ? 1'b1 : 1'b0), 1'b1, (val ? 1'b1 : 1'b0));
+
+            val = ~val;
+
+            `CSR_WRF4(DDR_DFI_OFFSET, DDR_DFI_LP_CTRL_IF_CFG, 
+            SW_REQ_OVR, SW_REQ_VAL, SW_ACK_OVR, SW_ACK_OVR,
+            1'b1, trans.req, 1'b1, trans.ack);
+        end
+        else begin
+            `CSR_WRF4(DDR_DFI_OFFSET,  DDR_DFI_LP_DATA_IF_CFG, 
+            SW_EVENT_0_OVR, SW_EVENT_0_VAL, SW_EVENT_1_OVR, SW_EVENT_1_VAL,
+            1'b1, (val ? 1'b1 : 1'b0), 1'b1, (val ? 1'b1 : 1'b0));
+
+            val = ~val;
+
+            `CSR_WRF4(DDR_DFI_OFFSET, DDR_DFI_LP_DATA_IF_CFG, 
+            SW_REQ_OVR, SW_REQ_VAL, SW_ACK_OVR, SW_ACK_OVR,
+            1'b1, trans.req, 1'b1, trans.ack);
+        end
+    end
+endtask
+
 task automatic get_dfi_phyupd_ack;
     output logic val;
     begin
@@ -147,6 +195,84 @@ task t_dfi_phymstr(output int err, input bit doInit = 1);
         `CSR_WRF2(DDR_DFI_OFFSET,DDR_DFI_PHYMSTR_IF_CFG, 
                     SW_EVENT_OVR, SW_EVENT_VAL,
                     1'b1, 1'b0);
+
+        #10ns;
+    end
+endtask
+
+task t_dfi_lp(output int err, input bit doInit = 1, input bit is_ctrl=0);
+    logic ack = 0, req = 0;
+    wav_DFI_lp_transfer trans;
+    begin
+        if (doInit) begin
+            `uvm_info(get_name(), "starting t_dfi_lp", UVM_MEDIUM);
+            #1us;
+
+            `uvm_info(get_name(), "calling ddr_boot", UVM_MEDIUM);
+            ddr_boot(err);  
+        end
+        
+        `uvm_info(get_name(), "starting t_dfi_lp body", UVM_MEDIUM);     
+        trans = new();
+        assert(trans.randomize());
+        trans.req = 1;
+        trans.ack = 1;
+        trans.is_ctrl = is_ctrl;
+        trans.print();
+		
+        `uvm_info(get_name(), "driving the lp trans HIGH", UVM_MEDIUM);
+        set_dfi_lp_req(trans);
+        
+        // if (is_ctrl)
+        //     EventHandler::wait_for_event(EventHandler::lp_ctrl_ack_pos); 
+        // else
+        //     EventHandler::wait_for_event(EventHandler::lp_data_ack_pos);
+
+        trans.req = 0;
+        trans.ack = 0;
+        `uvm_info(get_name(), "driving the lp trans LOW", UVM_MEDIUM);
+        set_dfi_lp_req(trans);
+        
+        // if (is_ctrl)
+        //     EventHandler::wait_for_event(EventHandler::lp_ctrl_req_neg);
+        // else
+        //     EventHandler::wait_for_event(EventHandler::lp_data_req_neg);
+
+        #10ns;
+    end
+endtask
+
+task t_dfi_ctrlupd(output int err, input bit doInit = 1);
+    logic ack = 0, req = 0;
+    wav_DFI_update_transfer trans;
+    begin
+        if (doInit) begin
+            `uvm_info(get_name(), "starting t_dfi_ctrlupd", UVM_MEDIUM);
+            #1us;
+
+            `uvm_info(get_name(), "calling ddr_boot", UVM_MEDIUM);
+            ddr_boot(err);  
+        end
+        
+        `uvm_info(get_name(), "starting t_dfi_ctrlupd body", UVM_MEDIUM);     
+        trans = new();
+        assert(trans.randomize());
+        trans.req = 1;
+        trans.ack = 1;
+        trans.is_ctrl = 1'b1;
+        trans.print();
+		
+        `uvm_info(get_name(), "driving the ctrlupd trans HIGH", UVM_MEDIUM);
+        set_dfi_ctrlupd_req(trans);
+        
+        // EventHandler::wait_for_event(EventHandler::ctrlupd_ack_pos); 
+
+        trans.req = 0;
+        trans.ack = 0;
+        `uvm_info(get_name(), "driving the ctrlupd trans LOW", UVM_MEDIUM);
+        set_dfi_ctrlupd_req(trans);
+        
+        // EventHandler::wait_for_event(EventHandler::ctrlupd_req_neg);
 
         #10ns;
     end

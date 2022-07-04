@@ -1,2 +1,13 @@
+wddr_DFI_access_control_regs_test
 wddr_DFI_lp_ctrl_test
+wddr_DFI_lp_data_test
+wddr_DFI_lp_test
+wddr_DFI_phymstr_test
+wddr_DFI_phyupd_test
+wddr_DFI_ctrlupd_test
+wddr_DFI_several_control_test
+wddr_DFI_several_lp_small_wakeup_test
+wddr_DFI_several_lp_test
 wddr_DFI_several_phymstr_test
+wddr_DFI_several_phyupd_test
+wddr_DFI_control_with_regs_test

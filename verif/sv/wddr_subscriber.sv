@@ -279,11 +279,16 @@ class wddr_subscriber extends uvm_component;
 	endfunction
 	
 	function automatic void write_DFI(wav_DFI_transfer trans);
+		static realtime last_time = 0, current_time = 0;
 		//insert sample function(s) and any other needed logic
 		wav_DFI_lp_transfer lp_trans;
 		wav_DFI_update_transfer update_trans;
 		// To ensure that we are not counting the same transaction twice
-		reset_DFI_objects();
+		current_time = $realtime;
+		if ((current_time - last_time) > 10) begin
+			last_time = current_time;
+			reset_DFI_objects();
+		end
 
 		if (!$cast(dfi_trans, trans.clone())) begin
 			`uvm_fatal(get_name(), "Coverage collector cannot cast wav_DFI_transfer object");			

@@ -20,15 +20,17 @@ class wddr_DFI_lp_seq extends wddr_base_seq;
 
         trans.req = 1'b1;
         trans.is_ctrl = 1'b1;
+		assert(trans.randomize() with {wakeup == 19;});
 		`uvm_info(get_name(), "Sending lp ctrl transaction", UVM_LOW);
-        `uvm_rand_send(trans);
+        `uvm_send(trans);
 		`uvm_info(get_type_name(), "printing lp ctrl transaction", UVM_MEDIUM);
 		trans.print();
 		
 		trans.req = 1'b1;
         trans.is_ctrl = 1'b0;
+		assert(trans.randomize() with {wakeup == 19;});
 		`uvm_info(get_name(), "Sending lp data transaction", UVM_LOW);
-        `uvm_rand_send(trans);
+        `uvm_send(trans);
 		`uvm_info(get_type_name(), "printing lp data transaction", UVM_MEDIUM);
 		trans.print();
 		
