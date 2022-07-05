@@ -1053,14 +1053,14 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 				@(negedge ch0_vif.ck_t) begin
 					//TODO COMPLETE ASSIGNMENT OF ALL VARIABLES
 					//ziad_checks();
+					prev_CA = CA;
+					CA = next_CA;
+					prev_BA = BA;
+					BA={ch0_vif.ca3, ch0_vif.ca2, ch0_vif.ca1, ch0_vif.ca0};
+					ALL_BANKS = ch0_vif.ca6;
 					case(next_CA)
 						PRE: begin
-							prev_CA = CA;
-							CA = next_CA;
-							prev_BA = BA;
-							BA={ch0_vif.ca3, ch0_vif.ca2, ch0_vif.ca1, ch0_vif.ca0};
 							bank_state[BA] = PRECHARGING;
-							ALL_BANKS = ch0_vif.ca6;
 							assert(!$isunknown(ch0_vif.ca4) && !$isunknown(ch0_vif.ca4)) begin
 								`uvm_error("gp_LPDDR5_monitor", "Invalid signals are supposed to be valid")
 							end 
