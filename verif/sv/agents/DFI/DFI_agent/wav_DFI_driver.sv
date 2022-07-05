@@ -14,7 +14,6 @@ class wav_DFI_driver extends uvm_driver;
 
     function new (string name = "wav_DFI_driver", uvm_component parent=null);
         super.new(name, parent);
-        // FIXME: we need to solve the cfg problem
         uvm_config_db#(wddr_config)::get(null, "*", "cfg_obj", cfg);
     endfunction
 
@@ -224,9 +223,8 @@ class wav_DFI_driver extends uvm_driver;
           
     endtask
 
-    task automatic drive_status(wav_DFI_status_transfer trans);
+    task automatic drive_status(input wav_DFI_status_transfer trans);
         string msg;
-        string freq_details;
         int tinit_start;
         vif.cb_drv.init_start <= 0;
         vif.cb_drv.freq_fsp <= trans.freq_fsp;
@@ -234,19 +232,14 @@ class wav_DFI_driver extends uvm_driver;
         vif.cb_drv.frequency <= trans.frequency;
         @(vif.cb_drv);
 
-        while (!vif.cb_drv.init_complete);
+        // while (!vif.cb_drv.init_complete) @(vif.cb_drv);
         vif.cb_drv.init_start <= 1;
 
-        freq_details = $sformatf (
-            "Frequency# = %0d, ", trans.frequency,
-            "Freq Ratio = %0d, ", trans.freq_ratio,
-            "FSP# = %0d", trans.freq_fsp
-        );
         tinit_start = 1;
 
         while (tinit_start != 0) begin
             @(vif.cb_drv) begin
-                if (vif.mp_drv.cb_drv.init_complete == 1'b0) begin
+                if (vif.cb_drv.init_complete == 1'b0) begin
                     break;
                 end
             end
@@ -258,10 +251,10 @@ class wav_DFI_driver extends uvm_driver;
             msg = "PHY rejects new freq setting";
         end else begin
             msg = $sformatf (
-                "PHY accepts new freq setting, tinit_start = %d", tinit_start);
+                "PHY accepts new freq setting, tinit_start = %0d", tinit_start);
         end
-        `uvm_info (get_name(), {msg, "\n", freq_details}, UVM_MEDIUM)
-        
+        // `uvm_info (get_name(), {msg, "\n", freq_details}, UVM_MEDIUM)
+        trans.print();
 
         // need to drive dfi_cke and dfi_reset_n
         // until the dfi_init_complete signal is asserted.
