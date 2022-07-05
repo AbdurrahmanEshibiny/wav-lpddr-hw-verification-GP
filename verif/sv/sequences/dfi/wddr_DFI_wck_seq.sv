@@ -1,33 +1,33 @@
 typedef struct packed {
-    // bit /*[1:0]*/                i_dfi_cke_p0,
-    // bit /*[1:0]*/                i_dfi_cke_p1,
-    // bit /*[1:0]*/                i_dfi_cke_p2,
-    // bit /*[1:0]*/                i_dfi_cke_p3,
-    // bit /*[1:0]*/                i_dfi_cs_p0,
-    // bit /*[1:0]*/                i_dfi_cs_p1,
-    // bit /*[1:0]*/                i_dfi_cs_p2,
-    // bit /*[1:0]*/                i_dfi_cs_p3,
-    // bit                      i_dfi_dram_clk_disable_p0,
-    // bit                      i_dfi_dram_clk_disable_p1,
-    // bit                      i_dfi_dram_clk_disable_p2,
-    // bit                      i_dfi_dram_clk_disable_p3,
+    bit                  i_dfi_cke_p0;
+    bit                  i_dfi_cke_p1;
+    bit                  i_dfi_cke_p2;
+    bit                  i_dfi_cke_p3;
+    bit                  i_dfi_cs_p0;
+    bit                  i_dfi_cs_p1;
+    bit                  i_dfi_cs_p2;
+    bit                  i_dfi_cs_p3;
+    bit                  i_dfi_dram_clk_disable_p0;
+    bit                  i_dfi_dram_clk_disable_p1;
+    bit                  i_dfi_dram_clk_disable_p2;
+    bit                  i_dfi_dram_clk_disable_p3;
  
     // bit                      i_dfi_parity_in_p0,
     // bit                      i_dfi_parity_in_p1,
     // bit                      i_dfi_parity_in_p2,
     // bit                      i_dfi_parity_in_p3,
-    // bit /*[1:0]*/                i_dfi_wrdata_cs_p0,
-    // bit /*[1:0]*/                i_dfi_wrdata_cs_p1,
-    // bit /*[1:0]*/                i_dfi_wrdata_cs_p2,
-    // bit /*[1:0]*/                i_dfi_wrdata_cs_p3,
-    // bit [7:0]                i_dfi_wrdata_mask_p0,
+    bit                          i_dfi_wrdata_cs_p0;
+    bit /*[1:0]*/                i_dfi_wrdata_cs_p1;
+    bit /*[1:0]*/                i_dfi_wrdata_cs_p2;
+    bit /*[1:0]*/                i_dfi_wrdata_cs_p3;
+    //bit [7:0]                i_dfi_wrdata_mask_p0,
     // bit [7:0]                i_dfi_wrdata_mask_p1,
     // bit [7:0]                i_dfi_wrdata_mask_p2,
     // bit [7:0]                i_dfi_wrdata_mask_p3,
-    // bit                      i_dfi_wrdata_en_p0,
-    // bit                      i_dfi_wrdata_en_p1,
-    // bit                      i_dfi_wrdata_en_p2,
-    // bit                      i_dfi_wrdata_en_p3,
+    bit                      i_dfi_wrdata_en_p0;
+    bit                      i_dfi_wrdata_en_p1;
+    bit                      i_dfi_wrdata_en_p2;
+    bit                      i_dfi_wrdata_en_p3;
     bit /*[1:0]*/                i_dfi_wck_cs_p0;
     bit /*[1:0]*/                i_dfi_wck_cs_p1;
     bit /*[1:0]*/                i_dfi_wck_cs_p2;
@@ -58,20 +58,48 @@ class wddr_DFI_wck_seq extends wddr_base_seq;
     `uvm_object_utils(wddr_DFI_wck_seq)
 
     task automatic drive_wc(wck_control item);
-        vif.wck_cs[0] <= {1'b0, item.i_dfi_wck_cs_p0};
-        vif.wck_cs[1] <= {1'b0, item.i_dfi_wck_cs_p1};
-        vif.wck_cs[2] <= {1'b0, item.i_dfi_wck_cs_p2};
-        vif.wck_cs[3] <= {1'b0, item.i_dfi_wck_cs_p3};
+        vif.wck_cs[0] <= {item.i_dfi_wck_cs_p0, item.i_dfi_wck_cs_p0};
+        vif.wck_cs[1] <= {item.i_dfi_wck_cs_p1, item.i_dfi_wck_cs_p1};
+        vif.wck_cs[2] <= {item.i_dfi_wck_cs_p2, item.i_dfi_wck_cs_p2};
+        vif.wck_cs[3] <= {item.i_dfi_wck_cs_p3, item.i_dfi_wck_cs_p3};
 
         vif.wck_en[0] <= item.i_dfi_wck_en_p0;
         vif.wck_en[1] <= item.i_dfi_wck_en_p1;
         vif.wck_en[2] <= item.i_dfi_wck_en_p2;
         vif.wck_en[3] <= item.i_dfi_wck_en_p3;
 
-        vif.wck_toggle[0] <= {1'b0, item.i_dfi_wck_toggle_p0};
-        vif.wck_toggle[1] <= {1'b0, item.i_dfi_wck_toggle_p1};
-        vif.wck_toggle[2] <= {1'b0, item.i_dfi_wck_toggle_p2};
-        vif.wck_toggle[3] <= {1'b0, item.i_dfi_wck_toggle_p3};
+        vif.wck_toggle[0] <= {item.i_dfi_wck_toggle_p0, item.i_dfi_wck_toggle_p0};
+        vif.wck_toggle[1] <= {item.i_dfi_wck_toggle_p1, item.i_dfi_wck_toggle_p1};
+        vif.wck_toggle[2] <= {item.i_dfi_wck_toggle_p2, item.i_dfi_wck_toggle_p2};
+        vif.wck_toggle[3] <= {item.i_dfi_wck_toggle_p3, item.i_dfi_wck_toggle_p3};
+
+        vif.cke[0] <= item.i_dfi_cke_p0;
+        vif.cke[1] <= item.i_dfi_cke_p1;
+        vif.cke[2] <= item.i_dfi_cke_p2;
+        vif.cke[3] <= item.i_dfi_cke_p3;
+
+        vif.cs[0] <= item.i_dfi_cs_p0;
+        vif.cs[1] <= item.i_dfi_cs_p1;
+        vif.cs[2] <= item.i_dfi_cs_p2;
+        vif.cs[3] <= item.i_dfi_cs_p3;
+    
+        vif.dram_clk_disable[0] <= item.i_dfi_dram_clk_disable_p0;
+        vif.dram_clk_disable[1] <= item.i_dfi_dram_clk_disable_p1;
+        vif.dram_clk_disable[2] <= item.i_dfi_dram_clk_disable_p2;
+        vif.dram_clk_disable[3] <= item.i_dfi_dram_clk_disable_p3;
+
+        vif.wrdata_cs[0] <= item.i_dfi_wrdata_cs_p0;
+        vif.wrdata_cs[1] <= item.i_dfi_wrdata_cs_p1;
+        vif.wrdata_cs[2] <= item.i_dfi_wrdata_cs_p2;
+        vif.wrdata_cs[3] <= item.i_dfi_wrdata_cs_p3;
+    
+        vif.wrdata_en[0] <= item.i_dfi_wrdata_en_p0;
+        vif.wrdata_en[1] <= item.i_dfi_wrdata_en_p1;
+        vif.wrdata_en[2] <= item.i_dfi_wrdata_en_p2;
+        vif.wrdata_en[3] <= item.i_dfi_wrdata_en_p3;
+    
+    
+
     endtask //automatic
 
     function bit any_signal();
@@ -106,7 +134,7 @@ class wddr_DFI_wck_seq extends wddr_base_seq;
 			`uvm_fatal("gp_LPDDR5_monitor", "Failed to get virtual interface from config db")
 		end
 
-        @(posedge vif.clock);
+        /*@(posedge vif.clock);
         vif.cke[0]  <= 2'b01;
         vif.cs[0]	<= 2'b01;
         vif.cs[2]	<= 2'b01;
@@ -114,7 +142,7 @@ class wddr_DFI_wck_seq extends wddr_base_seq;
         vif.dram_clk_disable[1] <= 1;
         vif.dram_clk_disable[2] <= 1;
         vif.dram_clk_disable[3] <= 1;
-
+        */
         forever begin
             assert(item.randomize());
             `uvm_info(get_name(), $psprintf("Trying values %0h", item.values), UVM_MEDIUM);            

@@ -32,12 +32,14 @@ class wav_DFI_driver extends uvm_driver;
     endtask
 	
     virtual protected task get_and_drive();
+        wav_DFI_transfer trans;
         forever begin
             `uvm_info(get_type_name(), "wav_DFI driver waiting for the next item", UVM_MEDIUM);
             seq_item_port.get_next_item(req);
 			`uvm_info(get_type_name(), "wav_DFI driver received the next item", UVM_MEDIUM);
 			
             $cast(rsp, req.clone());
+            $cast(trans, req.clone());
 
             rsp.set_id_info(req);
             `uvm_info(get_type_name(),$psprintf("wav_DFI driver start driving transfer :\n%s", rsp.sprint()), UVM_MEDIUM);
@@ -45,8 +47,9 @@ class wav_DFI_driver extends uvm_driver;
             drive_transaction(rsp);
             `uvm_info(get_type_name(),$psprintf("wav_DFI driver done driving transfer :\n%s", rsp.sprint()), UVM_MEDIUM);
 
-			seq_item_port.item_done();
-			seq_item_port.put_response(rsp);
+            seq_item_port.item_done();
+            if (trans.is_rsp_required)
+			    seq_item_port.put_response(rsp);
         end
       endtask
 
@@ -383,6 +386,20 @@ class wav_DFI_driver extends uvm_driver;
         end
     endtask
 
+
+    task automatic drive_cmd(wav_DFI_cmd_transfer trans);
+        foreach(trans.address[i])
+            vif.mp_drv.cb_drv.address[i] <= trans.address[i];
+        foreach(trans.dram_clk_disable[i])
+            vif.mp_drv.cb_drv.dram_clk_disable[i] <= trans.dram_clk_disable[i];
+        foreach(trans.cke[i])
+            vif.mp_drv.cb_drv.cke[i] <= trans.cke[i];
+        foreach(trans.cs[i])
+            vif.mp_drv.cb_drv.cs[i] <= trans.cs[i];
+        foreach(trans.parity_in[i])
+            vif.mp_drv.cb_drv.parity_in[i] <= trans.parity_in[i];
+    endtask
+
     //there are different types of DFI transactions 
     //this task checks the tr_type in the transaction and call the corresponding task 
 
@@ -395,9 +412,14 @@ class wav_DFI_driver extends uvm_driver;
 			wav_DFI_write_transfer write_trans;
             dfi_data_seq_item read_trans;
             wav_DFI_status_transfer status_trans;
+            wav_DFI_cmd_transfer cmd_trans;
 		//add the remaining interface cases
 			driver_run_phase.raise_objection(this, "start driving transaction");
-			case(trans.tr_type)
+            case(trans.tr_type)
+                cmd: begin
+                    $cast(cmd_trans, trans);
+					drive_cmd(cmd_trans);
+                end
 				lp: begin
 					$cast(lp_trans, trans);
 					drive_lp(lp_trans);

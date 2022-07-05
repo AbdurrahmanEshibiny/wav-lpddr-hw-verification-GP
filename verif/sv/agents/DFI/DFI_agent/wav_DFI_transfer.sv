@@ -12,14 +12,17 @@ typedef enum {
 class wav_DFI_transfer extends uvm_sequence_item; 
 
     type_e tr_type; 
+    bit is_rsp_required;
     
     `uvm_object_utils_begin(wav_DFI_transfer)
         `uvm_field_enum(type_e, tr_type, UVM_DEFAULT)
+        `uvm_field_int(is_rsp_required, UVM_DEFAULT)
     `uvm_object_utils_end
     
     function new(string name="wav_DFI_transfer"); 
         super.new(name); 
         tr_type = DFI;
+        is_rsp_required = 1;
     endfunction
 
     virtual function void reset();
@@ -224,6 +227,9 @@ typedef enum logic [13:0] {
     DFI_RDC = 14'b0000000_1010000
 } dfi_cmd_t;
 
+`define right_cmd(cmd) (cmd[6:0])
+`define left_cmd(cmd) (cmd[13:7])
+
 typedef struct {
     bit [63:0] data;
     bit [7:0] dbi;
@@ -269,10 +275,21 @@ endclass
 
 class wav_DFI_cmd_transfer extends wav_DFI_transfer;
     dfi_cmd_t cmd_mc[$]; // commmand coming from MC
+    rand bit [13:0]  address[0:3];  
+    rand bit         dram_clk_disable[0:3];
+    rand bit [1:0]   cke [0:3];
+    rand bit [1:0]   cs[0:3];
+    rand bit         parity_in[0:3];
 
     // TODO: modify the factory appropriately
     // TODO: add print function
-    `uvm_object_utils(wav_DFI_cmd_transfer)
+    `uvm_object_utils_begin(wav_DFI_cmd_transfer)
+        `uvm_field_sarray_int(parity_in, UVM_DEFAULT)
+        `uvm_field_sarray_int(address, UVM_DEFAULT)
+        `uvm_field_sarray_int(cs, UVM_DEFAULT)
+        `uvm_field_sarray_int(cke, UVM_DEFAULT)
+        `uvm_field_sarray_int(dram_clk_disable, UVM_DEFAULT)
+    `uvm_object_utils_end
 
     function new(string name="wav_DFI_cmd_transfer"); 
         super.new(name); 
