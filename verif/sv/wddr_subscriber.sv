@@ -9,7 +9,7 @@ class wddr_subscriber extends uvm_component;
 	wav_DFI_lp_transfer lp_ctrl_trans, lp_data_trans;
 	wav_DFI_phymstr_transfer phymstr_trans;
 	wav_DFI_update_transfer ctrlupd_trans, phyupd_trans;
-	wav_DFI_read_transfer DFI_read_trans;
+	// wav_DFI_read_transfer DFI_read_trans;
 	wav_DFI_write_transfer DFI_write_trans;
 
 	uvm_analysis_imp_DFI #(wav_DFI_transfer, wddr_subscriber) DFI_imp;
@@ -312,10 +312,10 @@ class wddr_subscriber extends uvm_component;
 				trans_c = write_c;
 				DFI_write_cg.sample();
 			end
-			read: begin     
-				$cast(DFI_read_trans, trans);
-				trans_c = read_c;
-			end
+			// read: begin     
+				// $cast(DFI_read_trans, trans);
+				// trans_c = read_c;
+			// end
 		endcase    
 
 		basic_DFI_cg.sample();

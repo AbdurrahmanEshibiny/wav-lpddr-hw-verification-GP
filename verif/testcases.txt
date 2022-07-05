@@ -4,6 +4,7 @@ wddr_DFI_lp_data_test
 wddr_DFI_lp_test
 wddr_DFI_phymstr_test
 wddr_DFI_phyupd_test
+wddr_DFI_ctrlupd_test
 wddr_DFI_several_control_test
 wddr_DFI_several_lp_small_wakeup_test
 wddr_DFI_several_lp_test

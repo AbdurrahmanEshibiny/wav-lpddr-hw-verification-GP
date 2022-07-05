@@ -79,6 +79,7 @@ import wav_DFI_pkg::*;
 `include "sv/sequences/dfi/wddr_DFI_several_phymstr_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_several_phyupd_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_several_control_seq.sv"
+`include "sv/sequences/dfi/wav_DFI_status_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_access_control_regs_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_power_down_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_control_with_regs_seq.sv"
