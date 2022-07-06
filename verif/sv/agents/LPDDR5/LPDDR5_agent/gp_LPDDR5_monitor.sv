@@ -1273,7 +1273,9 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						RD16:begin end
 						RD32:begin end
 						// CAS:begin end
-						MPC:begin end
+						MPC:begin 
+							`uvm_info("gp_lpddr5_monitor", "Recieved MPC", UVM_MEDIUM)
+						end
 						SRE: begin 
 							if({ch0_vif.ca5,ch0_vif.ca6} == 2'b10) begin
 								if(bank_state != '{default:IDLE})	// deep sleep entry
@@ -1344,11 +1346,21 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end
 						end
 						
-						MRW1:begin end
-						MRW2:begin end
-						MRR:begin end
-						WFF:begin end
-						RFF:begin end
+						MRW1:begin 
+							`uvm_info("gp_lpddr5_monitor","Recieved MRW1", UVM_MEDIUM)
+						end
+						MRW2:begin 
+							`uvm_info("gp_lpddr5_monitor","Recieved MRW2", UVM_MEDIUM)
+						end
+						MRR:begin
+							`uvm_info("gp_lpddr5_monitor","Recieved MRR", UVM_MEDIUM)
+						 end
+						WFF:begin
+							`uvm_info("gp_lpddr5_monitor","Recieved WFF", UVM_MEDIUM)
+						 end
+						RFF:begin
+							`uvm_info("gp_lpddr5_monitor","Recieved RFF", UVM_MEDIUM)
+						 end
 					endcase
 					cov_trans_item.CA = CA;
 					cov_trans_item.BA = BA;

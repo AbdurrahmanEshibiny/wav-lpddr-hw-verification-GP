@@ -323,14 +323,16 @@ endclass
 
 class wav_DFI_status_transfer extends wav_DFI_transfer;
     
-    `uvm_object_utils(wav_DFI_status_transfer)
+    rand bit [1:0] freq_fsp;
+    rand bit [1:0] freq_ratio;
+    rand bit [4:0] frequency;
+
+    `uvm_object_utils_begin(wav_DFI_status_transfer)
+        `uvm_field_int(freq_fsp, UVM_DEFAULT)
+        `uvm_field_int(freq_ratio, UVM_DEFAULT)
+        `uvm_field_int(frequency, UVM_DEFAULT)
+    `uvm_object_utils_end
     
-    bit [1:0] freq_fsp;
-    bit [1:0] freq_ratio;
-    bit [4:0] frequency;
-    
-    // TODO: modify the factory appropriately
-    // TODO: add print function
     function new(string name = "wav_DFI_status_transfer"); 
         super.new(name);
         tr_type = status_freq;

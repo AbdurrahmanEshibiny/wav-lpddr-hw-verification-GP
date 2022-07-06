@@ -25,7 +25,7 @@ class wddr_subscriber extends uvm_component;
 	// typedef enum {SAME, DIFFERENT} different_BA;
 	// different_BA diff_BA;
 	
-	time prev_CA_time[command];
+	time prev_CA_time[command] = '{default:0};;
 
 	enum {
 		RD_AFTER_RD_NO_SYNC,
@@ -326,7 +326,6 @@ class wddr_subscriber extends uvm_component;
 	function void write_LPDDR5(gp_LPDDR5_cov_trans lpddr5_trans);
 		
 		if(lpddr5_trans.CA != DES && lpddr5_trans.CA != NOP) begin
-			prev_CA_time[lpddr5_trans.CA] = $time;
 			
 			//RD_AFTER_RD_NO_SYNC
 			if(	lpddr5_trans.CA == RD32 ||
@@ -478,6 +477,7 @@ class wddr_subscriber extends uvm_component;
 			//WFF_AFTER_WFF_NO_CAS
 			if(	lpddr5_trans.CA == WFF) begin
 				if(	($time - prev_CA_time[WFF])/`tCK <= (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+						$display("***************problem******************");
 						lpddr5_cover_reqs = WFF_AFTER_WFF_NO_CAS;
 						lpddr5_cg.sample();
 				end
@@ -486,6 +486,7 @@ class wddr_subscriber extends uvm_component;
 			//WFF_AFTER_WFF_WITH_CAS
 			if(	lpddr5_trans.CA == WFF) begin
 				if(	($time - prev_CA_time[WFF])/`tCK > (`WL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+					$display("***************problem2******************");
 						lpddr5_cover_reqs = WFF_AFTER_WFF_WITH_CAS;
 						lpddr5_cg.sample();
 				end
@@ -495,6 +496,7 @@ class wddr_subscriber extends uvm_component;
 			if(	lpddr5_trans.CA == WFF ||
 				lpddr5_trans.CA == RFF) begin
 				if(	($time - prev_CA_time[RFF])/`tCK <= (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+					$display("***************problem3******************, %0t, %0t, %0t", $time , prev_CA_time[RFF],(`RL + `BL/`n_max + $floor(`tWCKPST/`tCK)));
 						lpddr5_cover_reqs = WFF_RFF_AFTER_RFF_NO_CAS;
 						lpddr5_cg.sample();
 				end
@@ -503,6 +505,7 @@ class wddr_subscriber extends uvm_component;
 			//WFF_AFTER_RFF_WITH_CAS	
 			if(	lpddr5_trans.CA == WFF) begin
 				if(	($time - prev_CA_time[RFF])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+					$display("***************problem4******************");
 						lpddr5_cover_reqs = WFF_AFTER_RFF_WITH_CAS;
 						lpddr5_cg.sample();
 				end
@@ -511,6 +514,7 @@ class wddr_subscriber extends uvm_component;
 			//RFF_AFTER_RFF_WITH_CAS
 			if(	lpddr5_trans.CA == RFF) begin
 				if(	($time - prev_CA_time[RFF])/`tCK > (`RL + `BL/`n_max + $floor(`tWCKPST/`tCK))) begin
+					$display("***************problem5******************");
 						lpddr5_cover_reqs = RFF_AFTER_RFF_WITH_CAS;
 						lpddr5_cg.sample();
 				end
@@ -611,6 +615,7 @@ class wddr_subscriber extends uvm_component;
 						lpddr5_cg.sample();
 				end
 			end
+			prev_CA_time[lpddr5_trans.CA] = $time;
 		end
 	endfunction
 
