@@ -1138,11 +1138,11 @@ ddr_phy_1x32 u_phy_1x32 (
         .o_dfi_phyupd_req            (dfi_phyupd_req),
         .o_dfi_phyupd_type           (dfi_phyupd_type),
 
-        .i_dfi_freq_fsp              (DFI_if.freq_fsp),
-        .i_dfi_freq_ratio            (DFI_if.freq_ratio),
-        .i_dfi_frequency             (DFI_if.frequency),
-        .o_dfi_init_complete         (DFI_if.init_complete),
-        .i_dfi_init_start            (DFI_if.init_start),
+        .i_dfi_freq_fsp              (),
+        .i_dfi_freq_ratio            (),
+        .i_dfi_frequency             (),
+        .o_dfi_init_complete         (),
+        .i_dfi_init_start            (),
         //.i_dfi_init_start            (dfi_init_start),
 
         .i_dfi_phymstr_ack           (dfi_phymstr_ack_sig),
@@ -1240,11 +1240,11 @@ ddr_phy_1x32 u_phy_1x32 (
         .o_dfi_phyupd_req            (DFI_if.phyupd_req),
         .o_dfi_phyupd_type           (DFI_if.phyupd_type),
 
-        .i_dfi_freq_fsp              ('0),
-        .i_dfi_freq_ratio            ('0),
-        .i_dfi_frequency             ('0),
-        .o_dfi_init_complete         (),
-        .i_dfi_init_start            ('0),
+        .i_dfi_freq_fsp              (DFI_if.freq_fsp),
+        .i_dfi_freq_ratio            (DFI_if.freq_ratio),
+        .i_dfi_frequency             (DFI_if.frequency),
+        .o_dfi_init_complete         (DFI_if.init_complete),
+        .i_dfi_init_start            (DFI_if.init_start),
 
         .i_dfi_phymstr_ack           (DFI_if.phymstr_ack),
         .o_dfi_phymstr_cs_state      (DFI_if.phymstr_cs_state),
