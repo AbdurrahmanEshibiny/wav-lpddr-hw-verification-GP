@@ -34,10 +34,10 @@ interface wav_DFI_if(input clock, input reset);
     
 
 	//write 
-    logic [63:0]               wrdata [0:3] = '{default:0};
-    logic [1:0]                wrdata_cs [0:3] = '{default:0};
-    logic [7:0]                wrdata_mask [0:3] = '{default:0};
-    logic                      wrdata_en [0:3] = '{default: 0};
+    logic [63:0]               wrdata [0:3];
+    logic [1:0]                wrdata_cs [0:3];
+    logic [7:0]                wrdata_mask [0:3];
+    logic                      wrdata_en [0:3];
     
 
 	//wck
