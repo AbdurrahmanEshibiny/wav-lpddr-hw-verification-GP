@@ -78,6 +78,7 @@ class wddr_DFI_write_seq extends wddr_base_seq;
         trans.print();
         
         `uvm_info(get_type_name(), "done sequence", UVM_LOW);
+        
     endtask : body
 
 endclass

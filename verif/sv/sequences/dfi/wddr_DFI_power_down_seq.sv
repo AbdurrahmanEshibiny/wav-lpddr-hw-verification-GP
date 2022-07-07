@@ -158,7 +158,7 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
         if (err != 0) begin
             `uvm_error(get_name(), $sformatf("sequence err_cnt <= %d ", err_cnt));
         end
-        config_vips(200,1);
+        // config_vips(200,1);
         
         random = new();
         `uvm_create(trans);
@@ -314,7 +314,7 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
         trans.address[0] = 0;
         `uvm_send(trans); 
 
-        /*//////////////////////////////  Write FIFO /////////////////////////////////
+        //////////////////////////////  Write FIFO /////////////////////////////////
 
         wait_dfi_cycles(2);
         `uvm_info(get_name(), "Write FIFO", UVM_MEDIUM);
@@ -323,7 +323,7 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
 
 		wait_dfi_cycles(1);
         trans.address[0] = 0;
-        `uvm_send(trans); */
+        `uvm_send(trans);
 
         //////////////////////////  Read DQ Calibration /////////////////////////////////
 
@@ -372,7 +372,7 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
 
 
 
-        wait_dfi_cycles(2); 
+        wait_dfi_cycles(20); 
 
     endtask
 endclass

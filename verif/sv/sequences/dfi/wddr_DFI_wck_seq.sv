@@ -58,30 +58,7 @@ class wddr_DFI_wck_seq extends wddr_base_seq;
     `uvm_object_utils(wddr_DFI_wck_seq)
 
     task automatic drive_wc(wck_control item);
-        // vif.wck_cs[0] <= item.i_dfi_wck_cs_p0;
-        // vif.wck_cs[1] <= item.i_dfi_wck_cs_p1;
-        // vif.wck_cs[2] <= item.i_dfi_wck_cs_p2;
-        // vif.wck_cs[3] <= item.i_dfi_wck_cs_p3;
 
-        // vif.wck_en[0] <= item.i_dfi_wck_en_p0;
-        // vif.wck_en[1] <= item.i_dfi_wck_en_p1;
-        // vif.wck_en[2] <= item.i_dfi_wck_en_p2;
-        // vif.wck_en[3] <= item.i_dfi_wck_en_p3;
-
-        // vif.wck_toggle[0] <= item.i_dfi_wck_toggle_p0;
-        // vif.wck_toggle[1] <= item.i_dfi_wck_toggle_p1;
-        // vif.wck_toggle[2] <= item.i_dfi_wck_toggle_p2;
-        // vif.wck_toggle[3] <= item.i_dfi_wck_toggle_p3;
-
-        // vif.cke[0] <= item.i_dfi_cke_p0;
-        // vif.cke[1] <= item.i_dfi_cke_p1;
-        // vif.cke[2] <= item.i_dfi_cke_p2;
-        // vif.cke[3] <= item.i_dfi_cke_p3;
-
-        // vif.cs[0] <= item.i_dfi_cs_p0;
-        // vif.cs[1] <= item.i_dfi_cs_p1;
-        // vif.cs[2] <= item.i_dfi_cs_p2;
-        // vif.cs[3] <= item.i_dfi_cs_p3;
     
         vif.dram_clk_disable[0] <= item.i_dfi_dram_clk_disable_p0;
         vif.dram_clk_disable[1] <= item.i_dfi_dram_clk_disable_p1;
