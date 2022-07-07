@@ -1051,7 +1051,6 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 					//`uvm_info("gp_LPDDR5_monitor", next_CA.name, UVM_NONE)
 				end 
 				@(negedge ch0_vif.ck_t) begin
-					//TODO COMPLETE ASSIGNMENT OF ALL VARIABLES
 					//ziad_checks();
 					prev_CA = CA;
 					CA = next_CA;
