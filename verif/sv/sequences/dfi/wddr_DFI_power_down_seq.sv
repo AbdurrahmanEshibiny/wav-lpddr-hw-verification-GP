@@ -372,7 +372,7 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
 
 
 
-        wait_dfi_cycles(2); 
+        wait_dfi_cycles(20); 
 
     endtask
 endclass

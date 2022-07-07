@@ -325,7 +325,8 @@ class wddr_subscriber extends uvm_component;
 	endfunction
 	
 
-	function void write_LPDDR5(gp_LPDDR5_cov_trans lpddr5_trans);
+	function void write_LPDDR5(gp_LPDDR5_cov_trans lpddr5_trans_item);
+		lpddr5_trans = lpddr5_trans_item;
 		if(lpddr5_trans.CA != DES && lpddr5_trans.CA != NOP) begin
 			
 			//RD_AFTER_RD_NO_SYNC

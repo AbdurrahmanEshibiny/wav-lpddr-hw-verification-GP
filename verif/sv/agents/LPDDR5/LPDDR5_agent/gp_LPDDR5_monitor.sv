@@ -1040,6 +1040,9 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						{1'b1, 7'b0000010}: begin
 							next_CA = RFF;
 						end
+						{1'b1, 7'b0000101}: begin
+							next_CA = RDC;
+						end 
 						default: if(ch0_vif.cs) `uvm_error("gp_LPDDR5_monitor", "Recieved unknown command on CA bus")
 					endcase
 					if(ch0_vif.DQ !== 16'hzzzz) begin 
@@ -1079,6 +1082,8 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 								begin
 									time_PDE = $time;
 									CA = PDE;
+									cov_trans_item.CA = CA;
+									subscriber_port_item.write(cov_trans_item);
 									if (CA == SRE) bank_state = '{default:SELF_REFRESH_POWER_DOWN};
 									else bank_state = '{default:IDLE_POWER_DOWN};
 									while(1) begin
@@ -1091,6 +1096,8 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 												CA = SRE;
 											end
 										end
+										cov_trans_item.CA = CA;
+										subscriber_port_item.write(cov_trans_item);
 									end	
 								end
 						end
@@ -1292,7 +1299,9 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 												bank_state = '{default:IDLE};
 												break;
 											end
-										end	
+										end
+										cov_trans_item.CA = CA;
+										subscriber_port_item.write(cov_trans_item);	
 									end
 								
 								end
@@ -1313,7 +1322,9 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 												bank_state = '{default:IDLE};
 												break;
 											end
-										end	
+										end
+										cov_trans_item.CA = CA;
+										subscriber_port_item.write(cov_trans_item);	
 									end
 								
 								end
