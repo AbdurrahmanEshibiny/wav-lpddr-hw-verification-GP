@@ -38,6 +38,6 @@ vsim +UVM_TESTNAME=wddr_DFI_phyupd_test work.wddr_tb_top -novopt
 vsim +UVM_TESTNAME=wddr_DFI_lp_ctrl_test work.wddr_tb_top -novopt
 vsim +UVM_TESTNAME=wddr_DFI_lp_data_test work.wddr_tb_top -novopt
 vsim +UVM_TESTNAME=wddr_DFI_status_test work.wddr_tb_top -novopt
-
+vsim +UVM_TESTNAME=wddr_DFI_wck_test +MVP_FORCE_PLL +vcoFreq1=2112 +gb=2 +freqRatio=2 work.wddr_tb_top -novopt
 
 Hint: You can add the option [-c] to the third step to start questa in CLI mode for faster startup
