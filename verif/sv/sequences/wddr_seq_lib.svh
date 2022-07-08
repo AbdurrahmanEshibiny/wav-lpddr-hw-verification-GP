@@ -84,3 +84,4 @@ import wav_DFI_pkg::*;
 `include "sv/sequences/dfi/wddr_DFI_power_down_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_control_with_regs_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_wck_seq.sv"
+`include "sv/sequences/dfi/wddr_DFI_write_4to1_seq.sv"
