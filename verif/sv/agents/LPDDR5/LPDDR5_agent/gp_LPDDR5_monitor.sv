@@ -602,7 +602,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 									i = 0;
 									repeat(16) begin
 										@(posedge ch0_vif.dq0_wck_t)begin
-											item.wrdata[j][i] = DQ[i];
+											//item.wrdata[j][i] = DQ[i];
 											i++;
 										end
 									end

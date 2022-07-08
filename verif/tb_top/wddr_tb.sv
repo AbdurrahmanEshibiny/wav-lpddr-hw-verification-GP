@@ -25,7 +25,7 @@ class wddr_tb extends uvm_env;
     wddr_reg_model               reg_model;
 
     wddr_subscriber              subscriber;
-
+    wddr_scoreboard              scoreboard;
     //RAL declartions
     reg_to_apb_adapter                   reg2apb;
     uvm_reg_predictor#(wav_APB_transfer) apb_predictor;
@@ -44,7 +44,8 @@ class wddr_tb extends uvm_env;
         dfi_agent        = wav_DFI_agent::type_id::create("dfi_agent", this);
         reg2apb          = reg_to_apb_adapter::type_id::create("reg2apb");
 
-        subscriber        = wddr_subscriber::type_id::create("subscriber", this);
+        scoreboard       = wddr_scoreboard::type_id::create("scoreboard", this);
+        subscriber       = wddr_subscriber::type_id::create("subscriber", this);
         // Predictor
         apb_predictor    = uvm_reg_predictor#(wav_APB_transfer)::type_id::create("apb_predictor", this);
 
@@ -80,6 +81,12 @@ class wddr_tb extends uvm_env;
         lpddr5_agent.lpddr5_monitor.subscriber_port_item.connect(subscriber.LPDDR5_imp);
         // Connect the DFI monitor to the subscriber
         dfi_agent.monitor.subscriber_port_item.connect(subscriber.DFI_imp);
+
+        // connecting scoreboard to DFI
+        //dfi_agent.driver.seq_item_port.connect(scoreboard.seq_item_export);
+
+        // connecting scoreboard to LPDDR5
+        lpddr5_agent.lpddr5_monitor.recieved_transaction.connect(scoreboard.fifo_recieved.analysis_export);
     endfunction
 
     function void end_of_elaboration_phase(uvm_phase phase);
