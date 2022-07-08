@@ -386,6 +386,8 @@ class wav_DFI_driver extends uvm_driver;
             vif.mp_drv.cb_drv.cs[i] <= trans.cs[i];
         foreach(trans.parity_in[i])
             vif.mp_drv.cb_drv.parity_in[i] <= trans.parity_in[i];
+		foreach(trans.reset_n[i])
+            vif.mp_drv.cb_drv.reset_n[i] <= trans.reset_n[i];
     endtask
 
     //there are different types of DFI transactions 

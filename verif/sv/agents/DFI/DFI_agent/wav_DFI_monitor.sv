@@ -622,6 +622,7 @@ class wav_DFI_monitor extends uvm_monitor;
         wav_DFI_update_transfer trans = new();
         int counter = 0, steadyCounter = 0;
         bit isAcked = 0;
+		trans.is_ctrl = 1;
         collect_ctrlupd(trans);
         write_to_port(trans);
         forever begin

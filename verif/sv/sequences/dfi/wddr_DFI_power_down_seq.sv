@@ -370,9 +370,36 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
         trans.address[0] = 0;
         `uvm_send(trans);
 
-
-
         wait_dfi_cycles(20); 
-
+		
+		//////////////////////////Toggling command interface DFI signals/////////////////////////////////
+		trans.cke 				= '{default: 2'b11};
+        trans.cs				= '{default: 2'b11};
+        trans.dram_clk_disable	= '{default: 1};
+		trans.parity_in			= '{default: 1};
+        trans.address 			= '{default: 14'h0000};
+        `uvm_send(trans);
+		wait_dfi_cycles(10); 
+		
+		trans.cke 				= '{default: 2'b00};
+        trans.cs				= '{default: 2'b00};
+        trans.dram_clk_disable	= '{default: 0};
+		trans.parity_in			= '{default: 0};
+        trans.address 			= '{default: 14'hffff};
+		`uvm_send(trans);
+		wait_dfi_cycles(10); 
+		
+		trans.address 			= '{default: 14'h0000};
+		`uvm_send(trans);
+		wait_dfi_cycles(10); 
+		
+		trans.reset_n			= '{default: 1};
+		`uvm_send(trans);
+		wait_dfi_cycles(10);
+		
+		trans.reset_n			= '{default: 0};
+		`uvm_send(trans);
+		wait_dfi_cycles(10);
+		
     endtask
 endclass

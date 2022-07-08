@@ -1043,7 +1043,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						{1'b1, 7'b0000101}: begin
 							next_CA = RDC;
 						end 
-						default: if(ch0_vif.cs) `uvm_error("gp_LPDDR5_monitor", "Recieved unknown command on CA bus")
+						default: if(ch0_vif.cs) `uvm_warning("gp_LPDDR5_monitor", "Recieved unknown command on CA bus")
 					endcase
 					if(ch0_vif.DQ !== 16'hzzzz) begin 
 						counter += 1;
