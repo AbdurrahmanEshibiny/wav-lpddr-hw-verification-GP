@@ -1,5 +1,5 @@
-`ifndef WDDR_DFI_READ_TEST
-`define WDDR_DFI_READ_TEST
+`ifndef _WDDR_DFI_READ_TEST_
+`define _WDDR_DFI_READ_TEST_
 
 class wddr_DFI_read_test extends wddr_base_test;
 
@@ -25,16 +25,18 @@ class wddr_DFI_read_test extends wddr_base_test;
 
         uvm_objection objection;
         wav_DFI_sequencer sequencer;
-        wav_DFI_read_seq  dfi_seq;
+        dfi_rd_seq dfi_seq;
 
-        `uvm_info (get_type_name(),$psprintf("------- Running WDDR DFI READ TEST ---------"),UVM_LOW)
+        `uvm_info (
+            get_type_name(),
+            $psprintf("------- Running WDDR DFI READ TEST ---------"),UVM_LOW)
         phase.raise_objection(this, "start_test");
 
         super.run_phase(phase);
 
         if (!uvm_config_db#(wav_DFI_sequencer)::get(uvm_root::get(), "*", "DFI_sequencer", sequencer))
             `uvm_fatal(get_name(), "Failed at getting the sequencer");
-        dfi_seq = wddr_DFI_read_seq::type_id::create("dfi_seq");
+        dfi_seq = dfi_rd_seq::type_id::create("dfi_seq");
         dfi_seq.start(sequencer);
         phase.drop_objection(this,"Done test.");
 

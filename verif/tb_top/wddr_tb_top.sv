@@ -1259,13 +1259,14 @@ ddr_phy_1x32 u_phy_1x32 (
         .i_dfi_lp_data_req           (DFI_if.lp_data_req),
         .i_dfi_lp_data_wakeup        (DFI_if.lp_data_wakeup),
 
-        .i_dfi_reset_n_p0            (dfi_reset_sig),// FIXME
-        .i_dfi_reset_n_p1            (dfi_reset_sig),// FIXME
-        .i_dfi_reset_n_p2            (dfi_reset_sig),// FIXME
-        .i_dfi_reset_n_p3            (dfi_reset_sig),// FIXME
+        .i_dfi_reset_n_p0            (DFI_if.reset_n[0]),// FIXME
+        .i_dfi_reset_n_p1            (DFI_if.reset_n[1]),// FIXME
+        .i_dfi_reset_n_p2            (DFI_if.reset_n[2]),// FIXME
+        .i_dfi_reset_n_p3            (DFI_if.reset_n[3]),// FIXME
+
         .i_dfi_address_p0            (DFI_if.address[0]),
-        .i_dfi_cke_p0                (DFI_if.cke[0]             ),
-        .i_dfi_cs_p0                 (DFI_if.cs[0]              ),
+        .i_dfi_cke_p0                (DFI_if.cke[0]),
+        .i_dfi_cs_p0                 (DFI_if.cs[0]),
         .i_dfi_dram_clk_disable_p0   (DFI_if.dram_clk_disable[0]),
         .i_dfi_address_p1            (DFI_if.address[1]         ),
         .i_dfi_cke_p1                (DFI_if.cke[1]              ),
@@ -1288,8 +1289,30 @@ ddr_phy_1x32 u_phy_1x32 (
         .i_dfi_wck_cs_p0             (DFI_if.wck_cs[0]),
         .i_dfi_wck_en_p0             (DFI_if.wck_en[0]),
         .i_dfi_wck_toggle_p0         (DFI_if.wck_toggle[0]),
-        .i_dfi_rddata_cs_p0          (i_dfi_rddata_cs_p0       ),
-        .i_dfi_rddata_en_p0          (i_dfi_rddata_en_p0       ),
+
+
+        // dfi read interface
+        .i_dfi_rddata_cs_p0          (DFI_if.rddata_cs[0]),
+        .i_dfi_rddata_cs_p1          (DFI_if.rddata_cs[1]),
+        .i_dfi_rddata_cs_p2          (DFI_if.rddata_cs[2]),
+        .i_dfi_rddata_cs_p3          (DFI_if.rddata_cs[3]),
+        .i_dfi_rddata_en_p0          (DFI_if.rddata_en[0]),
+        .i_dfi_rddata_en_p1          (DFI_if.rddata_en[1]),
+        .i_dfi_rddata_en_p2          (DFI_if.rddata_en[2]),
+        .i_dfi_rddata_en_p3          (DFI_if.rddata_en[3]),
+        .o_dfi_rddata_w0             (DFI_if.rddata[0]),
+        .o_dfi_rddata_w1             (DFI_if.rddata[1]),
+        .o_dfi_rddata_w2             (DFI_if.rddata[2]),
+        .o_dfi_rddata_w3             (DFI_if.rddata[3]),
+        .o_dfi_rddata_dbi_w0         (DFI_if.rddata_dbi[0]),
+        .o_dfi_rddata_dbi_w1         (DFI_if.rddata_dbi[1]),
+        .o_dfi_rddata_dbi_w2         (DFI_if.rddata_dbi[2]),
+        .o_dfi_rddata_dbi_w3         (DFI_if.rddata_dbi[3]),
+        .o_dfi_rddata_valid_w0       (DFI_if.rddata_valid[0]),
+        .o_dfi_rddata_valid_w1       (DFI_if.rddata_valid[1]),
+        .o_dfi_rddata_valid_w2       (DFI_if.rddata_valid[2]),
+        .o_dfi_rddata_valid_w3       (DFI_if.rddata_valid[3]),
+        
         .i_dfi_wrdata_p1             (DFI_if.wrdata[1]),
         .i_dfi_wrdata_mask_p1        (DFI_if.wrdata_mask[1]),
         .i_dfi_parity_in_p1          (DFI_if.parity_in[1]),
@@ -1298,8 +1321,7 @@ ddr_phy_1x32 u_phy_1x32 (
         .i_dfi_wck_cs_p1             (DFI_if.wck_cs[1]),
         .i_dfi_wck_en_p1             (DFI_if.wck_en[1]),
         .i_dfi_wck_toggle_p1         (DFI_if.wck_toggle[1]),
-        .i_dfi_rddata_cs_p1          (i_dfi_rddata_cs_p1       ),
-        .i_dfi_rddata_en_p1          (i_dfi_rddata_en_p1       ),
+        
         .i_dfi_wrdata_p2             (DFI_if.wrdata[2]),
         .i_dfi_wrdata_mask_p2        (DFI_if.wrdata_mask[2]),
         .i_dfi_parity_in_p2          (DFI_if.parity_in[2]),
@@ -1308,8 +1330,6 @@ ddr_phy_1x32 u_phy_1x32 (
         .i_dfi_wck_cs_p2             (DFI_if.wck_cs[2]),
         .i_dfi_wck_en_p2             (DFI_if.wck_en[2]),
         .i_dfi_wck_toggle_p2         (DFI_if.wck_toggle[2]),
-        .i_dfi_rddata_cs_p2          (i_dfi_rddata_cs_p2       ),
-        .i_dfi_rddata_en_p2          (i_dfi_rddata_en_p2       ),
         .i_dfi_wrdata_p3             (DFI_if.wrdata[3]),
         .i_dfi_wrdata_mask_p3        (DFI_if.wrdata_mask[3]),
         .i_dfi_parity_in_p3          (DFI_if.parity_in[3]),
@@ -1318,20 +1338,6 @@ ddr_phy_1x32 u_phy_1x32 (
         .i_dfi_wck_cs_p3             (DFI_if.wck_cs[3]),
         .i_dfi_wck_en_p3             (DFI_if.wck_en[3]),
         .i_dfi_wck_toggle_p3         (DFI_if.wck_toggle[3]),
-        .i_dfi_rddata_cs_p3          (i_dfi_rddata_cs_p3       ),
-        .i_dfi_rddata_en_p3          (i_dfi_rddata_en_p3       ),
-        .o_dfi_rddata_w0             (o_dfi_rddata_w0          ),
-        .o_dfi_rddata_dbi_w0         (o_dfi_rddata_dbi_w0      ),
-        .o_dfi_rddata_valid_w0       (o_dfi_rddata_valid_w0    ),
-        .o_dfi_rddata_w1             (o_dfi_rddata_w1          ),
-        .o_dfi_rddata_dbi_w1         (o_dfi_rddata_dbi_w1      ),
-        .o_dfi_rddata_valid_w1       (o_dfi_rddata_valid_w1    ),
-        .o_dfi_rddata_w2             (o_dfi_rddata_w2          ),
-        .o_dfi_rddata_dbi_w2         (o_dfi_rddata_dbi_w2      ),
-        .o_dfi_rddata_valid_w2       (o_dfi_rddata_valid_w2    ),
-        .o_dfi_rddata_w3             (o_dfi_rddata_w3          ),
-        .o_dfi_rddata_dbi_w3         (o_dfi_rddata_dbi_w3      ),
-        .o_dfi_rddata_valid_w3       (o_dfi_rddata_valid_w3    ),
     `endif
 
     .pad_ddr_reset_n             (pad_ddr_reset),

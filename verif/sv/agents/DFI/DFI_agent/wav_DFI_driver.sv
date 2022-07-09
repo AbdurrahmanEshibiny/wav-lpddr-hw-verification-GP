@@ -14,7 +14,6 @@ class wav_DFI_driver extends uvm_driver;
 
     function new (string name = "wav_DFI_driver", uvm_component parent=null);
         super.new(name, parent);
-        uvm_config_db#(wddr_config)::get(null, "*", "cfg_obj", cfg);
     endfunction
 
     // function void connect_phase(uvm_phase phase);
@@ -226,16 +225,24 @@ class wav_DFI_driver extends uvm_driver;
           
     endtask
 
-    task automatic drive_status(input wav_DFI_status_transfer trans);
+    task automatic drive_status(wav_DFI_status_transfer trans);
         string msg;
         int tinit_start;
+
+        foreach(vif.cb_drv.cke[i]) begin
+            vif.cb_drv.cke[i] <= 2'b11;
+            vif.cb_drv.dram_clk_disable[i] <= 0;
+            // vif.cb_drv.cs[i] <= trans.address.cs;
+            vif.cb_drv.reset_n[i] <= '1;
+        end
+
         vif.cb_drv.init_start <= 0;
         vif.cb_drv.freq_fsp <= trans.freq_fsp;
         vif.cb_drv.freq_ratio <= trans.freq_ratio;
         vif.cb_drv.frequency <= trans.frequency;
         @(vif.cb_drv);
 
-        // while (!vif.cb_drv.init_complete) @(vif.cb_drv);
+        while (!vif.cb_drv.init_complete) @(vif.cb_drv);
         vif.cb_drv.init_start <= 1;
 
         tinit_start = 1;
@@ -299,93 +306,166 @@ class wav_DFI_driver extends uvm_driver;
     // TODO: we need to think about cases in ratioed systems when we want
     // to send multiple consecutive read instructions. the above idea
     // should solve it
-
-    task drive_data (dfi_data_seq_item trans);
-        // we will assume the frequency ratio is 1:1 for now
-        // `uvm_info(get_name(), "Driving data", UVM_MEDIUM);
-        data_trans curr_rw_item;
-        data_trans next_rw_item;
-        dfi_cmd_t cmd_;
-        int rd_cmd_dly0;
-        int rd_cmd_dly1;
-        int j;
-        for (j = 0; j < trans.data_items.size(); j++) begin
-            curr_rw_item = trans.data_items[j];
-            // write preamble to address bus
-            foreach (curr_rw_item.preamble[i]) begin
-                @(vif.mp_drv.cb_drv) begin
-                    vif.mp_drv.cb_drv.address[0] <= curr_rw_item.preamble[i];
-                end
-            end
-            // preamble done. choose which instruction to make
-            if (curr_rw_item.dir == read_dir) begin
-                cmd_ = DFI_RD16;
-                cmd_[6:4] = curr_rw_item.address.col[5:3];
-                cmd_[10:7] = curr_rw_item.address.ba;
-                cmd_[12:11] = curr_rw_item.address.col[2:1];
-                cmd_[3] = curr_rw_item.address.col[0];
-                cmd_[13] = 1;
-                if (j != (trans.data_items.size() - 1)) begin
-                    next_rw_item = trans.data_items[j+1];
-                end
-                fork
-                    begin
-                        // write read instruction then NOP
-                        // TODO: handle the problem of consectuive
-                        // reads writes
-                        @(vif.mp_drv.cb_drv) begin
-                            vif.mp_drv.cb_drv.address[0] <= cmd_;                            
-                        end
-                        if (j == (trans.data_items.size() - 1)) begin
-                            @(vif.mp_drv.cb_drv) begin
-                                vif.mp_drv.cb_drv.address[0] <= DFI_NOP;
-                            end
-                        end else begin
-                            if (next_rw_item.dir == read_dir) begin
-                                rd_cmd_dly0 =
-                                curr_rw_item.data_len
-                                - next_rw_item.preamble.size() - 1;
-                                if (rd_cmd_dly0 > 0) begin
-                                    vif.mp_drv.cb_drv.address[0] <= DFI_NOP;
-                                    repeat (rd_cmd_dly0) begin
-                                        @(vif.mp_drv.cb_drv);
-                                    end
-                                end
-                            end
-                        end
-                    end
-                    begin
-                        repeat (cfg.tphy_rdcslat) begin
-                            @(vif.mp_drv.cb_drv);
-                        end
-                        vif.mp_drv.cb_drv.rddata_cs[0] <= curr_rw_item.cs;
-                    end
-                    begin
-                        repeat (cfg.trddata_en) begin
-                            @(vif.mp_drv.cb_drv);
-                        end
-                        vif.mp_drv.cb_drv.rddata_en[0] <= 1;
-                        // cycles needed for rddata_en to stay 1
-                        repeat (curr_rw_item.data_len) begin
-                            @(vif.mp_drv.cb_drv);
-                        end
-                        if (j != (trans.data_items.size() - 1)) begin
-                            next_rw_item = trans.data_items[j+1];
-                            rd_cmd_dly1 =
-                            curr_rw_item.data_len
-                            - next_rw_item.preamble.size() - 1;
-                            if (rd_cmd_dly1 < 0) begin
-                                vif.mp_drv.cb_drv.rddata_en[0] <= 0;
-                            end
-                        end else begin
-                            vif.mp_drv.cb_drv.rddata_en[0] <= 0;
-                        end
-                    end      
-                join_any
+/*
+    task drive_cmd_2_1(dfi_cmd_t _cmd_);
+        static bit phase;
+        static bit [13:0] adrs [0:1];
+        adrs [phase] = _cmd_;
+        phase = phase + 1;
+        if (!phase) begin
+            @(vif.cb_drv) begin
+                vif.cb_drv.address[0] <= adrs[0];
+                vif.cb_drv.address[1] <= adrs[1];
+                adrs[0] = 0;
+                adrs[1] = 0;
             end
         end
     endtask
 
+    task drive_rd_en(DFI_rd_seq_item trans);
+        // works with 2:1 ONLY
+        static bit phase;
+        repeat (trans.trddata_en) begin
+            // phase = phase + 1;
+            phase = ~phase;
+            if (!phase) begin
+                @(vif.cb_drv);    
+            end
+        end
+        // cycles needed for rddata_en to stay 1
+        // some synchronization control could be needed here
+        repeat (trans.data_len) begin
+            vif.cb_drv.rddata_en[phase] <= 1;
+            // phase = phase + 1;
+            phase = ~phase;
+            if (!phase) begin
+                @(vif.cb_drv);
+            end
+        end
+
+        repeat (trans.final_en) begin
+            vif.cb_drv.rddata_en[phase] <= 0;
+            // phase = phase + 1;
+            phase = ~phase;
+            if (!phase) begin
+                @(vif.cb_drv);
+            end  
+        end
+    endtask
+
+    task drive_rd_cs(DFI_rd_seq_item trans);
+        // works with 2:1 ONLY
+        static bit phase;
+        repeat (trans.tphy_rdcslat) begin
+            // phase = phase + 1;
+            phase = ~phase;
+            if (!phase) begin
+                @(vif.cb_drv);
+            end
+        end
+        vif.cb_drv.rddata_cs[phase] <= trans.address.cs;
+        // phase = phase + 1;
+        phase = ~phase;
+        if (!phase) begin
+            @(vif.cb_drv);
+        end
+       
+        if (trans.data_len > 1) begin
+            vif.cb_drv.rddata_cs[phase] <= trans.address.cs;
+            // phase = phase + 1;
+            phase = ~phase;
+            if (!phase) begin
+                @(vif.cb_drv);
+            end
+        end
+        
+    endtask
+
+
+
+    task automatic drive_read (DFI_rd_seq_item trans);
+        // This works for 2:1 ONLY
+        // TODO: dbi receive
+        dfi_cmd_t cmd_;
+        // if (!uvm_config_db#(wddr_config)::get(uvm_root::get(), "*", "cfg_obj", cfg))
+        // begin
+        //     `uvm_fatal(get_full_name(), "FAILED to get config obj");
+        // end
+        trans.print();
+
+        foreach(vif.cb_drv.cke[i]) begin
+            vif.cb_drv.cke[i] <= 2'b11;
+            vif.cb_drv.dram_clk_disable[i] <= 0;
+            vif.cb_drv.cs[i] <= trans.address.cs;
+            vif.cb_drv.reset_n[i] <= '1;
+        end
+
+        // write preamble
+        foreach (trans.preamble[i]) begin
+            drive_cmd_2_1(trans.preamble[i]);
+        end
+
+        // prepare read instruction
+        cmd_ = DFI_RD16;
+        cmd_[6:4] = trans.address.col[5:3];
+        cmd_[10:7] = trans.address.ba;
+        cmd_[12:11] = trans.address.col[2:1];
+        cmd_[3] = trans.address.col[0];
+        cmd_[13] = 1;
+
+        fork
+            begin
+                drive_cmd_2_1(cmd_);
+                if (trans.is_last) begin
+                    repeat (2) begin
+                        drive_cmd_2_1(DFI_NOP);    
+                    end
+                end    
+            end
+            begin
+                fork
+                    drive_rd_en(trans);
+                    drive_rd_cs(trans);
+                join_none
+            end
+        join
+    endtask
+
+*/
+
+    task automatic drive_read (DFI_rd_stream_seq_item trans);
+        
+        foreach(vif.cb_drv.cke[i]) begin
+            vif.cb_drv.cke[i] <= 2'b11;
+            vif.cb_drv.dram_clk_disable[i] <= 0;
+            vif.cb_drv.reset_n[i] <= '1;
+        end
+
+        foreach (trans.slice_q[i]) begin
+            @(vif.cb_drv) begin
+                vif.cb_drv.address[0] <= trans.slice_q[i].address[0];
+                vif.cb_drv.address[1] <= trans.slice_q[i].address[1];
+                vif.cb_drv.address[2] <= trans.slice_q[i].address[2];
+                vif.cb_drv.address[3] <= trans.slice_q[i].address[3];
+
+                vif.cb_drv.cs[0] <= trans.slice_q[i].cs[0];
+                vif.cb_drv.cs[1] <= trans.slice_q[i].cs[1];
+                vif.cb_drv.cs[2] <= trans.slice_q[i].cs[2];
+                vif.cb_drv.cs[3] <= trans.slice_q[i].cs[3];
+
+                vif.cb_drv.rddata_cs[0] <= trans.slice_q[i].rddata_cs[0];
+                vif.cb_drv.rddata_cs[1] <= trans.slice_q[i].rddata_cs[1];
+                vif.cb_drv.rddata_cs[2] <= trans.slice_q[i].rddata_cs[2];
+                vif.cb_drv.rddata_cs[3] <= trans.slice_q[i].rddata_cs[3];
+
+                vif.cb_drv.rddata_en[0] <= trans.slice_q[i].rddata_en[0];
+                vif.cb_drv.rddata_en[1] <= trans.slice_q[i].rddata_en[1];
+                vif.cb_drv.rddata_en[2] <= trans.slice_q[i].rddata_en[2];
+                vif.cb_drv.rddata_en[3] <= trans.slice_q[i].rddata_en[3];
+            end
+        end
+        
+    endtask
 
     task automatic drive_cmd(wav_DFI_cmd_transfer trans);
         foreach(trans.address[i])
@@ -410,7 +490,7 @@ class wav_DFI_driver extends uvm_driver;
 			wav_DFI_lp_transfer lp_trans;
 			wav_DFI_update_transfer update_trans;
 			wav_DFI_write_transfer write_trans;
-            dfi_data_seq_item read_trans;
+            DFI_rd_stream_seq_item read_trans;
             wav_DFI_status_transfer status_trans;
             wav_DFI_cmd_transfer cmd_trans;
 		//add the remaining interface cases
@@ -436,9 +516,9 @@ class wav_DFI_driver extends uvm_driver;
                     $cast(status_trans, trans);
                     drive_status(status_trans);
                 end
-                data: begin
+                read: begin
                     $cast(read_trans, trans);
-                    drive_data(read_trans);
+                    drive_read(read_trans);
                 end
 			endcase
 			driver_run_phase.drop_objection(this, "done driving transaction");

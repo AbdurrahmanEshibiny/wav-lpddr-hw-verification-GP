@@ -230,29 +230,157 @@ typedef enum logic [13:0] {
 `define right_cmd(cmd) (cmd[6:0])
 `define left_cmd(cmd) (cmd[13:7])
 
-typedef struct {
+
+class dfi_data extends uvm_object;
+    
     bit [63:0] data;
     bit [7:0] dbi;
-} data_t;
 
-typedef struct {
-    bit [17:0] row;
-    bit [6:0] col;
-    bit [1:0] bg;
-    bit [3:0] ba;
-} address_t;
+    `uvm_object_utils_begin(dfi_data)
+        `uvm_field_int(data, UVM_DEFAULT)
+        `uvm_field_int(dbi, UVM_DEFAULT)
+    `uvm_object_utils_end
+    
+    function new(string name = "dfi_data");
+        super.new(name);
+    endfunction
 
-typedef enum bit {
-    read_dir, write_dir
-} data_dir_t;
+endclass
 
-class data_trans;
+class dram_address extends uvm_object;
+
+    rand bit [17:0] row;
+    rand bit [6:0] col;
+    rand bit [1:0] bg;
+    rand bit [3:0] ba;
+    rand bit [1:0] cs;
+
+    `uvm_object_utils_begin(dram_address)
+        `uvm_field_int(row, UVM_DEFAULT)
+        `uvm_field_int(col, UVM_DEFAULT)
+        `uvm_field_int(bg, UVM_DEFAULT)
+        `uvm_field_int(ba, UVM_DEFAULT)
+        `uvm_field_int(cs, UVM_DEFAULT)
+    `uvm_object_utils_end
+
+    function new(string name = "dram_address");
+        super.new(name);
+    endfunction
+
+endclass
+
+virtual class DFI_data_seq_item extends wav_DFI_transfer;
+
+    dfi_cmd_t preamble [$];
+    rand dram_address address;
+    dfi_data data [$];
+    rand int data_len;
+    // bit is_last;
+    // bit [2:0] final_en;
+
+    // constraint c_is_last {if (is_last) final_en == 0;}
+    // constraint c_data_len {
+    //     data_len <= data.size();
+    // }
+
+    `uvm_object_utils_begin(DFI_data_seq_item)
+        `uvm_field_queue_enum(dfi_cmd_t, preamble, UVM_DEFAULT)
+        `uvm_field_object(address, UVM_DEFAULT)
+        `uvm_field_queue_object(data, UVM_DEFAULT)
+        `uvm_field_int(data_len, UVM_DEFAULT)
+        // `uvm_field_int(is_last, UVM_COPY)
+        // `uvm_field_int(final_en, UVM_COPY)
+    `uvm_object_utils_end
+
+    function new(string name = "DFI_data_seq_item", type_e tr_type = DFI);
+        super.new(name);
+        super.tr_type = tr_type;
+        address = dram_address::type_id::create("address");
+    endfunction
+
+endclass
+
+
+class DFI_rd_seq_item extends DFI_data_seq_item;
+    // int trddata_en;
+    // int tphy_rdcslat;
+
+    `uvm_object_utils_begin(DFI_rd_seq_item)
+        // `uvm_field_int(trddata_en, UVM_COPY)
+        // `uvm_field_int(tphy_rdcslat, UVM_COPY)
+    `uvm_object_utils_end
+
+    function new(string name = "DFI_rd_seq_item");
+        super.new(name, read);
+    endfunction
+
+endclass
+
+class DFI_wr_seq_item extends DFI_data_seq_item;
+
+    `uvm_object_utils(DFI_wr_seq_item)
+
+    function new(string name = "DFI_rd_seq_item");
+        super.new(name, write);
+    endfunction
+    
+endclass
+
+class DFI_rd_slice extends uvm_object;
+    bit [13:0] address [0:3];
+    bit [1:0] cs [0:3];
+    bit [63:0] rddata [0:3];
+    bit [1:0] rddata_cs [0:3];
+    bit [7:0] rddata_dbi [0:3];
+    bit rddata_en [0:3];
+    bit rddata_valid [0:3];
+    // int trddata_en;
+    // int tphy_rdcslat;
+
+
+    `uvm_object_utils_begin(DFI_rd_slice)
+        `uvm_field_sarray_int(address, UVM_DEFAULT)
+        `uvm_field_sarray_int(cs, UVM_DEFAULT)
+        `uvm_field_sarray_int(rddata, UVM_DEFAULT)
+        `uvm_field_sarray_int(rddata_cs, UVM_DEFAULT)
+        `uvm_field_sarray_int(rddata_dbi, UVM_DEFAULT)
+        `uvm_field_sarray_int(rddata_en, UVM_DEFAULT)
+        `uvm_field_sarray_int(rddata_valid, UVM_DEFAULT)
+        // `uvm_field_int(trddata_en, UVM_DEFAULT)
+        // `uvm_field_int(tphy_rdcslat, UVM_DEFAULT)
+    `uvm_object_utils_end
+    
+    function new(string name = "DFI_rd_slice");
+        super.new(name);
+    endfunction
+endclass
+
+class DFI_rd_stream_seq_item extends wav_DFI_transfer;
+    DFI_rd_slice slice_q [$];
+
+    `uvm_object_utils_begin(DFI_rd_stream_seq_item)
+        `uvm_field_queue_object(slice_q, UVM_DEFAULT)
+    `uvm_object_utils_end
+
+    function new(string name = "DFI_rd_stream_seq_item");
+        super.new(name);
+        tr_type = read;
+    endfunction 
+endclass
+
+/*
+class data_trans extends uvm_object;
+
     dfi_cmd_t preamble [$];
     address_t address;
     rand data_t data [$];
     int data_len;
-    bit [1:0] cs;
-    data_dir_t dir;
+    
+
+    `uvm_object_utils_begin (data_trans)
+        `uvm_field_int(address.row)
+    `uvm_component_utils_end
+
     function new(int data_len = 0, data_dir_t dir);
         this.data_len = data_len;
         this.dir = dir;
@@ -272,6 +400,8 @@ class dfi_data_seq_item extends wav_DFI_transfer;
         super.tr_type = data;
     endfunction
 endclass
+*/
+
 
 class wav_DFI_cmd_transfer extends wav_DFI_transfer;
     dfi_cmd_t cmd_mc[$]; // commmand coming from MC
