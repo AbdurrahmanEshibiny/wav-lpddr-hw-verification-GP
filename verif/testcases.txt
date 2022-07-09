@@ -12,3 +12,4 @@ wddr_DFI_several_phymstr_test
 wddr_DFI_several_phyupd_test
 wddr_DFI_control_with_regs_test
 wddr_DFI_power_down_test
+wddr_DFI_status_test
