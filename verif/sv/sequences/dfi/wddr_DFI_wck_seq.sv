@@ -95,15 +95,61 @@ class wddr_DFI_wck_seq extends wddr_base_seq;
 		bit [$bits(item.values)-1 : 0] end_val;
         bit err;
         wck_c item;
-        freqRatio = 2;
+        // freqRatio = 2;
         super.body();
-        // ddr_boot(err);
-        // if (err != 0) begin
-        //     `uvm_error(get_name(), $sformatf("sequence err_cnt <= %d ", err_cnt));
-        // end
+        ddr_boot(err);
+        if (err != 0) begin
+            `uvm_error(get_name(), $sformatf("sequence err_cnt <= %d ", err_cnt));
+        end
         // config_vips(200,2);
         set_dfi_wck_mode(1);
-        phy_bringup(err);
+        set_dfi_rdout_mode(1, 1);
+        set_dfi_ca_rddata_en (.en(1'b1));  // Enable CA RDDATA en for CA loopback.
+
+
+        set_txdq_sdr_fc_dly   (.byte_sel(ALL),    .dq (8'd99), .rank_sel(RANK_ALL), .fc_dly  ('h0000_0000) );
+      set_txdq_sdr_pipe_en  (.byte_sel(ALL),    .dq (8'd99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+      set_txdq_sdr_x_sel    (.byte_sel(ALL),    .dq (8'd99), .rank_sel(RANK_ALL), .x_sel   ('h7654_3200) );
+      set_txdqs_sdr_fc_dly  (.byte_sel(ALL),    .dqs(8'd99), .rank_sel(RANK_ALL), .fc_dly  ('h0000_0000) );
+      set_txdqs_sdr_pipe_en (.byte_sel(ALL),    .dqs(8'd99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+      set_txdqs_sdr_x_sel   (.byte_sel(ALL),    .dqs(8'd99), .rank_sel(RANK_ALL), .x_sel   ('h7654_3200) );
+
+      set_txdqs_sdr_x_sel   (.byte_sel(ALL),    .dqs(8'd0),  .rank_sel(RANK_ALL), .x_sel    ('h7654_3210) );  //WCK
+      set_txdqs_sdr_x_sel   (.byte_sel(ALL),    .dqs(8'd1),  .rank_sel(RANK_ALL), .x_sel    ('h7654_3210) );  //DQS/Parity
+
+      set_txdq_ddr_pipe_en  (.byte_sel(ALL),    .dq (8'd99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+      set_txdq_ddr_x_sel    (.byte_sel(ALL),    .dq (8'd99), .rank_sel(RANK_ALL), .x_sel   ('h0000_3210) );
+      set_txdqs_ddr_pipe_en (.byte_sel(ALL),    .dqs(8'd99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+      set_txdqs_ddr_x_sel   (.byte_sel(ALL),    .dqs(8'd99), .rank_sel(RANK_ALL), .x_sel   ('h0000_3210) );
+
+      //EGRESS_MODE 6:0 DEF=0x01 "Egress mode (one-hot) - 0: SDR, 1:DDR_2to1, 2:QDR_2to1, 3: ODR_2to1, 4:QDR_4to1, 5:ODR_4to1, 6: BSCAN ";
+      set_dq_egress_mode    (.byte_sel(ALL),    .dq (8'd99), .mode('h02) );
+      set_dqs_egress_mode   (.byte_sel(ALL),    .dqs(8'd99), .mode('h02) );
+      set_dqs_egress_mode   (.byte_sel(ALL),    .dqs(8'd0),  .mode('h02) ); // WCK DDR2to1.
+      set_dqs_egress_mode   (.byte_sel(ALL),    .dqs(8'd1),  .mode('h02) ); // DQS DDR2to1.
+
+      set_rx_gb             (.byte_sel(DQ_ALL), .rgb_mode(DGB_1TO1_HF), .fgb_mode(FGB_1TO1),    .wck_mode(1'b0)); // for DQ, lopback DQS clock
+      set_rx_gb             (.byte_sel(CA),     .rgb_mode(DGB_1TO1_HF), .fgb_mode(FGB_1TO1),    .wck_mode(1'b1)); // for CA, loop back CK clock
+      set_tx_gb             (.byte_sel(ALL),    .tgb_mode(DGB_1TO1_HF), .wgb_mode(WGB_1TO1));
+
+    //   bl = 32;
+      //DFI Configuration
+      set_dfiwrd_wdp_cfg     (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h0), .pre_gb_pipe_en(1'b0));
+      set_dfiwrcctrl_wdp_cfg (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
+      set_dfickctrl_wdp_cfg  (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
+      set_dfiwctrl_wdp_cfg   (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
+      set_dfiwenctrl_wdp_cfg (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
+      //set_dfiwckctrl_wdp_cfg   (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
+      set_dfirctrl_wdp_cfg   (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
+      set_dfi_rdgb_mode      (DFIRGB_1TO1);
+      set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h1),   .wck_oe_cycles(4'h1),   .ie_cycles(4'h2),       .re_cycles(4'h6), .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0)); // RE extended to 6 cycles to confirm independent control on RE.
+      set_dfi_clken_pext_cfg (.wr_clken_cycles(4'h7), .rd_clken_cycles(4'hF), .ca_clken_cycles(4'h3));
+
+
+
+
+        `CSR_WRF1(DDR_DFICH0_OFFSET,DDR_DFICH_TOP_1_CFG,RDATA_ENABLE, 1);
+        // phy_bringup(err);
         item = new;
 		end_val = ~end_val;
         if (!uvm_config_db#(virtual wav_DFI_if)::get(uvm_root::get(), "*", "DFI_vif", vif)) begin
