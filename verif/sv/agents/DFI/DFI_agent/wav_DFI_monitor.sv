@@ -315,9 +315,12 @@ class wav_DFI_monitor extends uvm_monitor;
                 // TODO: add detection `uvm_info
                 if (vif.mp_mon.cb_mon.init_start) begin
                     wav_DFI_status_transfer trans = new();
+                    EventHandler::start_transaction(EventHandler::status);
                     trans.freq_fsp = vif.mp_mon.cb_mon.freq_fsp;
                     trans.freq_ratio = vif.mp_mon.cb_mon.freq_ratio;
                     trans.frequency = vif.mp_mon.cb_mon.frequency;
+                    trans.req = 1;
+                    write_to_port(trans);
                     init_complete_cntr = 0;
                     // TODO: modify this timing parameter
                     
@@ -329,7 +332,8 @@ class wav_DFI_monitor extends uvm_monitor;
                         "Freq Ratio = %1d, ", trans.freq_ratio,
                         "FSP# = %1d", trans.freq_fsp
                     );
-                    forever begin
+                    forever 
+                    begin
                         @(vif.mp_mon.cb_mon) begin
                             init_complete_cntr++;
                             if (vif.mp_mon.cb_mon.init_complete == 1'b1)
@@ -354,9 +358,14 @@ class wav_DFI_monitor extends uvm_monitor;
                             end
                         end
                     end
+
+                    while (vif.mp_mon.cb_mon.init_complete != 1'b1)
+                        @(vif.mp_mon.cb_mon);
+                    `uvm_info(get_name(), "init complete is back on HIGH", UVM_MEDIUM);                    
                     `uvm_info (
                         get_name(), {msg, "\n", freq_details}, UVM_MEDIUM
-                    )
+                    );
+                    EventHandler::end_transaction(EventHandler::status);
                 end
             end
         end
@@ -622,6 +631,7 @@ class wav_DFI_monitor extends uvm_monitor;
         wav_DFI_update_transfer trans = new();
         int counter = 0, steadyCounter = 0;
         bit isAcked = 0;
+		trans.is_ctrl = 1;
         collect_ctrlupd(trans);
         write_to_port(trans);
         forever begin
@@ -849,6 +859,11 @@ class wav_DFI_monitor extends uvm_monitor;
                 EventHandler::trigger_event(EventHandler::ctrlupd_ack_pos);
             forever @(negedge vif.mp_mon.cb_mon.ctrlupd_req) 
                 EventHandler::trigger_event(EventHandler::ctrlupd_req_neg);
+
+            forever @(posedge vif.mp_mon.cb_mon.init_start) 
+                EventHandler::trigger_event(EventHandler::status_req_pos);
+            forever @(negedge vif.mp_mon.cb_mon.init_start) 
+                EventHandler::trigger_event(EventHandler::status_req_neg);
         join
     endtask
 
@@ -863,13 +878,13 @@ class wav_DFI_monitor extends uvm_monitor;
             monitor_phyupd();         
             monitor_ctrlupd();
             monitor_write();
+			event_emitter();
             // monitor_read();
-            // monitor_status();
+            monitor_status();
 /*add monitor function to the remaining interface signals*/    
         join    // FIXME: should we use it as join_none to prevent latencies in each of them?
                 // probably not because they are all forever loops so once they are launched
                 // they will never come out of their loops  
-            event_emitter();
 /*add monitor function to the remaining interface signals*/       
     endtask
 endclass

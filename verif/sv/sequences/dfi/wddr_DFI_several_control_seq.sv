@@ -14,8 +14,10 @@ class wddr_DFI_several_control_seq extends wddr_base_seq;
             `uvm_error(get_name(), $sformatf("sequence err_cnt = %d ", err_cnt));
         end
 
-        for (int i = 0; i < 40; ++i) begin
-              trans_type = $urandom_range(0, 4);
+        handle_status_internally(); 
+
+        for (int i = 0; i < 60; ++i) begin
+              trans_type = $urandom_range(0, 5);
               `uvm_info(get_name(), $psprintf("Starting the %0d transaction", i), UVM_MEDIUM);
               case (trans_type)
                 0:  begin                   
@@ -59,6 +61,14 @@ class wddr_DFI_several_control_seq extends wddr_base_seq;
                     trans.is_ctrl = 1'b1;
                     `uvm_rand_send(trans);
                     EventHandler::wait_for_transaction(EventHandler::ctrlupd);
+                    get_response(rsp);
+                end
+
+                5: begin
+                    wav_DFI_status_transfer trans = wav_DFI_status_transfer::type_id::create("seq_item");
+                    assert(trans.randomize());
+                    `uvm_send(trans);
+                    EventHandler::wait_for_transaction(EventHandler::status);
                     get_response(rsp);
                 end
               endcase

@@ -126,25 +126,30 @@ class wav_DFI_driver extends uvm_driver;
     task automatic drive_write(wav_DFI_write_transfer trans);  
         //trans.print();
         @(posedge vif.mp_drv.cb_drv);
+            //ck_c ck_t dram clock enable 
             vif.mp_drv.cb_drv.dram_clk_disable[0] <= 0;
             vif.mp_drv.cb_drv.dram_clk_disable[1] <= 1;
             vif.mp_drv.cb_drv.dram_clk_disable[2] <= 1;
             vif.mp_drv.cb_drv.dram_clk_disable[3] <= 1;
+            //enable ca dram bus
             vif.mp_drv.cb_drv.cke[0] <= 2'b01;
             vif.mp_drv.cb_drv.cke[2] <= 2'b01;
-            //wck
-            vif.mp_drv.cb_drv.wck_cs[0] <= 2'b11; 
-            vif.mp_drv.cb_drv.wck_cs[1] <= 2'b11;  
-            vif.mp_drv.cb_drv.wck_cs[2] <= 2'b11; 
-            vif.mp_drv.cb_drv.wck_cs[3] <= 2'b11;  
-            vif.mp_drv.cb_drv.wck_en[0] <= 1; 
-            vif.mp_drv.cb_drv.wck_en[1] <= 1;
-            vif.mp_drv.cb_drv.wck_en[2] <= 1; 
+            //wck initialized to static mood
+            vif.mp_drv.cb_drv.wck_cs[0] <= 2'b01;
+            vif.mp_drv.cb_drv.wck_cs[1] <= 2'b01;
+            vif.mp_drv.cb_drv.wck_cs[2] <= 2'b01;
+            vif.mp_drv.cb_drv.wck_cs[3] <= 2'b01;
+
+            vif.mp_drv.cb_drv.wck_en[0] <= 1;
+            vif.mp_drv.cb_drv.wck_en[1] <= 0;
+            vif.mp_drv.cb_drv.wck_en[2] <= 0;
             vif.mp_drv.cb_drv.wck_en[3] <= 1;
-            vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b01;
-            vif.mp_drv.cb_drv.wck_toggle[1] <= 2'b01;
-            vif.mp_drv.cb_drv.wck_toggle[2] <= 2'b01;
-            vif.mp_drv.cb_drv.wck_toggle[3] <= 2'b01;
+            
+            vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b00;
+            vif.mp_drv.cb_drv.wck_toggle[1] <= 2'b00;
+            vif.mp_drv.cb_drv.wck_toggle[2] <= 2'b00;
+            vif.mp_drv.cb_drv.wck_toggle[3] <= 2'b00;
+ 
             
         @(posedge vif.mp_drv.cb_drv);
             //ACT1
@@ -153,6 +158,8 @@ class wav_DFI_driver extends uvm_driver;
             // cs
             vif.mp_drv.cb_drv.cs[0] <= 2'b01;
             vif.mp_drv.cb_drv.cs[2] <= 2'b01;
+            
+
         @(posedge vif.mp_drv.cb_drv);
             //ACT2
             vif.mp_drv.cb_drv.address[0] <= 14'b0000000_0000011;
@@ -163,66 +170,47 @@ class wav_DFI_driver extends uvm_driver;
             vif.mp_drv.cb_drv.address[2] <= 14'b0000000_0000000;
             
         @(posedge vif.mp_drv.cb_drv);
-            //WR32
+            //WR16
             vif.mp_drv.cb_drv.address[0] <= 14'b0000000_0000100;
             vif.mp_drv.cb_drv.address[2] <= 14'b0000000_1000000;
-            //wck
-            vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b10;
-            vif.mp_drv.cb_drv.wck_toggle[1] <= 2'b10;
-            vif.mp_drv.cb_drv.wck_toggle[2] <= 2'b10;
-            vif.mp_drv.cb_drv.wck_toggle[3] <= 2'b10;
-        @(posedge vif.mp_drv.cb_drv);
+            
+       
+           
+
+        @(posedge vif.mp_drv.cb_drv);      
+            //write 
             vif.mp_drv.cb_drv.wrdata_en[0] <= 1;
-            vif.mp_drv.cb_drv.wrdata_en[1] <= 1;
             vif.mp_drv.cb_drv.wrdata_en[2] <= 1;
-            vif.mp_drv.cb_drv.wrdata_en[3] <= 1;
             vif.mp_drv.cb_drv.wrdata[0] <= 64'habcd_ef98_1234_5678;
             vif.mp_drv.cb_drv.wrdata[2] <= 64'h1234_5678_abcd_ef98;
             vif.mp_drv.cb_drv.wrdata_cs[0] <= 2'b01;
-            vif.mp_drv.cb_drv.wrdata_cs[2] <= 2'b01;
-            
-            
-            
+            vif.mp_drv.cb_drv.wrdata_cs[2] <= 2'b01;            
             vif.mp_drv.cb_drv.cs[0] <= 2'b00;
             vif.mp_drv.cb_drv.cs[2] <= 2'b00;
             vif.mp_drv.cb_drv.address[0] <= 14'b0000000_0000000;
             vif.mp_drv.cb_drv.address[2] <= 14'b0000000_0000000;
-
-
-           #100ns;
-           
+             //wck toggle mood
+            vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b01;
+            vif.mp_drv.cb_drv.wck_toggle[2] <= 2'b01;
+            vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b01;
+            vif.mp_drv.cb_drv.wck_toggle[2] <= 2'b01;
         
-           
-        // @(posedge vif.mp_drv.cb_drv);
-        //     //DES
-        //     vif.mp_drv.cb_drv.address[0] <= 14'b0000000_0000000;
-        
+        @(posedge vif.mp_drv.cb_drv);      
+            //ending the write transaction 
+            vif.mp_drv.cb_drv.wrdata_en[0] <= 0;
+            vif.mp_drv.cb_drv.wrdata_en[2] <= 0;
+            vif.mp_drv.cb_drv.wrdata[0] <= 64'hxxxx_xxxx_xxxx_xxxx;
+            vif.mp_drv.cb_drv.wrdata[2] <= 64'hxxxx_xxxx_xxxx_xxxx;
+            vif.mp_drv.cb_drv.wrdata_cs[0] <= 2'b00;
+            vif.mp_drv.cb_drv.wrdata_cs[2] <= 2'b00;            
+            vif.mp_drv.cb_drv.cs[0] <= 2'b00;
+            vif.mp_drv.cb_drv.cs[2] <= 2'b00;
+         @(posedge vif.mp_drv.cb_drv); 
+            vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b00;
+            vif.mp_drv.cb_drv.wck_toggle[1] <= 2'b00;
+            vif.mp_drv.cb_drv.wck_toggle[2] <= 2'b00;
+            vif.mp_drv.cb_drv.wck_toggle[3] <= 2'b00;
             
-            //vif.mp_drv.cb_drv.parity_in[0] <= trans.parity_in[0]; 
-               
-            //vif.mp_drv.cb_drv.wrdata_mask[0] <= trans.wrdata_mask[0]; 
-            
-            //vif.mp_drv.cb_drv.dram_clk_disable[0] <= trans.dram_clk_disable[0];
-            
-            //vif.mp_drv.cb_drv.cke[0] <= trans.cke[0];
-            
-            
-        // @(posedge vif.mp_drv.cb_drv);
-        //     vif.mp_drv.cb_drv.address[0] <= 14'b0;
-        //     vif.mp_drv.cb_drv.wrdata[0] <= 64'b0;
-        //     //vif.mp_drv.cb_drv.parity_in[0] <= trans.parity_in[0]; 
-        //     vif.mp_drv.cb_drv.wrdata_en[0] <= 0;   
-        //     //vif.mp_drv.cb_drv.wrdata_mask[0] <= trans.wrdata_mask[0]; 
-        //     vif.mp_drv.cb_drv.wck_cs[0] <= 2'b00;  
-        //     vif.mp_drv.cb_drv.wck_en[0] <= 0; 
-        //     vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b00;
-        //     vif.mp_drv.cb_drv.dram_clk_disable[0] <= 1;
-        //     vif.mp_drv.cb_drv.wrdata_cs[0] <= 2'b00; 
-        //     vif.mp_drv.cb_drv.cke[0] <= 0;
-        //     vif.mp_drv.cb_drv.cs[0] <= 2'b00;
-        
-        
-          
     endtask
 
     task automatic drive_status(wav_DFI_status_transfer trans);
@@ -255,7 +243,7 @@ class wav_DFI_driver extends uvm_driver;
             end
             tinit_start++;
         end
-        // vif.cb_drv.init_start <= 0;
+        vif.cb_drv.init_start <= 0;
 
         if (tinit_start == 0) begin
             msg = "PHY rejects new freq setting";
@@ -478,6 +466,8 @@ class wav_DFI_driver extends uvm_driver;
             vif.mp_drv.cb_drv.cs[i] <= trans.cs[i];
         foreach(trans.parity_in[i])
             vif.mp_drv.cb_drv.parity_in[i] <= trans.parity_in[i];
+		foreach(trans.reset_n[i])
+            vif.mp_drv.cb_drv.reset_n[i] <= trans.reset_n[i];
     endtask
 
     //there are different types of DFI transactions 

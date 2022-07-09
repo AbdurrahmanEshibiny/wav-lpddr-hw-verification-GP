@@ -25,9 +25,10 @@ class wddr_subscriber extends uvm_component;
 	// typedef enum {SAME, DIFFERENT} different_BA;
 	// different_BA diff_BA;
 	
-	time prev_CA_time[command];
+	time prev_CA_time[command] = '{default:0};
 
 	enum {
+		NONE,
 		RD_AFTER_RD_NO_SYNC,
 		RD_AFTER_RD_WITH_SYNC, 	
 		WR_AFTER_RD_WITH_SYNC, 	
@@ -59,11 +60,10 @@ class wddr_subscriber extends uvm_component;
 	} lpddr5_cover_reqs;
 	//--------------------------------COVERGROUPS------------------------------------
 	//TODO Need to create cross bins to handle multiple commands in the same requirements
-	//TODO Single-Ended MODE: Will still see how it's implemented in the monitor
 	covergroup lpddr5_cg;
 		COMMANDS_COVER: coverpoint lpddr5_trans.CA {
 			bins COMMANDS[] = COMMANDS_COVER with (item != DES && item != NOP);
-			bins SRE_AFTER_PDE 				= (PDE => SRE);
+			bins SRE_AFTER_PDE = (PDE => SRX);
 
 			//TODO VR 253?? 
 			bins VR256 = (ACT2[=1] => PRE);
@@ -207,6 +207,8 @@ class wddr_subscriber extends uvm_component;
 		super.new(name, parent);
 		DFI_imp = new("DFI_imp", this);
 		LPDDR5_imp = new("LPDDR5_imp", this);
+		
+		lpddr5_trans = new();
 		lpddr5_cg = new();
 
 		// Instantiate the required transaction objects
@@ -299,6 +301,9 @@ class wddr_subscriber extends uvm_component;
 				trans_c = phymstr_c;
 				phymstr_cg.sample();
 			end
+			status_freq: begin
+				trans_c = freq_change_c;
+			end
 			lp: begin
 				$cast(lp_trans, trans);
 				handle_lp_cg(lp_trans);
@@ -322,11 +327,10 @@ class wddr_subscriber extends uvm_component;
 		advanced_control_cg.sample();
 	endfunction
 	
-	//TODO UNCOMMENT ALL OF THIS AFTER DEFINING THE PROPER TRANSACTION (SEQUENCE ITEM) CLASS
-	function void write_LPDDR5(gp_LPDDR5_cov_trans lpddr5_trans);
-		
+
+	function void write_LPDDR5(gp_LPDDR5_cov_trans lpddr5_trans_item);
+		lpddr5_trans = lpddr5_trans_item;
 		if(lpddr5_trans.CA != DES && lpddr5_trans.CA != NOP) begin
-			prev_CA_time[lpddr5_trans.CA] = $time;
 			
 			//RD_AFTER_RD_NO_SYNC
 			if(	lpddr5_trans.CA == RD32 ||
@@ -611,6 +615,9 @@ class wddr_subscriber extends uvm_component;
 						lpddr5_cg.sample();
 				end
 			end
+			prev_CA_time[lpddr5_trans.CA] = $time;
+			lpddr5_cover_reqs = NONE;
+			lpddr5_cg.sample();
 		end
 	endfunction
 

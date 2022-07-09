@@ -2,6 +2,8 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 	`uvm_component_utils(gp_LPDDR5_monitor)
 	
 	uvm_analysis_port #(gp_LPDDR5_cov_trans) subscriber_port_item;
+	uvm_analysis_port #(wav_DFI_write_transfer) recieved_transaction;
+	wav_DFI_write_transfer item;
 	gp_LPDDR5_cov_trans cov_trans_item;
 
 	//-------------------Start of variable declarations-------------------------------
@@ -110,8 +112,6 @@ class gp_LPDDR5_monitor extends uvm_monitor;
  	/*assign DQ = {ch0_vif.dq0_dq0, ch0_vif.dq0_dq1, ch0_vif.dq0_dq2, ch0_vif.dq0_dq3, ch0_vif.dq0_dq4, ch0_vif.dq0_dq5,
 	ch0_vif.dq0_dq6, ch0_vif.dq0_dq7,ch1_vif.dq1_dq0, ch1_vif.dq1_dq1, ch1_vif.dq1_dq2, ch1_vif.dq1_dq3,
 	ch1_vif.dq1_dq4, ch1_vif.dq1_dq5,ch1_vif.dq1_dq6, ch1_vif.dq1_dq7};*/
-	uvm_analysis_port #(wav_DFI_write_transfer) recieved_transaction;
-	wav_DFI_write_transfer item;
 	
 	//--------------------------------------------------------------------------
 	//----------------------------Ziad's variable decalarations-----------------  
@@ -145,7 +145,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 		recieved_transaction = new("recieved_transaction", this);
 		subscriber_port_item = new("subscriber_port_item", this);
 		cov_trans_item = gp_LPDDR5_cov_trans::type_id::create("cov_trans_item");
-		
+		item		   = wav_DFI_write_transfer::type_id::create("item");		
 		//TODO get config db for ch1_vif 	
 		act1_key = new(1);
 	endfunction: build_phase
@@ -602,13 +602,13 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 									i = 0;
 									repeat(16) begin
 										@(posedge ch0_vif.dq0_wck_t)begin
-											//item.data[j][i] = DQ[i];
+											//item.wrdata[j][i] = DQ[i];
 											i++;
 										end
 									end
 									j++;
 									if(j == 4)begin
-										// recieved_transaction.write(item); 
+										recieved_transaction.write(item); 
 										i = 0; 
 									end
 								end
@@ -1040,7 +1040,10 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						{1'b1, 7'b0000010}: begin
 							next_CA = RFF;
 						end
-						default: if(ch0_vif.cs) `uvm_error("gp_LPDDR5_monitor", "Recieved unknown command on CA bus")
+						{1'b1, 7'b0000101}: begin
+							next_CA = RDC;
+						end 
+						default: if(ch0_vif.cs) `uvm_warning("gp_LPDDR5_monitor", "Recieved unknown command on CA bus")
 					endcase
 					if(ch0_vif.DQ !== 16'hzzzz) begin 
 						counter += 1;
@@ -1051,20 +1054,15 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 					//`uvm_info("gp_LPDDR5_monitor", next_CA.name, UVM_NONE)
 				end 
 				@(negedge ch0_vif.ck_t) begin
-					//TODO COMPLETE ASSIGNMENT OF ALL VARIABLES
 					//ziad_checks();
 					prev_CA = CA;
 					CA = next_CA;
 					prev_BA = BA;
 					BA={ch0_vif.ca3, ch0_vif.ca2, ch0_vif.ca1, ch0_vif.ca0};
+					ALL_BANKS = ch0_vif.ca6;
 					case(next_CA)
 						PRE: begin
-							prev_CA = CA;
-							CA = next_CA;
-							prev_BA = BA;
-							BA={ch0_vif.ca3, ch0_vif.ca2, ch0_vif.ca1, ch0_vif.ca0};
 							bank_state[BA] = PRECHARGING;
-							ALL_BANKS = ch0_vif.ca6;
 							assert(!$isunknown(ch0_vif.ca4) && !$isunknown(ch0_vif.ca4)) begin
 								`uvm_error("gp_LPDDR5_monitor", "Invalid signals are supposed to be valid")
 							end 
@@ -1084,6 +1082,8 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 								begin
 									time_PDE = $time;
 									CA = PDE;
+									cov_trans_item.CA = CA;
+									subscriber_port_item.write(cov_trans_item);
 									if (CA == SRE) bank_state = '{default:SELF_REFRESH_POWER_DOWN};
 									else bank_state = '{default:IDLE_POWER_DOWN};
 									while(1) begin
@@ -1096,6 +1096,8 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 												CA = SRE;
 											end
 										end
+										cov_trans_item.CA = CA;
+										subscriber_port_item.write(cov_trans_item);
 									end	
 								end
 						end
@@ -1297,7 +1299,9 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 												bank_state = '{default:IDLE};
 												break;
 											end
-										end	
+										end
+										cov_trans_item.CA = CA;
+										subscriber_port_item.write(cov_trans_item);	
 									end
 								
 								end
@@ -1318,7 +1322,9 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 												bank_state = '{default:IDLE};
 												break;
 											end
-										end	
+										end
+										cov_trans_item.CA = CA;
+										subscriber_port_item.write(cov_trans_item);	
 									end
 								
 								end

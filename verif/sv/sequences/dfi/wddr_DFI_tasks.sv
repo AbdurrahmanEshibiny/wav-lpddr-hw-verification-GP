@@ -279,7 +279,7 @@ task t_dfi_ctrlupd(output int err, input bit doInit = 1);
 endtask
 
 
-virtual wav_DFI_if vif;
+virtual wav_DFI_if vif = null;
 
 task automatic init_vif;
     if (!uvm_config_db#(virtual wav_DFI_if)::get(uvm_root::get(), "*", "DFI_vif", vif)) begin
@@ -289,4 +289,31 @@ endtask
 
 task automatic wait_dfi_cycles(int count);
     repeat(count) @(posedge vif.clock);
+endtask
+
+task automatic handle_status_internally;
+    if (vif == null) begin
+        init_vif(); // obtain the virtual DFI interface
+    end
+
+    `CSR_WRF1(DDR_DFI_OFFSET,DDR_DFI_STATUS_IF_CFG, 
+            SW_ACK_OVR,
+            1'b0);
+    `CSR_WRF4(DDR_DFI_OFFSET,DDR_DFI_STATUS_IF_CFG, 
+            SW_EVENT_1_OVR, SW_EVENT_1_VAL, SW_REQ_VAL, SW_REQ_OVR,
+            1'b1, 1'b1, 1'b0, 1'b1);
+    fork
+        forever begin
+            @(posedge vif.init_start);
+            `uvm_info(get_name(), $psprintf("overriding status req val = $b", vif.init_start), UVM_MEDIUM);            
+            `CSR_WRF1(DDR_DFI_OFFSET, DDR_DFI_STATUS_IF_CFG, 
+                    SW_REQ_VAL, 1'b1);
+            wait_dfi_cycles(10);
+            `CSR_WRF1(DDR_DFI_OFFSET, DDR_DFI_STATUS_IF_CFG, 
+                    SW_REQ_VAL, 1'b0);
+        end
+    join_none
+
+    // delay to allow the previous values to be written in the registers
+    wait_dfi_cycles(50);    
 endtask

@@ -1,5 +1,12 @@
+`ifndef EVENT_HANDLER_DFI
+`define EVENT_HANDLER_DFI
 class EventHandler;
-    typedef enum {lp_ctrl, lp_data, phymstr, ctrlupd, phyupd} transaction_e;
+    typedef enum {lp_ctrl, lp_data, phymstr, ctrlupd, phyupd, status} transaction_e;
+
+    static event status_start;
+    static event status_finish;
+    static event status_req_pos;
+    static event status_req_neg;
 
     static event lp_ctrl_start;
     static event lp_ctrl_finish;
@@ -43,6 +50,7 @@ class EventHandler;
             phymstr:    trigger_event(phymstr_start);
             ctrlupd:    trigger_event(ctrlupd_start);
             phyupd:     trigger_event(phyupd_start);
+            status:     trigger_event(status_start);
         endcase
     endtask
 
@@ -53,6 +61,7 @@ class EventHandler;
             phymstr:    trigger_event(phymstr_finish);
             ctrlupd:    trigger_event(ctrlupd_finish);
             phyupd:     trigger_event(phyupd_finish);
+            status:     trigger_event(status_finish);
         endcase
     endtask
 
@@ -64,6 +73,7 @@ class EventHandler;
             phymstr:    wait_for_event(phymstr_start);
             ctrlupd:    wait_for_event(ctrlupd_start);
             phyupd:     wait_for_event(phyupd_start);
+            status:     wait_for_event(status_start);
         endcase
     endtask
 
@@ -74,12 +84,16 @@ class EventHandler;
             phymstr:    wait_for_event(phymstr_finish);
             ctrlupd:    wait_for_event(ctrlupd_finish);
             phyupd:     wait_for_event(phyupd_finish);
+            status:     wait_for_event(status_finish);
         endcase
     endtask
 
     static task automatic wait_for_transaction(transaction_e tr);
+        `uvm_info("Event emitter", "waiting for start event", UVM_MEDIUM);        
         wait_for_transaction_start(tr);
+        `uvm_info("Event emitter", "waiting for finish event", UVM_MEDIUM);
         wait_for_transaction_finish(tr);
     endtask
 
 endclass
+`endif

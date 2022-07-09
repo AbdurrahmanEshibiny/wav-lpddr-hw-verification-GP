@@ -410,6 +410,7 @@ class wav_DFI_cmd_transfer extends wav_DFI_transfer;
     rand bit [1:0]   cke [0:3];
     rand bit [1:0]   cs[0:3];
     rand bit         parity_in[0:3];
+	bit 		   	 reset_n[0:3];
 
     // TODO: modify the factory appropriately
     // TODO: add print function
@@ -418,6 +419,7 @@ class wav_DFI_cmd_transfer extends wav_DFI_transfer;
         `uvm_field_sarray_int(address, UVM_DEFAULT)
         `uvm_field_sarray_int(cs, UVM_DEFAULT)
         `uvm_field_sarray_int(cke, UVM_DEFAULT)
+		`uvm_field_sarray_int(reset_n, UVM_DEFAULT)
         `uvm_field_sarray_int(dram_clk_disable, UVM_DEFAULT)
     `uvm_object_utils_end
 
@@ -451,7 +453,7 @@ class wav_DFI_read_transfer extends wav_DFI_transfer;
 endclass
 */
 
-class wav_DFI_status_transfer extends wav_DFI_transfer;
+class wav_DFI_status_transfer extends wav_DFI_control_transfer;
     
     rand bit [1:0] freq_fsp;
     rand bit [1:0] freq_ratio;
