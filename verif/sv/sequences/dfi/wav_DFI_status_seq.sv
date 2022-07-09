@@ -29,7 +29,7 @@ wav_DFI_status_transfer seq_item;
         handle_status_internally(); // defined in the driver    
         
         start_item(seq_item);
-        seq_item.randomize();
+        assert(seq_item.randomize());
         finish_item(seq_item);       
         
         `uvm_info(
@@ -40,7 +40,7 @@ wav_DFI_status_transfer seq_item;
         )        
             
         // wait for the start and end of the transaction
-        EventHandler::wait_for_transaction(status); //defined in the wav_DFI_events
+        EventHandler::wait_for_transaction(EventHandler::status); //defined in the wav_DFI_events
 
         // `uvm_send(seq_item);
         // fsp = 0, ratio = 4:1, frequency = 3200
