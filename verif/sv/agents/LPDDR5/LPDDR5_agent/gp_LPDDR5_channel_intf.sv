@@ -56,12 +56,17 @@ interface gp_LPDDR5_channel_intf(
 	int min_reset_time = 1;
 	int tREFi = 1;
 	int min_delay_between_act_to_ref = 1;
-	int tCKCSH = 1;
+	int tCKCSH = 2;
 	int tCSLCK = 1;
 	int BL = 16, tCK = 8;
 	int latency_with_clock_cycles_in_16 = BL + 0.5* tCK;
-	int latency_with_clock_cycles_in_32 = BL + 0.5* tCK;;
+	int latency_with_clock_cycles_in_32 = BL + 0.5* tCK;
+	bit flag;
 	//----------------------------Sequences------------------------------------------
+
+	sequence DES;
+		@(posedge ck_t) (cs==1 && ca==7'b0000000);
+	endsequence
 
 	sequence PDE;
 		@(posedge ck_t) (cs==1 && ca==7'b0000001) ##1 (cs==0);
@@ -163,7 +168,7 @@ interface gp_LPDDR5_channel_intf(
 
 	property Max_Refresh_Interval;
 	@(posedge ck_t) 	
-			(REF |-> ##[1: 2] REF); //[tREFi: 2*tREFi]
+			(REF |-> ##[1: 100] REF); //[tREFi: 2*tREFi]
 	endproperty		
 
 	property Illegal_refresh_after_activate;
@@ -172,8 +177,8 @@ interface gp_LPDDR5_channel_intf(
 	endproperty		
 
 	property clock_stable_before_PDX;
-	@(posedge ck_t)	
-			PDX |=> $past(dq0_wck_t, tCKCSH) != 'bZ; 
+	@(posedge ck_t)	 
+			PDX |-> ~$isunknown(ck_t);
 	endproperty		
 
 	property clock_off_after_PDE;
@@ -182,8 +187,8 @@ interface gp_LPDDR5_channel_intf(
 	endproperty		
 	
 	property check_clock_during_write16;
-	@(posedge ck_t)	
-			WR16 |=> ~$isunknown(dq0_wck_t)[*6]; //[*latency_with_clock_cycles_in_16]
+	@(posedge ck_t)
+			DES |=> WR16 |=> ~$isunknown(dq0_wck_t)[*6]; //[*latency_with_clock_cycles_in_16]
 	endproperty		
 	property check_clock_during_MWR;
 	@(posedge ck_t)	
@@ -198,15 +203,19 @@ interface gp_LPDDR5_channel_intf(
 	assertion2:	
 		assert property (@(posedge ck_t) Max_Refresh_Interval);
 	assertion3:	
-		assert property (@(posedge ck_t) Illegal_refresh_after_activate);
+		assert property (@(posedge ck_t) Illegal_refresh_after_activate)
+		else $display("Assertion 3");
 	assertion4:	
-		assert property (@(posedge ck_t) clock_stable_before_PDX);
+		assert property (@(posedge ck_t) clock_stable_before_PDX)
+		else $display("Assertion 4 %t", $time);
 	assertion5:	
-		assert property (@(posedge ck_t) clock_off_after_PDE);
+		assert property (@(posedge ck_t) clock_off_after_PDE)
+		else $display("Assertion 5");
 	assertion6:	
-		assert property (@(posedge ck_t) check_clock_during_write16);
-	assertion7:	
-		assert property (@(posedge ck_t) check_clock_during_MWR);
+		assert property (@(posedge ck_t) check_clock_during_write16)
+		else $display("Assertion 6 %t", $time);
+	/*assertion7:	
+		assert property (@(posedge ck_t) check_clock_during_MWR);*/
 
 	//------------------------------Ziad's stuff--------------------------------------
 	logic [15:0] DQ;	
