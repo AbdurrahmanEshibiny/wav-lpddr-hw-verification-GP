@@ -21,18 +21,27 @@ wav_DFI_status_transfer seq_item;
         if (err != 0) begin
             `uvm_error(get_name(), $sformatf("sequence err_cnt = %d ", err_cnt));
         end
+            
+        // according to the RTL, the interface value of the init_start is almost ignored
+        // so we have to use the registers
+        // this task will override the value of the init_start in the registers
+        // according to the value we want on the interface        
+        handle_status_internally(); // defined in the driver    
         
         start_item(seq_item);
-        seq_item.freq_fsp = 0;
-        seq_item.freq_ratio = 1;
-        seq_item.frequency = 2;
-        finish_item(seq_item);
+        seq_item.randomize();
+        finish_item(seq_item);       
+        
         `uvm_info(
             get_name(),
             $sformatf("STATUS SEQUENCE: FSP: %0d, Ratio = %0d, Freq = %0d", 
             seq_item.freq_fsp, seq_item.freq_ratio, seq_item.frequency),
             UVM_MEDIUM
-        )
+        )        
+            
+        // wait for the start and end of the transaction
+        EventHandler::wait_for_transaction(status); //defined in the wav_DFI_events
+
         // `uvm_send(seq_item);
         // fsp = 0, ratio = 4:1, frequency = 3200
 

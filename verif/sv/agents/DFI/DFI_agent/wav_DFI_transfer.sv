@@ -323,7 +323,7 @@ class wav_DFI_read_transfer extends wav_DFI_transfer;
 endclass
 */
 
-class wav_DFI_status_transfer extends wav_DFI_transfer;
+class wav_DFI_status_transfer extends wav_DFI_control_transfer;
     
     rand bit [1:0] freq_fsp;
     rand bit [1:0] freq_ratio;

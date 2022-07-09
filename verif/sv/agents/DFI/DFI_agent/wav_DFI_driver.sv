@@ -236,7 +236,7 @@ class wav_DFI_driver extends uvm_driver;
             end
             tinit_start++;
         end
-        // vif.cb_drv.init_start <= 0;
+        vif.cb_drv.init_start <= 0;
 
         if (tinit_start == 0) begin
             msg = "PHY rejects new freq setting";

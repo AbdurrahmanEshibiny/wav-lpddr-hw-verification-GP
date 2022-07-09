@@ -1,5 +1,12 @@
+`ifndef EVENT_HANDLER_DFI
+`define EVENT_HANDLER_DFI
 class EventHandler;
-    typedef enum {lp_ctrl, lp_data, phymstr, ctrlupd, phyupd} transaction_e;
+    typedef enum {lp_ctrl, lp_data, phymstr, ctrlupd, phyupd, status} transaction_e;
+
+    static event status_start;
+    static event status_finish;
+    static event status_req_pos;
+    static event status_req_neg;
 
     static event lp_ctrl_start;
     static event lp_ctrl_finish;
@@ -83,3 +90,4 @@ class EventHandler;
     endtask
 
 endclass
+`endif

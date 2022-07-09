@@ -301,6 +301,9 @@ class wddr_subscriber extends uvm_component;
 				trans_c = phymstr_c;
 				phymstr_cg.sample();
 			end
+			status_freq: begin
+				trans_c = freq_change_c;
+			end
 			lp: begin
 				$cast(lp_trans, trans);
 				handle_lp_cg(lp_trans);
