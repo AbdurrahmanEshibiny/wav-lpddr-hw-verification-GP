@@ -320,7 +320,7 @@ endtask
 
 task automatic set_freq_ratio(int freq_ratio);
     // Case1: SDR 1:1 - egress DDR2to1
-    if (freq_ratio == 2) begin
+    if (freq_ratio == 1) begin
         set_txdq_sdr_fc_dly   (.byte_sel(ALL),    .dq (8'd99), .rank_sel(RANK_ALL), .fc_dly  ('h0000_0000) );
         set_txdq_sdr_pipe_en  (.byte_sel(ALL),    .dq (8'd99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
         set_txdq_sdr_x_sel    (.byte_sel(ALL),    .dq (8'd99), .rank_sel(RANK_ALL), .x_sel   ('h7654_3200) );
@@ -366,7 +366,7 @@ task automatic set_freq_ratio(int freq_ratio);
 
 
     // Case2: DDR - DP 2to1 - egress DDR2to1 - freq ratio 1:1
-    else if (freq_ratio == 3) begin
+    else if (freq_ratio == 2) begin
         set_txdq_sdr_fc_dly   (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .fc_dly  ('h0000_0000) );
         set_txdq_sdr_pipe_en  (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
         set_txdq_sdr_x_sel    (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .x_sel   ('h7654_3210) );
