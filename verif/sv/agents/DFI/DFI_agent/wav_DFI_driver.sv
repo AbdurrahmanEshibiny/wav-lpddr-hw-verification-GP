@@ -180,9 +180,13 @@ class wav_DFI_driver extends uvm_driver;
         @(posedge vif.mp_drv.cb_drv);      
             //write 
             vif.mp_drv.cb_drv.wrdata_en[0] <= 1;
+            vif.mp_drv.cb_drv.wrdata_en[1] <= 0;
             vif.mp_drv.cb_drv.wrdata_en[2] <= 1;
-            vif.mp_drv.cb_drv.wrdata[0] <= 64'habcd_ef98_1234_5678;
-            vif.mp_drv.cb_drv.wrdata[2] <= 64'h1234_5678_abcd_ef98;
+            vif.mp_drv.cb_drv.wrdata_en[3] <= 0;
+            vif.mp_drv.cb_drv.wrdata[0] <= 64'hzzzz_zzzz_1234_5678;
+            vif.mp_drv.cb_drv.wrdata[1] <= 64'hzzzz_zzzz_zzzz_zzzz;
+            vif.mp_drv.cb_drv.wrdata[2] <= 64'hzzzz_zzzz_abcd_ef98;
+            vif.mp_drv.cb_drv.wrdata[3] <= 64'hzzzz_zzzz_zzzz_zzzz;
             vif.mp_drv.cb_drv.wrdata_cs[0] <= 2'b01;
             vif.mp_drv.cb_drv.wrdata_cs[2] <= 2'b01;            
             vif.mp_drv.cb_drv.cs[0] <= 2'b00;
@@ -199,13 +203,11 @@ class wav_DFI_driver extends uvm_driver;
             //ending the write transaction 
             vif.mp_drv.cb_drv.wrdata_en[0] <= 0;
             vif.mp_drv.cb_drv.wrdata_en[2] <= 0;
-            vif.mp_drv.cb_drv.wrdata[0] <= 64'hxxxx_xxxx_xxxx_xxxx;
-            vif.mp_drv.cb_drv.wrdata[2] <= 64'hxxxx_xxxx_xxxx_xxxx;
+            vif.mp_drv.cb_drv.wrdata[0] <= 64'hzzzz_zzzz_zzzz_zzzz;
+            vif.mp_drv.cb_drv.wrdata[2] <= 64'hzzzz_zzzz_zzzz_zzzz;
             vif.mp_drv.cb_drv.wrdata_cs[0] <= 2'b00;
-            vif.mp_drv.cb_drv.wrdata_cs[2] <= 2'b00;            
-            vif.mp_drv.cb_drv.cs[0] <= 2'b00;
-            vif.mp_drv.cb_drv.cs[2] <= 2'b00;
-         @(posedge vif.mp_drv.cb_drv); 
+            vif.mp_drv.cb_drv.wrdata_cs[2] <= 2'b00;
+        @(posedge vif.mp_drv.cb_drv);            
             vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b00;
             vif.mp_drv.cb_drv.wck_toggle[1] <= 2'b00;
             vif.mp_drv.cb_drv.wck_toggle[2] <= 2'b00;
@@ -430,7 +432,6 @@ class wav_DFI_driver extends uvm_driver;
             end    
         end
         
-
         foreach (trans.slice_q[i]) begin
             @(vif.cb_drv) begin
                 vif.cb_drv.address[0] <= trans.slice_q[i].address[0];
@@ -475,8 +476,7 @@ class wav_DFI_driver extends uvm_driver;
     //there are different types of DFI transactions 
     //this task checks the tr_type in the transaction and call the corresponding task 
 
-    task automatic drive_transaction(wav_DFI_transfer trans);
-        `uvm_info(get_name(), "write xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", UVM_MEDIUM); 
+    task automatic drive_transaction(wav_DFI_transfer trans); 
         trans.print();
 		fork begin
 			wav_DFI_lp_transfer lp_trans;
