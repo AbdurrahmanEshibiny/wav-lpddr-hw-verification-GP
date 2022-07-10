@@ -334,6 +334,10 @@ class DFI_rd_slice extends uvm_object;
     bit [7:0] rddata_dbi [0:3];
     bit rddata_en [0:3];
     bit rddata_valid [0:3];
+    bit [1:0] wck_cs [0:3];
+    bit wck_en [0:3];
+    bit [1:0] wck_toggle [0:3];
+    
     // int trddata_en;
     // int tphy_rdcslat;
 
@@ -346,6 +350,9 @@ class DFI_rd_slice extends uvm_object;
         `uvm_field_sarray_int(rddata_dbi, UVM_DEFAULT)
         `uvm_field_sarray_int(rddata_en, UVM_DEFAULT)
         `uvm_field_sarray_int(rddata_valid, UVM_DEFAULT)
+        `uvm_field_sarray_int(wck_cs, UVM_DEFAULT)
+        `uvm_field_sarray_int(wck_en, UVM_DEFAULT)
+        `uvm_field_sarray_int(wck_toggle, UVM_DEFAULT)
         // `uvm_field_int(trddata_en, UVM_DEFAULT)
         // `uvm_field_int(tphy_rdcslat, UVM_DEFAULT)
     `uvm_object_utils_end
@@ -405,15 +412,13 @@ endclass
 
 class wav_DFI_cmd_transfer extends wav_DFI_transfer;
     dfi_cmd_t cmd_mc[$]; // commmand coming from MC
-    rand bit [13:0]  address[0:3];  
-    rand bit         dram_clk_disable[0:3];
-    rand bit [1:0]   cke [0:3];
-    rand bit [1:0]   cs[0:3];
-    rand bit         parity_in[0:3];
-	bit 		   	 reset_n[0:3];
+    rand    bit [13:0]  address[0:3];  
+    rand    bit         dram_clk_disable[0:3];
+    rand    bit [1:0]   cke [0:3];
+    rand    bit [1:0]   cs[0:3];
+    rand    bit         parity_in[0:3];
+	        bit 		reset_n[0:3];
 
-    // TODO: modify the factory appropriately
-    // TODO: add print function
     `uvm_object_utils_begin(wav_DFI_cmd_transfer)
         `uvm_field_sarray_int(parity_in, UVM_DEFAULT)
         `uvm_field_sarray_int(address, UVM_DEFAULT)
