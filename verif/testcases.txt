@@ -15,3 +15,4 @@ wddr_DFI_power_down_test
 wddr_DFI_status_test
 wddr_DFI_write_2to1_test
 wddr_DFI_many_write_2to1_test
+wddr_DFI_read_test
