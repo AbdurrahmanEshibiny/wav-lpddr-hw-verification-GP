@@ -124,95 +124,49 @@ class wav_DFI_driver extends uvm_driver;
     endtask
 
     task automatic drive_write(wav_DFI_write_transfer trans);  
-        //trans.print();
-        @(posedge vif.mp_drv.cb_drv);
-            //ck_c ck_t dram clock enable 
-            vif.mp_drv.cb_drv.dram_clk_disable[0] <= 0;
-            vif.mp_drv.cb_drv.dram_clk_disable[1] <= 1;
-            vif.mp_drv.cb_drv.dram_clk_disable[2] <= 1;
-            vif.mp_drv.cb_drv.dram_clk_disable[3] <= 1;
-            //enable ca dram bus
-            vif.mp_drv.cb_drv.cke[0] <= 2'b01;
-            vif.mp_drv.cb_drv.cke[2] <= 2'b01;
-            //wck initialized to static mood
-            vif.mp_drv.cb_drv.wck_cs[0] <= 2'b01;
-            vif.mp_drv.cb_drv.wck_cs[1] <= 2'b01;
-            vif.mp_drv.cb_drv.wck_cs[2] <= 2'b01;
-            vif.mp_drv.cb_drv.wck_cs[3] <= 2'b01;
-
-            vif.mp_drv.cb_drv.wck_en[0] <= 1;
-            vif.mp_drv.cb_drv.wck_en[1] <= 0;
-            vif.mp_drv.cb_drv.wck_en[2] <= 0;
-            vif.mp_drv.cb_drv.wck_en[3] <= 1;
-            
-            vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b00;
-            vif.mp_drv.cb_drv.wck_toggle[1] <= 2'b00;
-            vif.mp_drv.cb_drv.wck_toggle[2] <= 2'b00;
-            vif.mp_drv.cb_drv.wck_toggle[3] <= 2'b00;
- 
-            
-        @(posedge vif.mp_drv.cb_drv);
-            //ACT1
-            vif.mp_drv.cb_drv.address[0] <= 14'b0000000_0000111;
-            vif.mp_drv.cb_drv.address[2] <= 14'b0000000_0000000;
-            // cs
-            vif.mp_drv.cb_drv.cs[0] <= 2'b01;
-            vif.mp_drv.cb_drv.cs[2] <= 2'b01;
-            
-
-        @(posedge vif.mp_drv.cb_drv);
-            //ACT2
-            vif.mp_drv.cb_drv.address[0] <= 14'b0000000_0000011;
-            vif.mp_drv.cb_drv.address[2] <= 14'b0000000_0000000;
-        @(posedge vif.mp_drv.cb_drv);
-            //CAS_WR
-            vif.mp_drv.cb_drv.address[0] <= 14'b0000000_0011100;
-            vif.mp_drv.cb_drv.address[2] <= 14'b0000000_0000000;
-            
-        @(posedge vif.mp_drv.cb_drv);
-            //WR16
-            vif.mp_drv.cb_drv.address[0] <= 14'b0000000_0000100;
-            vif.mp_drv.cb_drv.address[2] <= 14'b0000000_1000000;
-            
-       
-           
-
-        @(posedge vif.mp_drv.cb_drv);      
-            //write 
-            vif.mp_drv.cb_drv.wrdata_en[0] <= 1;
-            vif.mp_drv.cb_drv.wrdata_en[1] <= 0;
-            vif.mp_drv.cb_drv.wrdata_en[2] <= 1;
-            vif.mp_drv.cb_drv.wrdata_en[3] <= 0;
-            vif.mp_drv.cb_drv.wrdata[0] <= 64'hzzzz_zzzz_1234_5678;
-            vif.mp_drv.cb_drv.wrdata[1] <= 64'hzzzz_zzzz_zzzz_zzzz;
-            vif.mp_drv.cb_drv.wrdata[2] <= 64'hzzzz_zzzz_abcd_ef98;
-            vif.mp_drv.cb_drv.wrdata[3] <= 64'hzzzz_zzzz_zzzz_zzzz;
-            vif.mp_drv.cb_drv.wrdata_cs[0] <= 2'b01;
-            vif.mp_drv.cb_drv.wrdata_cs[2] <= 2'b01;            
-            vif.mp_drv.cb_drv.cs[0] <= 2'b00;
-            vif.mp_drv.cb_drv.cs[2] <= 2'b00;
-            vif.mp_drv.cb_drv.address[0] <= 14'b0000000_0000000;
-            vif.mp_drv.cb_drv.address[2] <= 14'b0000000_0000000;
-             //wck toggle mood
-            vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b01;
-            vif.mp_drv.cb_drv.wck_toggle[2] <= 2'b01;
-            vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b01;
-            vif.mp_drv.cb_drv.wck_toggle[2] <= 2'b01;
         
-        @(posedge vif.mp_drv.cb_drv);      
-            //ending the write transaction 
-            vif.mp_drv.cb_drv.wrdata_en[0] <= 0;
-            vif.mp_drv.cb_drv.wrdata_en[2] <= 0;
-            vif.mp_drv.cb_drv.wrdata[0] <= 64'hzzzz_zzzz_zzzz_zzzz;
-            vif.mp_drv.cb_drv.wrdata[2] <= 64'hzzzz_zzzz_zzzz_zzzz;
-            vif.mp_drv.cb_drv.wrdata_cs[0] <= 2'b00;
-            vif.mp_drv.cb_drv.wrdata_cs[2] <= 2'b00;
-        @(posedge vif.mp_drv.cb_drv);            
-            vif.mp_drv.cb_drv.wck_toggle[0] <= 2'b00;
-            vif.mp_drv.cb_drv.wck_toggle[1] <= 2'b00;
-            vif.mp_drv.cb_drv.wck_toggle[2] <= 2'b00;
-            vif.mp_drv.cb_drv.wck_toggle[3] <= 2'b00;
+        vif.mp_drv.cb_drv.dram_clk_disable[0] <= trans.dram_clk_disable[0];
+        vif.mp_drv.cb_drv.dram_clk_disable[1] <= trans.dram_clk_disable[1];
+        vif.mp_drv.cb_drv.dram_clk_disable[2] <= trans.dram_clk_disable[2];
+        vif.mp_drv.cb_drv.dram_clk_disable[3] <= trans.dram_clk_disable[3];
+        
+        vif.mp_drv.cb_drv.cke[0] <= trans.cke[0];
+        vif.mp_drv.cb_drv.cke[2] <= trans.cke[2];
             
+        vif.mp_drv.cb_drv.wck_cs[0] <= trans.wck_cs[0];
+        vif.mp_drv.cb_drv.wck_cs[1] <= trans.wck_cs[1];
+        vif.mp_drv.cb_drv.wck_cs[2] <= trans.wck_cs[2];
+        vif.mp_drv.cb_drv.wck_cs[3] <= trans.wck_cs[3];
+
+        vif.mp_drv.cb_drv.wck_en[0] <= trans.wck_en[0];
+        vif.mp_drv.cb_drv.wck_en[1] <= trans.wck_en[1];
+        vif.mp_drv.cb_drv.wck_en[2] <= trans.wck_en[2];
+        vif.mp_drv.cb_drv.wck_en[3] <= trans.wck_en[3];
+            
+        vif.mp_drv.cb_drv.wck_toggle[0] <= trans.wck_toggle[0];
+        vif.mp_drv.cb_drv.wck_toggle[1] <= trans.wck_toggle[1];
+        vif.mp_drv.cb_drv.wck_toggle[2] <= trans.wck_toggle[2];
+        vif.mp_drv.cb_drv.wck_toggle[3] <= trans.wck_toggle[3];
+ 
+        vif.mp_drv.cb_drv.address[0] <= trans.address[0];
+        vif.mp_drv.cb_drv.address[2] <= trans.address[2];
+        
+        vif.mp_drv.cb_drv.cs[0] <= trans.cs[0];
+        vif.mp_drv.cb_drv.cs[2] <= trans.cs[2];
+            
+        vif.mp_drv.cb_drv.wrdata_en[0] <= trans.wrdata_en[0];
+        vif.mp_drv.cb_drv.wrdata_en[1] <= trans.wrdata_en[1];
+        vif.mp_drv.cb_drv.wrdata_en[2] <= trans.wrdata_en[2];
+        vif.mp_drv.cb_drv.wrdata_en[3] <= trans.wrdata_en[3];
+
+        vif.mp_drv.cb_drv.wrdata[0] <= trans.wrdata[0];
+        vif.mp_drv.cb_drv.wrdata[1] <= trans.wrdata[1];
+        vif.mp_drv.cb_drv.wrdata[2] <= trans.wrdata[2];
+        vif.mp_drv.cb_drv.wrdata[3] <= trans.wrdata[3];
+
+        vif.mp_drv.cb_drv.wrdata_cs[0] <= trans.wrdata_cs[0];
+        vif.mp_drv.cb_drv.wrdata_cs[2] <= trans.wrdata_cs[2]; 
+
     endtask
 
     task automatic drive_status(wav_DFI_status_transfer trans);

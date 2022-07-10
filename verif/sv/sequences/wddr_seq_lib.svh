@@ -72,7 +72,10 @@ import wav_DFI_pkg::*;
 `include "sv/sequences/dfi/wddr_DFI_ctrlupd_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_lp_ctrl_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_lp_data_seq.sv"
-`include "sv/sequences/dfi/wddr_DFI_write_seq.sv"
+
+`include "sv/sequences/dfi/wddr_DFI_write_2to1.sv"
+`include "sv/sequences/dfi/wddr_DFI_many_write_2to1.sv"
+
 `include "sv/sequences/dfi/wddr_DFI_lp_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_several_lp_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_several_lp_small_wakeup_seq.sv"
