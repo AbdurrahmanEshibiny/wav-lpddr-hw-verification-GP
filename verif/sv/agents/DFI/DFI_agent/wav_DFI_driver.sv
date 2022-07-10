@@ -422,12 +422,14 @@ class wav_DFI_driver extends uvm_driver;
 */
 
     task automatic drive_read (DFI_rd_stream_seq_item trans);
-        
-        foreach(vif.cb_drv.cke[i]) begin
-            vif.cb_drv.cke[i] <= 2'b11;
-            vif.cb_drv.dram_clk_disable[i] <= 0;
-            vif.cb_drv.reset_n[i] <= '1;
+        @(vif.cb_drv) begin
+            foreach(vif.cb_drv.cke[i]) begin
+                vif.cb_drv.cke[i] <= 2'b11;
+                vif.cb_drv.dram_clk_disable[i] <= 0;
+                vif.cb_drv.reset_n[i] <= '1;
+            end    
         end
+        
 
         foreach (trans.slice_q[i]) begin
             @(vif.cb_drv) begin

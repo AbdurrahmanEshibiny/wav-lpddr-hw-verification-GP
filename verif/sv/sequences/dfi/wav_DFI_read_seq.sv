@@ -105,14 +105,20 @@ class dfi_rd_seq extends wddr_base_seq; // uvm_sequence #(wav_DFI_write_transfer
         slice = DFI_rd_slice::type_id::create("rd_slice");
         rd_seq_item = DFI_rd_stream_seq_item::type_id::create("rd_seq_item");
 
-        uvm_config_db#(virtual gp_LPDDR5_channel_intf)::get(uvm_root::get(), "*", "ch0_vif", ch0);
-        uvm_config_db#(virtual gp_LPDDR5_channel_intf)::get(uvm_root::get(), "*", "ch1_vif", ch1);
+        if (!uvm_config_db#(virtual gp_LPDDR5_channel_intf)::get(uvm_root::get(), "*", "ch0_vif", ch0)) begin
+            `uvm_error(get_name(),"Cannot get CH0 interface")
+        end
+        if (!uvm_config_db#(virtual gp_LPDDR5_channel_intf)::get(uvm_root::get(), "*", "ch1_vif", ch1)) begin
+            `uvm_error(get_name(),"Cannot get CH1 interface")
+        end
         
         super.body();
-        ddr_boot(err);
+        // ddr_boot(err);
         config_vips(806, 1);
-        set_dfi_ca_rddata_en(1);
-        set_dfi_rdout_mode(1,1);
+        gb_set = 1;
+        phy_bringup(err);
+        // set_dfi_ca_rddata_en(1);
+        // set_dfi_rdout_mode(1,1);
         if (err != 0) begin
             `uvm_error(get_name(), $sformatf("sequence err_cnt = %d ", err_cnt));
         end
@@ -120,8 +126,8 @@ class dfi_rd_seq extends wddr_base_seq; // uvm_sequence #(wav_DFI_write_transfer
         start_item(rd_seq_item);
         // TODO: We should try to encapsulate these things
         // in the rd_seq_item class itself
-        ch0.DQ = $random(5);
-        ch1.DQ = $random(8);
+        // ch0.DQ = $random(5);
+        // ch1.DQ = $random(8);
         rd_seq_data.randomize();
         rd_seq_data.data_len = 10; // can be randomized
 
