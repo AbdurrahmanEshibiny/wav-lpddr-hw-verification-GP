@@ -132,7 +132,10 @@ class wav_DFI_driver extends uvm_driver;
         vif.mp_drv.cb_drv.dram_clk_disable[3] <= trans.dram_clk_disable[3];
         
         vif.mp_drv.cb_drv.cke[0] <= trans.cke[0];
+        vif.mp_drv.cb_drv.cke[1] <= trans.cke[1];
         vif.mp_drv.cb_drv.cke[2] <= trans.cke[2];
+        vif.mp_drv.cb_drv.cke[3] <= trans.cke[3];
+        
             
         vif.mp_drv.cb_drv.wck_cs[0] <= trans.wck_cs[0];
         vif.mp_drv.cb_drv.wck_cs[1] <= trans.wck_cs[1];
@@ -150,10 +153,14 @@ class wav_DFI_driver extends uvm_driver;
         vif.mp_drv.cb_drv.wck_toggle[3] <= trans.wck_toggle[3];
  
         vif.mp_drv.cb_drv.address[0] <= trans.address[0];
+        vif.mp_drv.cb_drv.address[1] <= trans.address[1];
         vif.mp_drv.cb_drv.address[2] <= trans.address[2];
+        vif.mp_drv.cb_drv.address[3] <= trans.address[3];
         
         vif.mp_drv.cb_drv.cs[0] <= trans.cs[0];
+        vif.mp_drv.cb_drv.cs[1] <= trans.cs[1];
         vif.mp_drv.cb_drv.cs[2] <= trans.cs[2];
+        vif.mp_drv.cb_drv.cs[3] <= trans.cs[3];
             
         vif.mp_drv.cb_drv.wrdata_en[0] <= trans.wrdata_en[0];
         vif.mp_drv.cb_drv.wrdata_en[1] <= trans.wrdata_en[1];
@@ -166,8 +173,14 @@ class wav_DFI_driver extends uvm_driver;
         vif.mp_drv.cb_drv.wrdata[3] <= trans.wrdata[3];
 
         vif.mp_drv.cb_drv.wrdata_cs[0] <= trans.wrdata_cs[0];
+        vif.mp_drv.cb_drv.wrdata_cs[1] <= trans.wrdata_cs[1];
         vif.mp_drv.cb_drv.wrdata_cs[2] <= trans.wrdata_cs[2]; 
+        vif.mp_drv.cb_drv.wrdata_cs[3] <= trans.wrdata_cs[3];
 
+        vif.mp_drv.cb_drv.wrdata_mask[0] <= trans.wrdata_mask[0];
+        vif.mp_drv.cb_drv.wrdata_mask[1] <= trans.wrdata_mask[1];
+        vif.mp_drv.cb_drv.wrdata_mask[2] <= trans.wrdata_mask[2];
+        vif.mp_drv.cb_drv.wrdata_mask[3] <= trans.wrdata_mask[3];
     endtask
 
     task automatic drive_status(input wav_DFI_status_transfer trans);

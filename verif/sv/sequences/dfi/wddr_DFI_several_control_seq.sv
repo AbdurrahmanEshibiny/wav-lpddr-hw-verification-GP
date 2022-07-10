@@ -8,6 +8,7 @@ class wddr_DFI_several_control_seq extends wddr_base_seq;
 
     virtual task body();
         int err, trans_type;
+		wav_DFI_lp_transfer trans = new();
         super.body();
         ddr_boot(err);
         if (err != 0) begin
@@ -15,8 +16,19 @@ class wddr_DFI_several_control_seq extends wddr_base_seq;
         end
 
         handle_status_internally(); 
+		
+		trans.req = 0;
+		trans.is_rsp_required = 0;
+		trans.cyclesCount = 1;
+		trans.is_ctrl = 1;
+		trans.wakeup[5] = 1;
+		`uvm_send(trans);
+		trans.is_ctrl = 0;
+		`uvm_send(trans);
+		
+		wait_dfi_cycles(10);
 
-        for (int i = 0; i < 60; ++i) begin
+        for (int i = 0; i < 100; ++i) begin
               trans_type = $urandom_range(0, 5);
               `uvm_info(get_name(), $psprintf("Starting the %0d transaction", i), UVM_MEDIUM);
               case (trans_type)

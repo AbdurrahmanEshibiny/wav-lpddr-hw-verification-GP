@@ -300,22 +300,27 @@ class wddr_subscriber extends uvm_component;
 				$cast(phymstr_trans, trans);
 				trans_c = phymstr_c;
 				phymstr_cg.sample();
+				`uvm_info(get_name(), "Received a phymstr trans", UVM_MEDIUM);				
 			end
 			status_freq: begin
 				trans_c = freq_change_c;
+				`uvm_info(get_name(), "Received a status_freq trans", UVM_MEDIUM);
 			end
 			lp: begin
 				$cast(lp_trans, trans);
 				handle_lp_cg(lp_trans);
+				`uvm_info(get_name(), "Received a lp trans", UVM_MEDIUM);
 			end 
 			update: begin     
 				$cast(update_trans, trans);
 				handle_update_cg(update_trans);
+				`uvm_info(get_name(), "Received an update trans", UVM_MEDIUM);
 			end
 			write: begin     
 				$cast(DFI_write_trans, trans);
 				trans_c = write_c;
 				DFI_write_cg.sample();
+				`uvm_info(get_name(), "Received a write trans", UVM_MEDIUM);
 			end
 			// read: begin     
 				// $cast(DFI_read_trans, trans);

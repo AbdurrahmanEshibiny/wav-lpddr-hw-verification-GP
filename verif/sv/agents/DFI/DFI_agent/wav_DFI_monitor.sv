@@ -780,17 +780,27 @@ class wav_DFI_monitor extends uvm_monitor;
         end    
     endtask
 
-    task automatic monitor_write();                 
-        // forever begin         
-        //     @(vif.mp_mon.cb_mon) 
-        //     foreach(vif.mp_mon.cb_mon.wrdata_en[i])
-        //     begin      
-        //         if (vif.mp_mon.cb_mon.wrdata_en[i]) begin
-        //             `uvm_info(get_name(), "write transaction is detected", UVM_MEDIUM);
-        //             handle_write();
-        //         end
-        //     end
-        // end    
+    task automatic monitor_write(); 
+        int flag, prevflag = 0;        
+        wav_DFI_write_transfer trans = new();        
+        forever begin         
+            flag = 0;
+            @(vif.mp_mon.cb_mon) 
+            foreach(vif.mp_mon.cb_mon.wrdata_en[i])
+            begin      
+                if (vif.mp_mon.cb_mon.wrdata_en[i])
+                    flag = 1; 
+            end
+
+            if (flag && !prevflag) begin
+                `uvm_info(get_name(), "write transaction is detected", UVM_MEDIUM);
+                collect_write(trans);
+                write_to_port(trans);
+                // handle_write();
+            end
+             
+            prevflag = flag;
+        end    
     endtask
 
     task automatic monitor_initiailization();

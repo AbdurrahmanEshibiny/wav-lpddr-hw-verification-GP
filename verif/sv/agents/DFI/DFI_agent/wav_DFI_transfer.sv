@@ -33,7 +33,7 @@ endclass
 
 // Base class for DFI write transactions 
 class wav_DFI_write_transfer extends wav_DFI_transfer; 
-    bit [63:0]               wrdata [0:3];
+    rand bit [63:0]               wrdata [0:3];
 
     bit                      parity_in [0:3];
     bit [7:0]                wrdata_mask [0:3];

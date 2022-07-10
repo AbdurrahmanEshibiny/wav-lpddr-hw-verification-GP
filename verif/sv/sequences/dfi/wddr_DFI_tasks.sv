@@ -288,6 +288,9 @@ task automatic init_vif;
 endtask
 
 task automatic wait_dfi_cycles(int count);
+	if (vif == null) begin
+        init_vif(); // obtain the virtual DFI interface
+    end
     repeat(count) @(posedge vif.clock);
 endtask
 
