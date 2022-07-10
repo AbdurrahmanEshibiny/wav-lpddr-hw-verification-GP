@@ -1,11 +1,11 @@
-`ifndef WDDR_DFI_WRITE_TEST
-`define WDDR_DFI_WRITE_TEST
+`ifndef WDDR_DFI_WRITE_2TO1_TEST
+`define WDDR_DFI_WRITE_2TO1_TEST
 
-class wddr_DFI_write_test extends wddr_base_test;
+class wddr_DFI_write_2to1_test extends wddr_base_test;
 
-    `uvm_component_utils(wddr_DFI_write_test)
+    `uvm_component_utils(wddr_DFI_write_2to1_test)
 
-    function new (string name = "wddr_DFI_write_test", uvm_component parent=null);
+    function new (string name = "wddr_DFI_write_2to1_test", uvm_component parent=null);
         super.new(name,parent);
     endfunction:new
 
@@ -25,7 +25,7 @@ class wddr_DFI_write_test extends wddr_base_test;
 
         uvm_objection objection;
         wav_DFI_sequencer sequencer;
-        wddr_DFI_write_seq  dfi_seq;
+        wddr_DFI_write_2to1_seq  dfi_seq;
 
         `uvm_info (get_type_name(),$psprintf("------- Running WDDR DFI WRITE TEST ---------"),UVM_LOW)
         phase.raise_objection(this, "start_test");
@@ -34,7 +34,7 @@ class wddr_DFI_write_test extends wddr_base_test;
 
         if (!uvm_config_db#(wav_DFI_sequencer)::get(uvm_root::get(), "*", "DFI_sequencer", sequencer))
             `uvm_fatal(get_name(), "Failed at getting the sequencer");
-        dfi_seq = wddr_DFI_write_seq::type_id::create("dfi_seq");
+        dfi_seq = wddr_DFI_write_2to1_seq::type_id::create("dfi_seq");
 
         dfi_seq.start(sequencer);
 
