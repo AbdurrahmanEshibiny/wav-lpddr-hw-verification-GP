@@ -20,6 +20,10 @@ class wddr_DFI_write_2to1_seq extends wddr_base_seq;
         `uvm_info(get_type_name(), $psprintf("1.PRE-CREATE OF TRANSACTION"), UVM_LOW);
         `uvm_create(trans);
         `uvm_info(get_type_name(), $psprintf("2.POST-CREATE, PRE-RUN OF TRANSACTION"), UVM_LOW);
+
+        trans.is_rsp_required = 0;
+        assert(trans.randomize());
+
          @(posedge vif.mp_drv.cb_drv);
             //ck_c ck_t dram clock enable 
             trans.dram_clk_disable[0] = 0;
@@ -30,10 +34,13 @@ class wddr_DFI_write_2to1_seq extends wddr_base_seq;
             trans.cke[0] = 2'b01;
             trans.cke[2] = 2'b01;
             //wck initialized to static mood
-            trans.wck_cs[0] = 2'b01;
-            trans.wck_cs[1] = 2'b01;
-            trans.wck_cs[2] = 2'b01;
-            trans.wck_cs[3] = 2'b01;
+            // trans.wck_cs[0] = 2'b11;
+            // trans.wck_cs[1] = 2'b11;
+            // trans.wck_cs[2] = 2'b11;
+            // trans.wck_cs[3] = 2'b11;
+            trans.wck_cs = '{default: 2'b11};
+            trans.wrdata_cs = '{default: 2'b11};
+            trans.cs = '{default: 2'b11};
 
             trans.wck_en[0] = 1;
             trans.wck_en[1] = 0;
@@ -94,8 +101,9 @@ class wddr_DFI_write_2to1_seq extends wddr_base_seq;
 
         @(posedge vif.mp_drv.cb_drv); 
             //data
-            trans.wrdata[0] = 64'h0000_0000_1234_5678; 
-            trans.wrdata[2] = 64'h0000_0000_abcd_ef98;
+            // trans.wrdata[0] = 64'h0000_0000_1234_5678;
+            // trans.wrdata[2] = 64'h0000_0000_abcd_ef98;
+            assert(trans.randomize());
         
 
         `uvm_send(trans);
@@ -110,11 +118,14 @@ class wddr_DFI_write_2to1_seq extends wddr_base_seq;
             trans.wrdata_en[2] = 1;
             trans.wrdata_en[3] = 0;
 
+            trans.wrdata_cs[0] = 2'b01;
+            trans.wrdata_cs[1] = 2'b01;
+
         `uvm_send(trans);
 
         @(posedge vif.mp_drv.cb_drv);      
             //ending the write transaction 
-            trans.wrdata_en[3] = 0;
+            
             trans.wrdata_cs[0] = 2'b00;
             trans.wrdata_cs[2] = 2'b00;
             trans.wrdata[0] = 64'hzzzz_zzzz_zzzz_zzzz;
@@ -139,6 +150,10 @@ class wddr_DFI_write_2to1_seq extends wddr_base_seq;
 
         `uvm_info(get_type_name(), "--------PRINTING THE REQ ITEM--------", UVM_DEBUG); 
         trans.print();
+
+        repeat (10) @(posedge vif.mp_drv.cb_drv); 
+        trans = new();      // empty write transaction
+        `uvm_send(trans);   // to reset the write interface
         
         `uvm_info(get_type_name(), "done sequence", UVM_LOW);
         

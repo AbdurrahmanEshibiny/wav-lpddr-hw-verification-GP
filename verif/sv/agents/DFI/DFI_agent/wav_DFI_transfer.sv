@@ -4,7 +4,7 @@
 `include "wav_DFI_defines.svh"
 
 typedef enum {
-    DFI, cmd, control, lp, phymstr, update, status_freq, read, write, data
+    DFI, cmd, control, lp, phymstr, update, status_freq, read, write, data, wck
     } type_e;
 
 
@@ -30,17 +30,40 @@ class wav_DFI_transfer extends uvm_sequence_item;
     endfunction
 endclass
 
+// used only for measuring coverage
+class wav_DFI_wck_transfer extends wav_DFI_transfer; 
+    typedef enum  { static_high, static_low, toggle, fast_toggle } wck_mode_e;
+    wck_mode_e wck_mode;
+    bit enable;
+
+    `uvm_object_utils_begin(wav_DFI_wck_transfer)
+        `uvm_field_enum(wck_mode_e, wck_mode, UVM_DEFAULT)
+    `uvm_object_utils_end
+
+    function new(wck_mode_e mode=static_high, bit en=0, string name=" wav_DFI_wck_transfer"); 
+        super.new(name); 
+        super.tr_type = wck; 
+        enable = en;
+        wck_mode = mode;
+    endfunction
+
+    function void reset;
+        enable = 0;
+    endfunction
+endclass
+
 
 // Base class for DFI write transactions 
 class wav_DFI_write_transfer extends wav_DFI_transfer; 
-    bit [63:0]               wrdata [0:3];
+    rand bit [63:0]               wrdata [0:3];
 
-    bit                      parity_in [0:3];
-    bit [7:0]                wrdata_mask [0:3];
+    // randomization will be turned off by default in the "new" the constructor
+    rand bit                      parity_in [0:3];
+    rand bit [7:0]                wrdata_mask [0:3];
 
     bit [1:0]                wrdata_cs [0:3];
     bit                      wrdata_en [0:3];
-    bit [13:0]               address [0:3];
+    rand bit [13:0]          address [0:3];
     bit [1:0]                cs [0:3];
     bit [1:0]                cke [0:3];
     bit [1:0]                wck_cs [0:3];
@@ -66,6 +89,21 @@ class wav_DFI_write_transfer extends wav_DFI_transfer;
     function new(string name=" wav_DFI_write_transfer"); 
         super.new(name); 
         super.tr_type = write; 
+        foreach(parity_in[i])
+            parity_in[i].rand_mode(0);
+        foreach(wrdata_mask[i])
+            wrdata_mask[i].rand_mode(0);
+        foreach(address[i])
+            address[i].rand_mode(0);
+    endfunction
+
+    function void enable_randomization;
+        foreach(parity_in[i])
+            parity_in[i].rand_mode(1);
+        foreach(wrdata_mask[i])
+            wrdata_mask[i].rand_mode(1);
+        foreach(address[i])
+            address[i].rand_mode(1);
     endfunction
 
     virtual function void reset();

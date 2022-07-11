@@ -282,12 +282,15 @@ endtask
 virtual wav_DFI_if vif = null;
 
 task automatic init_vif;
-    if (!uvm_config_db#(virtual wav_DFI_if)::get(uvm_root::get(), "*", "DFI_vif", vif)) begin
+    if (vif == null && !uvm_config_db#(virtual wav_DFI_if)::get(uvm_root::get(), "*", "DFI_vif", vif)) begin
         `uvm_fatal("NOVIF",{"virtual interface must be set for: ",get_full_name(),".DFI_vif"});
     end
 endtask
 
 task automatic wait_dfi_cycles(int count);
+	if (vif == null) begin
+        init_vif(); // obtain the virtual DFI interface
+    end
     repeat(count) @(posedge vif.clock);
 endtask
 
@@ -621,3 +624,12 @@ task genina_t_ddr_sanity;
     #100ns;
     end
 endtask
+
+typedef bit [13:0] address_t;
+function  address_t randomize_address(address_t address, address_t mask);
+    address_t rand_address;
+    rand_address = $urandom;
+    rand_address = rand_address & ~mask;
+    rand_address = rand_address | address;
+    return rand_address;
+endfunction //automatic

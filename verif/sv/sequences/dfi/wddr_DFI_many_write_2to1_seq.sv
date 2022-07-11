@@ -20,8 +20,10 @@ class wddr_DFI_many_write_2to1_seq extends wddr_base_seq;
         `uvm_info(get_type_name(), $psprintf("1.PRE-CREATE OF TRANSACTION"), UVM_LOW);
         `uvm_create(trans);
         `uvm_info(get_type_name(), $psprintf("2.POST-CREATE, PRE-RUN OF TRANSACTION"), UVM_LOW);
+        trans.is_rsp_required = 0;
         /************************************************************* 1 **********************************************/
          @(posedge vif.mp_drv.cb_drv);
+            assert(trans.randomize()); // added
             //ck_c ck_t dram clock enable 
             trans.dram_clk_disable[0] = 0;
             trans.dram_clk_disable[1] = 1;
@@ -31,10 +33,10 @@ class wddr_DFI_many_write_2to1_seq extends wddr_base_seq;
             trans.cke[0] = 2'b01;
             trans.cke[2] = 2'b01;
             //wck initialized to static mood
-            trans.wck_cs[0] = 2'b01;
-            trans.wck_cs[1] = 2'b01;
-            trans.wck_cs[2] = 2'b01;
-            trans.wck_cs[3] = 2'b01;
+            trans.wck_cs[0] = 2'b11;
+            trans.wck_cs[1] = 2'b11;
+            trans.wck_cs[2] = 2'b11;
+            trans.wck_cs[3] = 2'b11;
 
             trans.wck_en[0] = 1;
             trans.wck_en[1] = 0;
@@ -95,8 +97,9 @@ class wddr_DFI_many_write_2to1_seq extends wddr_base_seq;
 
         @(posedge vif.mp_drv.cb_drv); 
             //data
-            trans.wrdata[0] = 64'h0000_0000_1234_5678; 
-            trans.wrdata[2] = 64'h0000_0000_abcd_ef98;
+            // trans.wrdata[0] = 64'h0000_0000_1234_5678; 
+            // trans.wrdata[2] = 64'h0000_0000_abcd_ef98;
+            assert(trans.randomize());
         
 
         `uvm_send(trans);
@@ -222,8 +225,9 @@ class wddr_DFI_many_write_2to1_seq extends wddr_base_seq;
 
         @(posedge vif.mp_drv.cb_drv); 
             //data
-            trans.wrdata[0] = 64'h0000_0000_1234_5678; 
-            trans.wrdata[2] = 64'h0000_0000_abcd_ef98;
+            // trans.wrdata[0] = 64'h0000_0000_1234_5678; 
+            // trans.wrdata[2] = 64'h0000_0000_abcd_ef98;
+            assert(trans.randomize());
         
 
         `uvm_send(trans);
@@ -349,9 +353,9 @@ class wddr_DFI_many_write_2to1_seq extends wddr_base_seq;
 
         @(posedge vif.mp_drv.cb_drv); 
             //data
-            trans.wrdata[0] = 64'h0000_0000_1234_5678; 
-            trans.wrdata[2] = 64'h0000_0000_abcd_ef98;
-        
+            // trans.wrdata[0] = 64'h0000_0000_1234_5678; 
+            // trans.wrdata[2] = 64'h0000_0000_abcd_ef98;
+            assert(trans.randomize());
 
         `uvm_send(trans);
 

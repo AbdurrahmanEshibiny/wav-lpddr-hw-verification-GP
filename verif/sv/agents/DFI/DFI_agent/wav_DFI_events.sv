@@ -3,6 +3,11 @@
 class EventHandler;
     typedef enum {lp_ctrl, lp_data, phymstr, ctrlupd, phyupd, status} transaction_e;
 
+    static event setting_wck_static_high;
+    static event setting_wck_static_low;
+    static event setting_wck_toggle;
+    static event setting_wck_fast_toggle;
+
     static event status_start;
     static event status_finish;
     static event status_req_pos;
@@ -38,8 +43,11 @@ class EventHandler;
         ->e;
     endtask
 
-    static task wait_for_event(ref event e);
-        wait(e.triggered);
+    static task wait_for_event(ref event e, input bit wait_style=0);
+        if (wait_style == 0)
+            wait(e.triggered);
+        else
+            @(e);
     endtask
 
     // *************** trigger events *************** //

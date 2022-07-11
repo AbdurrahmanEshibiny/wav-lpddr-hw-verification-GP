@@ -150,6 +150,7 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
     
     virtual task body();
         wav_DFI_cmd_transfer trans;
+        virtual clock_reset_intf vreset;
         my_rand random;
         int err;
 
@@ -400,6 +401,48 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
 		trans.reset_n			= '{default: 0};
 		`uvm_send(trans);
 		wait_dfi_cycles(10);
-		
+        
+        if (!uvm_config_db#(virtual clock_reset_intf)::get(uvm_root::get(), "*", "clk_rst_vif", vreset)) begin
+            `uvm_fatal("NOVIF",{"virtual interface must be set for: ",get_full_name(),".clk_rst_vif"});
+        end
+
+        // exercising the resets
+        vreset.i_refclk_alt_off();
+        #10ns;
+        vreset.i_refclk_alt_on();
+        #10ns;
+        vreset.i_ana_refclk_off();
+        #10ns;
+        vreset.i_ana_refclk_on();
+        #10ns;
+        vreset.i_ahb_clk_off();
+        #10ns;
+        vreset.i_ahb_clk_on();
+        #10ns;
+        vreset.i_jtag_tck_off();
+        #10ns;
+        vreset.i_jtag_tck_on();
+        #10ns;
+        vreset.set_i_jtag_trst_n(0);
+        #10ns;
+        vreset.set_i_jtag_trst_n(1);
+        #10ns;
+        vreset.set_i_ahb_rst(1);
+        #10ns;
+        vreset.set_i_ahb_rst(0);
+        #10ns;
+        vreset.i_refclk_off();
+        #10ns;
+        vreset.i_refclk_on();
+        #10ns;
+        vreset.set_i_prst(1);
+        #10ns;
+        vreset.set_i_prst(0);
+        #10ns;
+        vreset.set_i_rst(1);
+        #10ns;
+        vreset.set_i_rst(0);
+
+        #50ns;
     endtask
 endclass

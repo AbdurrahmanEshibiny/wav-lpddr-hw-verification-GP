@@ -494,4 +494,220 @@ function void print_prepost_fixes();
     `uvm_info(get_type_name(), $psprintf(" SER_SEL:   %s"  , SER_SEL     ), UVM_MEDIUM);
 endfunction
 
+
+
+    task automatic perform_write_2to1;
+        wav_DFI_write_transfer trans = new();
+        trans.is_rsp_required = 0;        
+        trans.enable_randomization();
+        assert(trans.randomize());
+        
+        wait_dfi_cycles(1);
+            //ck_c ck_t dram clock enable 
+            trans.dram_clk_disable[0] = 0;
+            trans.dram_clk_disable[1] = 1;
+            trans.dram_clk_disable[2] = 1;
+            trans.dram_clk_disable[3] = 1;
+            //enable ca dram bus
+            trans.cke[0] = 2'b01;
+            trans.cke[2] = 2'b01;
+            trans.wck_cs = '{default: 2'b11};
+            trans.wrdata_cs = '{default: 2'b11};
+            trans.cs = '{default: 2'b11};
+
+            trans.address = '{default: 0};
+
+            trans.wck_en[0] = 1;
+            trans.wck_en[1] = 0;
+            trans.wck_en[2] = 0;
+            trans.wck_en[3] = 1;
+            //static
+            EventHandler::trigger_event(EventHandler::setting_wck_static_low);
+            trans.wck_toggle[0] = 2'b00;
+            trans.wck_toggle[1] = 2'b00;
+            trans.wck_toggle[2] = 2'b00;
+            trans.wck_toggle[3] = 2'b00;
+ 
+        `uvm_send(trans);
+
+        wait_dfi_cycles(1);
+            //ACT1
+            trans.address[0] = 14'hffff;
+            trans.address[2] = 14'hffff;
+            // cs
+            trans.cs[0] = 2'b01;
+            trans.cs[2] = 2'b01;
+        `uvm_send(trans);
+
+        wait_dfi_cycles(1);
+            //ACT2
+            trans.address[0] = randomize_address(3'b011, 3'b111);
+            trans.address[2] = randomize_address(0, 0); // totally random
+        `uvm_send(trans);
+
+        wait_dfi_cycles(1);
+            //CAS_WR
+            trans.address[0] = 14'b0000000_0011100;
+            trans.address[2] = 14'b0000000_0000000;
+        `uvm_send(trans);
+
+        wait_dfi_cycles(1);
+            //WR16
+            trans.address[0] = randomize_address(3'b110, 3'b111);
+            trans.address[2] = randomize_address(0, 0); // totally random
+            // toggle 
+            EventHandler::trigger_event(EventHandler::setting_wck_toggle);
+            trans.wck_toggle[0] = 2'b01;
+            trans.wck_toggle[2] = 2'b01;
+            trans.wck_toggle[0] = 2'b01;
+            trans.wck_toggle[2] = 2'b01;
+        `uvm_send(trans);
+
+        wait_dfi_cycles(1);      
+            trans.cs[0] = 2'b00;
+            trans.cs[2] = 2'b00;
+            trans.address[0] = 14'b0000000_0000000;
+            trans.address[2] = 14'b0000000_0000000;
+            //finish of the commands before read (ACT1-ACT2-CASWR-WR16)
+         `uvm_send(trans);
+
+        wait_dfi_cycles(1); 
+            //data
+            // trans.wrdata[0] = 64'h0000_0000_1234_5678;
+            // trans.wrdata[2] = 64'h0000_0000_abcd_ef98;
+            assert(trans.randomize());
+        `uvm_send(trans);
+
+        /**************************** delay Tphy_wrdata between wrdata and wrdata_en ********************/
+        /**************************** delay Tphy_wrdata between wr16 command and wrdata_en ********************/
+        
+        wait_dfi_cycles(1); 
+            //wrdata enable 
+            trans.wrdata_en[0] = 0;
+            trans.wrdata_en[1] = 0;
+            trans.wrdata_en[2] = 1;
+            trans.wrdata_en[3] = 0;
+        `uvm_send(trans);
+
+        wait_dfi_cycles(1);      
+            //ending the write transaction 
+            trans.wrdata_en[3] = 0;
+            trans.wrdata_cs[0] = 2'b00;
+            trans.wrdata_cs[2] = 2'b00;
+            // trans.wrdata[0] = 64'hzzzz_zzzz_zzzz_zzzz;
+            // trans.wrdata[2] = 64'hzzzz_zzzz_zzzz_zzzz;
+            trans.wrdata = '{default: 0};
+            trans.wrdata_en[0] = 0;
+            trans.wrdata_en[1] = 0;
+            trans.wrdata_en[2] = 0;
+            trans.wrdata_en[3] = 0;
+        `uvm_send(trans);
+
+        wait_dfi_cycles(2);        
+            trans.wck_toggle[0] = 2'b00;
+            trans.wck_toggle[1] = 2'b00;
+            trans.wck_toggle[2] = 2'b00;
+            trans.wck_toggle[3] = 2'b00;
+        `uvm_send(trans);
+
+        `uvm_info(get_type_name(), $psprintf("3.POST-CREATE, PPOST-RUN, PRE-RSP OF TRANSACTION"), UVM_LOW);
+
+        `uvm_info(get_type_name(), "--------PRINTING THE REQ ITEM--------", UVM_DEBUG); 
+        trans.print();
+
+        repeat (10) wait_dfi_cycles(1); 
+        trans = new();      // empty write transaction
+        trans.is_rsp_required = 0;
+        `uvm_send(trans);   // to reset the write interface
+    endtask
+
+    task automatic perform_toggling;
+        wav_DFI_write_transfer trans = new();
+        trans.is_rsp_required = 0;        
+        trans.cke 				= '{default: 2'b11};
+        trans.cs				= '{default: 2'b11};
+        trans.wck_en            = '{default: 2'b11};
+        trans.wck_toggle        = '{default: 2'b11};
+        trans.wck_cs            = '{default: 2'b11};
+        trans.wrdata_cs         = '{default: 2'b11};
+        trans.wrdata            = '{default: 64'hffff_ffff_ffff_ffff};
+        trans.wrdata_mask       = '{default: 8'hff};
+        trans.wrdata_en         = '{default: 1};
+        trans.dram_clk_disable	= '{default: 1};
+		trans.parity_in			= '{default: 1};
+        trans.address 			= '{default: 14'h0000};
+        `uvm_send(trans);
+        wait_dfi_cycles(10); 
+        
+        trans = new();
+        trans.is_rsp_required = 0;
+        `uvm_send(trans);
+		wait_dfi_cycles(10); 
+    endtask
+
+
+    task automatic perform_control;
+        int trans_type;
+
+        trans_type = $urandom_range(0, 5);
+        `uvm_info(get_name(), $psprintf("Starting the %0d transaction", i), UVM_MEDIUM);
+
+        case (trans_type)
+        0:  begin                   
+            wav_DFI_lp_transfer trans = new();
+            `uvm_info(get_name(), "Sending a lp_ctrl transaction", UVM_MEDIUM); 
+            `uvm_create(trans);
+            trans.is_rsp_required = 0;
+            trans.req = 1'b1;
+            trans.is_ctrl = 1'b1;
+            `uvm_rand_send(trans);
+            trans.print();
+            EventHandler::wait_for_transaction(EventHandler::lp_ctrl);
+            // get_response(rsp); 
+        end
+
+        1: begin                    
+            wav_DFI_lp_transfer trans = new();
+            `uvm_info(get_name(), "Sending a lp_data transaction", UVM_MEDIUM);
+            `uvm_create(trans);
+            trans.is_rsp_required = 0;
+            trans.req = 1'b1;
+            trans.is_ctrl = 1'b0;
+            `uvm_rand_send(trans);
+            trans.print();
+            EventHandler::wait_for_transaction(EventHandler::lp_data);
+            // get_response(rsp); 
+        end
+
+        2: begin
+            `uvm_info(get_name(), "Sending a phymstr transaction", UVM_MEDIUM);
+            t_dfi_phymstr(err_cnt, 1'b0);
+        end
+
+        3: begin
+            `uvm_info(get_name(), "Sending a phyupd transaction", UVM_MEDIUM);
+            t_dfi_phyupd(err_cnt, 1'b0);
+        end
+
+        4: begin
+            wav_DFI_update_transfer trans = new();
+            `uvm_info(get_name(), "Sending a ctrlupd transaction", UVM_MEDIUM);
+            trans.is_rsp_required = 0;
+            trans.req = 1'b1;
+            trans.is_ctrl = 1'b1;
+            `uvm_rand_send(trans);
+            EventHandler::wait_for_transaction(EventHandler::ctrlupd);
+            // get_response(rsp);
+        end
+
+        5: begin
+            wav_DFI_status_transfer trans = wav_DFI_status_transfer::type_id::create("seq_item");
+            trans.is_rsp_required = 0;
+            assert(trans.randomize());
+            `uvm_send(trans);
+            EventHandler::wait_for_transaction(EventHandler::status);
+            // get_response(rsp);
+        end
+        endcase
+    endtask
 endclass : wddr_base_seq
