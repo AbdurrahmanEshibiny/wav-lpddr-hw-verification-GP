@@ -11,13 +11,14 @@ class wddr_subscriber extends uvm_component;
 	wav_DFI_update_transfer ctrlupd_trans, phyupd_trans;
 	// wav_DFI_read_transfer DFI_read_trans;
 	wav_DFI_write_transfer DFI_write_trans;
+	wav_DFI_wck_transfer DFI_wck_trans;
 
 	uvm_analysis_imp_DFI #(wav_DFI_transfer, wddr_subscriber) DFI_imp;
 	
 	gp_LPDDR5_cov_trans lpddr5_trans;
 	uvm_analysis_imp_LPDDR5 #(gp_LPDDR5_cov_trans, wddr_subscriber) LPDDR5_imp;
 
-	typedef enum  {DFI_C, control_c, phyupd_c, ctrlupd_c, phymstr_c, lp_ctrl_c, lp_data_c, read_c, write_c, freq_change_c} trans_c_e;
+	typedef enum  {DFI_C, control_c, phyupd_c, ctrlupd_c, phymstr_c, lp_ctrl_c, lp_data_c, read_c, write_c, freq_change_c, wck_c} trans_c_e;
 	trans_c_e trans_c;
 
 	`define high_bin_only {bins is_high = {1};}
@@ -123,11 +124,8 @@ class wddr_subscriber extends uvm_component;
 	endgroup
 
 	// Cover different parameters of write
-	covergroup DFI_write_cg;
-		wck_modes_p0_cp:	coverpoint DFI_write_trans.wck_toggle[0] iff(DFI_write_trans.wck_en[0]);
-		wck_modes_p1_cp:	coverpoint DFI_write_trans.wck_toggle[1] iff(DFI_write_trans.wck_en[1]);
-		wck_modes_p2_cp:	coverpoint DFI_write_trans.wck_toggle[2] iff(DFI_write_trans.wck_en[2]);
-		wck_modes_p3_cp:	coverpoint DFI_write_trans.wck_toggle[3] iff(DFI_write_trans.wck_en[3]);
+	covergroup DFI_wck_cg;
+		wck_modes_cp:	coverpoint DFI_wck_trans.wck_mode iff(DFI_wck_trans.enable);
 	endgroup
 
 	// Cover different control high level scenarios
@@ -223,6 +221,7 @@ class wddr_subscriber extends uvm_component;
 		phyupd_trans = wav_DFI_update_transfer::type_id::create("coverage_phyupd_trans", this);
 
 		DFI_write_trans = wav_DFI_write_transfer::type_id::create("coverage_DFI_write_trans", this);
+		DFI_wck_trans = wav_DFI_wck_transfer::type_id::create("coverage_DFI_write_trans", this);
 
 		// Instantiate the required scalar data field
 		trans_c = DFI_C;
@@ -232,7 +231,7 @@ class wddr_subscriber extends uvm_component;
 		phymstr_cg = new();
 		update_cg = new();
 		lp_cg = new();
-		DFI_write_cg = new();
+		DFI_wck_cg = new();
 		advanced_control_cg = new();
 	endfunction: new
 
@@ -250,6 +249,7 @@ class wddr_subscriber extends uvm_component;
 		phymstr_trans.reset();
 
 		DFI_write_trans.reset();
+		DFI_wck_trans.reset();
 
 		trans_c = DFI_C;
 	endfunction
@@ -319,8 +319,13 @@ class wddr_subscriber extends uvm_component;
 			write: begin     
 				$cast(DFI_write_trans, trans);
 				trans_c = write_c;
-				DFI_write_cg.sample();
+				// DFI_write_cg.sample();
 				`uvm_info(get_name(), "Received a write trans", UVM_MEDIUM);
+			end
+			wck: begin
+				$cast(DFI_wck_trans, trans);
+				DFI_wck_cg.sample();
+				`uvm_info(get_name(), "Received a wck trans", UVM_MEDIUM);
 			end
 			// read: begin     
 				// $cast(DFI_read_trans, trans);
