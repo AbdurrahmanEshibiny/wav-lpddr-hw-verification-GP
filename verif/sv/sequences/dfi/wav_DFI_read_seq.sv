@@ -113,14 +113,18 @@ class dfi_rd_seq extends wddr_base_seq; // uvm_sequence #(wav_DFI_write_transfer
         end
         
         super.body();
-        ddr_boot(err);
-        config_vips(806, 2);
-        set_freq_ratio(2);
-        // gb_set = 1;
+        // ddr_boot(err);
+        genina_t_ddr_sanity(err, 3); // not working yet, use t_ddr_sanity
         // phy_bringup(err);
-        set_dfi_ca_rddata_en(1);
+        config_vips(vcoFreq1, freqRatio);
+        // set_freq_ratio(freqRatio);
+        // gb_set = 1;
+        
+        // t_mcu_boot(err_cnt);
+        set_dfi_ca_rddata_en(1); // included in the functions
         set_dfi_rdout_mode(1,1);
         set_dfi_wck_mode(1);
+        
         if (err != 0) begin
             `uvm_error(get_name(), $sformatf("sequence err_cnt = %d ", err_cnt));
         end
@@ -218,7 +222,7 @@ class dfi_rd_seq extends wddr_base_seq; // uvm_sequence #(wav_DFI_write_transfer
         // assign rddata_en & pt3 of wck_toggle
         repeat (rd_seq_data.data_len) begin
             rd_seq_item.slice_q[slice_i].rddata_en[phase_i] = 1;
-            rd_seq_item.slice_q[slice_i].wck_toggle[phase_i] = 2'b10;
+            rd_seq_item.slice_q[slice_i].wck_toggle[phase_i] = 2'b11;
             phase_i++;
             if (!phase_i) begin
                 slice_i++;
@@ -278,43 +282,6 @@ class dfi_rd_seq extends wddr_base_seq; // uvm_sequence #(wav_DFI_write_transfer
         end
 
 
-        slice_i = 0;
-        // adjust wck_en
-        // -1 so last slice is equal to zero
-        while (slice_i < rd_seq_item.slice_q.size() - 1) begin
-            rd_seq_item.slice_q[slice_i].wck_en[0] = 1'b1;
-            rd_seq_item.slice_q[slice_i].wck_en[1] = 1'b1;
-            slice_i++;
-        end
-        // disable wck on the last slice
-        rd_seq_item.slice_q[slice_i].wck_en[0] = 0;
-        rd_seq_item.slice_q[slice_i].wck_en[1] = 0;
-
-        // no need for this part since the default value of bits is zero
-        /*
-        slice_i = 0;
-        phase_i = 0;
-        // adjust wck_toggle
-        
-        // cfg so that rddata_en and wck_toggle = 2'b10 are sent together
-        
-
-        repeat (rd_seq_data.data_len) begin
-            rd_seq_item.slice_q[slice_i].wck_toggle[phase_i] = 2'b10;
-            phase_i++;
-            if (!phase_i) begin
-                slice_i++;
-            end
-            // if (slice_i >= rd_seq_item.slice_q.size()) begin
-            //     if(!$cast(slice, slice.clone()))
-            //         `uvm_error(get_name(), "Failed to cast slice")
-            //     rd_seq_item.slice_q.push_back(slice);
-            // end
-        end
-
-        // one last slice to ensure wck is closed 
-        */
-
         slice_i = 2;
         // assign rest of the CA to NOP
         while (slice_i < rd_seq_item.slice_q.size()) begin
@@ -323,19 +290,42 @@ class dfi_rd_seq extends wddr_base_seq; // uvm_sequence #(wav_DFI_write_transfer
             slice_i++;
         end
 
+        // add a few empty slices to account for the need
+        // for the PHY to start capturing data on CA
+        // and assign the CA of those slices to NOP
+        repeat (4) begin
+            if(!$cast(slice, slice.clone()))
+                `uvm_error(get_name(), "Failed to cast slice")
+            rd_seq_item.slice_q.push_front(slice);
+            rd_seq_item.slice_q[0].address[0] = DFI_NOP;
+            rd_seq_item.slice_q[0].address[1] = DFI_NOP;
+        end
+
         slice_i = 0;
-        // assign cs and wck_cs
-        while (slice_i < rd_seq_item.slice_q.size()) begin
+        // adjust wck_en, cs and wck_cs
+        // -1 so last slice is equal to zero
+        while (slice_i < rd_seq_item.slice_q.size() - 1) begin
+            rd_seq_item.slice_q[slice_i].wck_en[0] = 1'b1;
+            rd_seq_item.slice_q[slice_i].wck_en[1] = 1'b1;
+
             rd_seq_item.slice_q[slice_i].cs[0] = rd_seq_data.address.cs;
             rd_seq_item.slice_q[slice_i].cs[1] = rd_seq_data.address.cs;
+
             rd_seq_item.slice_q[slice_i].wck_cs[0] = rd_seq_data.address.cs;
             rd_seq_item.slice_q[slice_i].wck_cs[1] = rd_seq_data.address.cs;
             slice_i++;
         end
+        // disable wck_en, wck_cs & cs on the last slice
+        rd_seq_item.slice_q[slice_i].wck_en[0] = 0;
+        rd_seq_item.slice_q[slice_i].wck_en[1] = 0;
 
+        rd_seq_item.slice_q[slice_i].cs[0] = 0;
+        rd_seq_item.slice_q[slice_i].cs[1] = 0;
+
+        rd_seq_item.slice_q[slice_i].wck_cs[0] = 0;
+        rd_seq_item.slice_q[slice_i].wck_cs[1] = 0;
+        
         finish_item(rd_seq_item);
-
-        // uvm_info(get_type_name(), $psprintf("1.PRE-CREATE OF TRANSACTION"), UVM_LOW);
     endtask
 
 endclass

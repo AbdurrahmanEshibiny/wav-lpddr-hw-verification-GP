@@ -135,11 +135,3 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 `include "tests/dfi/wddr_DFI_wck_test.sv"
 `include "tests/dfi/wddr_DFI_write_4to1_test.sv"
 `include "tests/dfi/wddr_DFI_read_test.sv"
-
-`include "tests/dfi/wddr_DFI_read_test1.sv"
-`include "tests/dfi/wddr_DFI_read_test2.sv"
-`include "tests/dfi/wddr_DFI_read_test3.sv"
-`include "tests/dfi/wddr_DFI_read_test4.sv"
-`include "tests/dfi/wddr_DFI_read_test5.sv"
-`include "tests/dfi/wddr_DFI_read_test6.sv"
-`include "tests/dfi/wddr_DFI_read_test7.sv"

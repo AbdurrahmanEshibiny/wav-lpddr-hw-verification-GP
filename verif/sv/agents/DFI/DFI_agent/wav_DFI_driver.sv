@@ -407,6 +407,21 @@ class wav_DFI_driver extends uvm_driver;
                 vif.cb_drv.rddata_en[1] <= trans.slice_q[i].rddata_en[1];
                 vif.cb_drv.rddata_en[2] <= trans.slice_q[i].rddata_en[2];
                 vif.cb_drv.rddata_en[3] <= trans.slice_q[i].rddata_en[3];
+
+                vif.cb_drv.wck_cs[0] <= trans.slice_q[i].wck_cs[0];
+                vif.cb_drv.wck_cs[1] <= trans.slice_q[i].wck_cs[1];
+                vif.cb_drv.wck_cs[2] <= trans.slice_q[i].wck_cs[2];
+                vif.cb_drv.wck_cs[3] <= trans.slice_q[i].wck_cs[3];
+
+                vif.cb_drv.wck_en[0] <= trans.slice_q[i].wck_en[0];
+                vif.cb_drv.wck_en[1] <= trans.slice_q[i].wck_en[1];
+                vif.cb_drv.wck_en[2] <= trans.slice_q[i].wck_en[2];
+                vif.cb_drv.wck_en[3] <= trans.slice_q[i].wck_en[3];
+
+                vif.cb_drv.wck_toggle[0] <= trans.slice_q[i].wck_toggle[0];
+                vif.cb_drv.wck_toggle[1] <= trans.slice_q[i].wck_toggle[1];
+                vif.cb_drv.wck_toggle[2] <= trans.slice_q[i].wck_toggle[2];
+                vif.cb_drv.wck_toggle[3] <= trans.slice_q[i].wck_toggle[3];
             end
         end
         

@@ -449,3 +449,175 @@ task automatic set_freq_ratio(int freq_ratio);
         set_dfi_clken_pext_cfg (.wr_clken_cycles(4'h7), .rd_clken_cycles(4'hF), .ca_clken_cycles(4'h3));
     end
 endtask
+
+
+// same as t_ddr_sanity but without the packet generation
+// still not fully working ... data never stops randomizing!
+// case 3 guarantees DFI 2:1
+task genina_t_ddr_sanity;
+    output int err;
+    input int freq_setup;
+    int err_temp;
+    int err_cnt;
+    int bl;
+    begin
+    err = 0;
+    err_temp = 0;
+    err_cnt  = 0;
+
+    wait_hclk (1);
+    ddr_boot(err) ;
+    set_dfi_ca_rddata_en (.en(1'b1));  // Enable CA RDDATA en for CA loopback.
+
+    // Set lpde delay
+    // 90p delay through DQ TX LPDE, 98ps Delay through DQS TX LPDE
+    set_wrdq_lpde_dly  (.byte_sel(ALL),    .rank_sel(RANK_ALL), .dq(99),  .gear(2'h2), .r0_dly(6'h01), .r1_dly(6'h01));
+    set_wrdqs_lpde_dly (.byte_sel(DQ_ALL), .rank_sel(RANK_ALL), .dqs(99), .gear(2'h2), .r0_dly(6'h01), .r1_dly(6'h01));
+    set_wrdqs_lpde_dly (.byte_sel(CA),     .rank_sel(RANK_ALL), .dqs(99), .gear(2'h2), .r0_dly(6'h21), .r1_dly(6'h21));
+    set_rdsdr_lpde_dly (.byte_sel(DQ_ALL), .rank_sel(RANK_ALL),           .gear(2'h2), .r0_dly(6'h1A), .r1_dly(6'h1A));
+    set_rdsdr_lpde_dly (.byte_sel(CA),     .rank_sel(RANK_ALL),           .gear(2'h2), .r0_dly(6'h1A), .r1_dly(6'h1A));
+    // 20ps delay through DQS RX diff PAD. this is the skew between DQ and DQS to capture DQ in SA.
+    set_dq_dqs_drvr_cfg   (.byte_sel(ALL), .dqs_freq_MHz(ddrfreq_MHz), .lb_mode(1), .wck_mode(1'b0), .se_mode(1'b0), .termination(1'b1) ) ;
+    set_dq_dqs_rcvr_cfg   (.byte_sel(DQ_ALL), .rank_sel(RANK_ALL), .dqs_freq_MHz(ddrfreq_MHz), .dly_ps('d0));
+
+    // Enable IO loopback
+    set_tx_io_cmn_cfg_dt    (.byte_sel(ALL),    .rank_sel(RANK_ALL), .lpbk_en(1'b1), .ncal('d14), .pcal('d45));
+
+    bl = 32;
+
+    case (freq_setup)
+        1 : begin
+            //----------------------------------------------------------------------------------
+            // Case1: SDR 1:1 - egress DDR2to1 -- "SDR Transaction"
+            // ---------------------------------------------------------------------------------
+            set_txdq_sdr_fc_dly   (.byte_sel(ALL),    .dq (8'd99), .rank_sel(RANK_ALL), .fc_dly  ('h0000_0000) );
+            set_txdq_sdr_pipe_en  (.byte_sel(ALL),    .dq (8'd99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+            set_txdq_sdr_x_sel    (.byte_sel(ALL),    .dq (8'd99), .rank_sel(RANK_ALL), .x_sel   ('h7654_3200) );
+            set_txdqs_sdr_fc_dly  (.byte_sel(ALL),    .dqs(8'd99), .rank_sel(RANK_ALL), .fc_dly  ('h0000_0000) );
+            set_txdqs_sdr_pipe_en (.byte_sel(ALL),    .dqs(8'd99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+            set_txdqs_sdr_x_sel   (.byte_sel(ALL),    .dqs(8'd99), .rank_sel(RANK_ALL), .x_sel   ('h7654_3200) );
+
+            set_txdqs_sdr_x_sel   (.byte_sel(ALL),    .dqs(8'd0),  .rank_sel(RANK_ALL), .x_sel    ('h7654_3210) );  //WCK
+            set_txdqs_sdr_x_sel   (.byte_sel(ALL),    .dqs(8'd1),  .rank_sel(RANK_ALL), .x_sel    ('h7654_3210) );  //DQS/Parity
+
+            set_txdq_ddr_pipe_en  (.byte_sel(ALL),    .dq (8'd99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+            set_txdq_ddr_x_sel    (.byte_sel(ALL),    .dq (8'd99), .rank_sel(RANK_ALL), .x_sel   ('h0000_3210) );
+            set_txdqs_ddr_pipe_en (.byte_sel(ALL),    .dqs(8'd99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+            set_txdqs_ddr_x_sel   (.byte_sel(ALL),    .dqs(8'd99), .rank_sel(RANK_ALL), .x_sel   ('h0000_3210) );
+
+            //EGRESS_MODE 6:0 DEF=0x01 "Egress mode (one-hot) - 0: SDR, 1:DDR_2to1, 2:QDR_2to1, 3: ODR_2to1, 4:QDR_4to1, 5:ODR_4to1, 6: BSCAN ";
+            set_dq_egress_mode    (.byte_sel(ALL),    .dq (8'd99), .mode('h02) );
+            set_dqs_egress_mode   (.byte_sel(ALL),    .dqs(8'd99), .mode('h02) );
+            set_dqs_egress_mode   (.byte_sel(ALL),    .dqs(8'd0),  .mode('h02) ); // WCK DDR2to1.
+            set_dqs_egress_mode   (.byte_sel(ALL),    .dqs(8'd1),  .mode('h02) ); // DQS DDR2to1.
+
+            set_rx_gb             (.byte_sel(DQ_ALL), .rgb_mode(DGB_1TO1_HF), .fgb_mode(FGB_1TO1),    .wck_mode(1'b0)); // for DQ, lopback DQS clock
+            set_rx_gb             (.byte_sel(CA),     .rgb_mode(DGB_1TO1_HF), .fgb_mode(FGB_1TO1),    .wck_mode(1'b1)); // for CA, loop back CK clock
+            set_tx_gb             (.byte_sel(ALL),    .tgb_mode(DGB_1TO1_HF), .wgb_mode(WGB_1TO1));
+
+            
+            //DFI Configuration
+            set_dfiwrd_wdp_cfg     (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h0), .pre_gb_pipe_en(1'b0));
+            set_dfiwrcctrl_wdp_cfg (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
+            set_dfickctrl_wdp_cfg  (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
+            set_dfiwctrl_wdp_cfg   (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
+            set_dfiwenctrl_wdp_cfg (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
+            //set_dfiwckctrl_wdp_cfg   (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
+            set_dfirctrl_wdp_cfg   (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
+            set_dfi_rdgb_mode      (DFIRGB_1TO1);
+            set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h1),   .wck_oe_cycles(4'h1),   .ie_cycles(4'h2),       .re_cycles(4'h6), .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0)); // RE extended to 6 cycles to confirm independent control on RE.
+            set_dfi_clken_pext_cfg (.wr_clken_cycles(4'h7), .rd_clken_cycles(4'hF), .ca_clken_cycles(4'h3));
+        end
+
+        2 : begin
+            //----------------------------------------------------------------------------------
+            // Case2: DDR - DP 2to1 - egress DDR2to1 - freq ratio 1:1 -- "DDR Transaction"
+            // ---------------------------------------------------------------------------------
+            set_txdq_sdr_fc_dly   (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .fc_dly  ('h0000_0000) );
+            set_txdq_sdr_pipe_en  (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+            set_txdq_sdr_x_sel    (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .x_sel   ('h7654_3210) );
+
+            set_txdqs_sdr_fc_dly  (.byte_sel(ALL),    .dqs(99), .rank_sel(RANK_ALL), .fc_dly  ('h0000_0000) );
+            set_txdqs_sdr_pipe_en (.byte_sel(ALL),    .dqs(99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+            set_txdqs_sdr_x_sel   (.byte_sel(ALL),    .dqs(99), .rank_sel(RANK_ALL), .x_sel   ('h7654_3210) );
+
+            set_txdq_ddr_pipe_en  (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+            set_txdq_ddr_x_sel    (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .x_sel   ('h0000_3210) );
+            set_txdqs_ddr_pipe_en (.byte_sel(ALL),    .dqs(99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+            set_txdqs_ddr_x_sel   (.byte_sel(ALL),    .dqs(99), .rank_sel(RANK_ALL), .x_sel   ('h0000_3210) );
+
+            //EGRESS_MODE 6:0 DEF=0x01 "Egress mode (one-hot) - 0: SDR, 1:DDR_2to1, 2:QDR_2to1, 3: ODR_2to1, 4:QDR_4to1, 5:ODR_4to1, 6: BSCAN ";
+            set_dq_egress_mode    (.byte_sel(ALL),    .dq (8'd99), .mode('h02) );
+            set_dqs_egress_mode   (.byte_sel(ALL),    .dqs(8'd99), .mode('h02) );
+
+            set_rx_gb             (.byte_sel(DQ_ALL),     .rgb_mode(DGB_2TO1_HF), .fgb_mode(FGB_2TO2),    .wck_mode(1'b0)); // DQS Loop back
+            set_rx_gb             (.byte_sel(CA),         .rgb_mode(DGB_2TO1_HF), .fgb_mode(FGB_2TO2),    .wck_mode(1'b1)); // CK  Loop back
+            set_tx_gb             (.byte_sel(ALL),        .tgb_mode(DGB_2TO1_HF), .wgb_mode(WGB_1TO1));
+
+            //DFI Configuration
+            set_dfiwrd_wdp_cfg     (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h0), .pre_gb_pipe_en(1'b0));
+            set_dfiwrcctrl_wdp_cfg (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
+            set_dfickctrl_wdp_cfg  (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
+            set_dfiwctrl_wdp_cfg   (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
+            set_dfiwenctrl_wdp_cfg (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
+            //set_dfiwckctrl_wdp_cfg (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
+            set_dfirctrl_wdp_cfg   (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
+            set_dfi_rdgb_mode      (DFIRGB_2TO2);
+            set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h3),   .wck_oe_cycles(4'h1),   .ie_cycles(4'h2),       .re_cycles(4'h2), .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0));
+            set_dfi_clken_pext_cfg (.wr_clken_cycles(4'h7), .rd_clken_cycles(4'hF), .ca_clken_cycles(4'h3));
+        end
+
+        3 : begin
+            //----------------------------------------------------------------------------------
+            // Case3: DDR - DP 4to1 - egress QDR2to1 -- "DFI 1:2 mode DDR Transaction"
+            // ---------------------------------------------------------------------------------
+            set_txdq_sdr_fc_dly   (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .fc_dly  ('h0000_0000) );
+            set_txdq_sdr_pipe_en  (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+            set_txdq_sdr_x_sel    (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .x_sel   ('h7654_3120) );
+
+            set_txdqs_sdr_fc_dly  (.byte_sel(ALL),    .dqs(99), .rank_sel(RANK_ALL), .fc_dly  ('h0000_0000) );
+            set_txdqs_sdr_pipe_en (.byte_sel(ALL),    .dqs(99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+            set_txdqs_sdr_x_sel   (.byte_sel(ALL),    .dqs(99), .rank_sel(RANK_ALL), .x_sel   ('h7654_2020) );
+            set_txdqs_sdr_x_sel   (.byte_sel(ALL),    .dqs(0),  .rank_sel(RANK_ALL), .x_sel   ('h7654_3120) );// WCK
+            set_txdqs_sdr_x_sel   (.byte_sel(ALL),    .dqs(1),  .rank_sel(RANK_ALL), .x_sel   ('h7654_3120) );// DQS/Parity
+
+            set_txdq_ddr_pipe_en  (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+            set_txdq_ddr_x_sel    (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .x_sel   ('h0000_3210) );
+            set_txdqs_ddr_pipe_en (.byte_sel(ALL),    .dqs(99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+            set_txdqs_ddr_x_sel   (.byte_sel(ALL),    .dqs(99), .rank_sel(RANK_ALL), .x_sel   ('h0000_3210) );
+
+            //EGRESS_MODE 6:0 DEF=0x02 "Egress mode (one-hot) - 0:SDR, 1:DDR_2to1, 2:QDR_2to1, 3: ODR_2to1, 4:QDR_4to1, 5:ODR_4to1, 6:BSCAN";
+            set_dq_egress_mode    (.byte_sel(ALL),    .dq (99), .mode('h04) );
+            set_dqs_egress_mode   (.byte_sel(ALL),    .dqs(99), .mode('h04) );
+
+            set_rx_gb             (.byte_sel(DQ_ALL),     .rgb_mode (DGB_4TO1_HF), .fgb_mode(FGB_4TO4),  .wck_mode(1'b0)); // DQS Loop back
+            set_rx_gb             (.byte_sel(CA),         .rgb_mode (DGB_4TO1_HF), .fgb_mode(FGB_4TO4),   .wck_mode(1'b1)); // CK  Loop back
+            set_tx_gb             (.byte_sel(ALL),        .tgb_mode (DGB_4TO1_HF), .wgb_mode(WGB_1TO1));
+
+            //DFI Configuration
+            set_dfiwrd_wdp_cfg     (.gb_mode(DFIWGB_4TO4), .gb_pipe_dly(2'h0), .pre_gb_pipe_en(1'b0));
+            set_dfiwrcctrl_wdp_cfg (.gb_mode(DFIWGB_4TO4), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
+            set_dfickctrl_wdp_cfg  (.gb_mode(DFIWGB_4TO4), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
+            set_dfiwctrl_wdp_cfg   (.gb_mode(DFIWGB_4TO4), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
+            set_dfiwenctrl_wdp_cfg (.gb_mode(DFIWGB_4TO4), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
+            //set_dfiwckctrl_wdp_cfg (.gb_mode(DFIWGB_4TO4), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
+            set_dfirctrl_wdp_cfg   (.gb_mode(DFIWGB_4TO4), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
+            set_dfi_rdgb_mode      (DFIRGB_4TO4);
+            set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h2),   .wck_oe_cycles(4'h1),      .ie_cycles(4'h2),       .re_cycles(4'h2), .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0));
+            set_dfi_clken_pext_cfg (.wr_clken_cycles(4'h7), .rd_clken_cycles(4'hF), .ca_clken_cycles(4'h3));
+        end 
+    endcase
+
+    sw_csp_byte_sync();
+    set_dfi_wdata_clr;
+    set_dfi_rdata_clr;
+    set_dfibuf_ts_cfg(.en(1'b1), .rst(1'b0));
+    wait_hclk (10);
+    set_dfibuf_ts_cfg(.en(1'b0), .rst(1'b1));
+
+    //----------------------------------------------------------------------------------
+    // Case4: DFI 1:4 mode - DDR - DP 4to1 - egress QDR2to1
+    // ---------------------------------------------------------------------------------
+    #100ns;
+    end
+endtask
