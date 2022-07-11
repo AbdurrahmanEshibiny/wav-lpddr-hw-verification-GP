@@ -4,7 +4,7 @@
 `include "wav_DFI_defines.svh"
 
 typedef enum {
-    DFI, cmd, control, lp, phymstr, update, status_freq, read, write, data
+    DFI, cmd, control, lp, phymstr, update, status_freq, read, write, data, wck
     } type_e;
 
 
@@ -27,6 +27,28 @@ class wav_DFI_transfer extends uvm_sequence_item;
 
     virtual function void reset();
 
+    endfunction
+endclass
+
+// used only for measuring coverage
+class wav_DFI_wck_transfer extends wav_DFI_transfer; 
+    typedef enum  { static_high, static_low, toggle, fast_toggle } wck_mode_e;
+    wck_mode_e wck_mode;
+    bit enable;
+
+    `uvm_object_utils_begin(wav_DFI_wck_transfer)
+        `uvm_field_enum(wck_mode_e, wck_mode, UVM_DEFAULT)
+    `uvm_object_utils_end
+
+    function new(wck_mode_e mode=static_high, bit en=0, string name=" wav_DFI_wck_transfer"); 
+        super.new(name); 
+        super.tr_type = wck; 
+        enable = en;
+        wck_mode = mode;
+    endfunction
+
+    function void reset;
+        enable = 0;
     endfunction
 endclass
 

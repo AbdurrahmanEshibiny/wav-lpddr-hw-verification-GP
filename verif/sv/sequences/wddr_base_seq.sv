@@ -522,7 +522,7 @@ endfunction
             trans.wck_en[2] = 0;
             trans.wck_en[3] = 1;
             //static
-            // EventHandler::trigger_event(EventHandler::setting_wck_static_high);
+            EventHandler::trigger_event(EventHandler::setting_wck_static_low);
             trans.wck_toggle[0] = 2'b00;
             trans.wck_toggle[1] = 2'b00;
             trans.wck_toggle[2] = 2'b00;
@@ -556,7 +556,7 @@ endfunction
             trans.address[0] = randomize_address(3'b110, 3'b111);
             trans.address[2] = randomize_address(0, 0); // totally random
             // toggle 
-            // EventHandler::trigger_event(EventHandler::setting_wck_toggle);
+            EventHandler::trigger_event(EventHandler::setting_wck_toggle);
             trans.wck_toggle[0] = 2'b01;
             trans.wck_toggle[2] = 2'b01;
             trans.wck_toggle[0] = 2'b01;

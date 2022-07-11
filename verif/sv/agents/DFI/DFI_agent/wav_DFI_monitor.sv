@@ -877,6 +877,34 @@ class wav_DFI_monitor extends uvm_monitor;
         join
     endtask
 
+    task automatic event_listener;
+        wav_DFI_wck_transfer wck_sh = new(wav_DFI_wck_transfer::static_high, 1);
+        wav_DFI_wck_transfer wck_sl = new(wav_DFI_wck_transfer::static_low, 1);
+        wav_DFI_wck_transfer wck_t  = new(wav_DFI_wck_transfer::toggle, 1);
+        wav_DFI_wck_transfer wck_ft = new(wav_DFI_wck_transfer::fast_toggle, 1);
+        fork
+            forever begin
+                EventHandler::wait_for_event(EventHandler::setting_wck_static_high, 1);
+                write_to_port(wck_sh);
+            end
+
+            forever begin
+                EventHandler::wait_for_event(EventHandler::setting_wck_static_low, 1);
+                write_to_port(wck_sl);
+            end
+
+            forever begin
+                EventHandler::wait_for_event(EventHandler::setting_wck_toggle, 1);
+                write_to_port(wck_t);
+            end
+
+            forever begin
+                EventHandler::wait_for_event(EventHandler::setting_wck_fast_toggle, 1);
+                write_to_port(wck_ft);
+            end
+        join
+    endtask
+
     //A task to call all the monitoring tasks created earlier to work in parallel 
     virtual task run_phase(uvm_phase phase);
         monitor_run_phase = phase;
@@ -888,7 +916,8 @@ class wav_DFI_monitor extends uvm_monitor;
             monitor_phyupd();         
             monitor_ctrlupd();
             monitor_write();
-			event_emitter();
+            event_emitter();
+            event_listener();
             // monitor_read();
             monitor_status();
 /*add monitor function to the remaining interface signals*/    
