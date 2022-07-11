@@ -4,8 +4,8 @@ coverage exclude -togglenode *scan* 	-scope /wddr_tb_top/u_phy_1x32 -r
 coverage exclude -togglenode *freeze* 	-scope /wddr_tb_top/u_phy_1x32 -r
 coverage exclude -togglenode *debug* 	-scope /wddr_tb_top/u_phy_1x32 -r
 coverage exclude -togglenode *irq* 		-scope /wddr_tb_top/u_phy_1x32 -r
-coverage exclude -togglenode *_sta 		-scope /wddr_tb_top/u_phy_1x32 -r
-coverage exclude -togglenode *_cfg	 	-scope /wddr_tb_top/u_phy_1x32 -r
+coverage exclude -togglenode *sta* 		-scope /wddr_tb_top/u_phy_1x32 -r
+coverage exclude -togglenode *cfg*	 	-scope /wddr_tb_top/u_phy_1x32 -r
 coverage exclude -togglenode sw_*_ovr	-scope /wddr_tb_top/u_phy_1x32 -r
 coverage exclude -togglenode sw_*_val	-scope /wddr_tb_top/u_phy_1x32 -r
 
@@ -51,6 +51,14 @@ coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_phyupd_
 coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_phyupd_intf/u_demet_3	-r
 coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_phyupd_intf/u_demet_4	-r
 coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_phyupd_intf/u_demet_5	-r
+
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_phy_ch0/u_phy_ca/CA_CSR_WRAPPER 		-r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_phy_ch0/u_phy_dq0/DQ_CSR_WRAPPER 		-r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_phy_ch0/u_phy_dq1/DQ_CSR_WRAPPER 		-r
+
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_phy_ch1/u_phy_ca/CA_CSR_WRAPPER 		-r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_phy_ch1/u_phy_dq0/DQ_CSR_WRAPPER 		-r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_phy_ch1/u_phy_dq1/DQ_CSR_WRAPPER 		-r
 
 coverage exclude -togglenode i_event i_req  -du work.ddr_dfi_eg_req_intf
 
