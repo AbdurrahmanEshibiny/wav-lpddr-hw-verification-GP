@@ -29,6 +29,8 @@ class wddr_DFI_all_seq extends wddr_base_seq;
             perform_control();
             wait_dfi_cycles(2);
         end
+
+        perform_toggling();
         `uvm_info(get_type_name(), "done sequence", UVM_LOW);
     endtask
 

@@ -522,6 +522,7 @@ endfunction
             trans.wck_en[2] = 0;
             trans.wck_en[3] = 1;
             //static
+            // EventHandler::trigger_event(EventHandler::setting_wck_static_high);
             trans.wck_toggle[0] = 2'b00;
             trans.wck_toggle[1] = 2'b00;
             trans.wck_toggle[2] = 2'b00;
@@ -555,6 +556,7 @@ endfunction
             trans.address[0] = randomize_address(3'b110, 3'b111);
             trans.address[2] = randomize_address(0, 0); // totally random
             // toggle 
+            // EventHandler::trigger_event(EventHandler::setting_wck_toggle);
             trans.wck_toggle[0] = 2'b01;
             trans.wck_toggle[2] = 2'b01;
             trans.wck_toggle[0] = 2'b01;
@@ -617,6 +619,30 @@ endfunction
         trans = new();      // empty write transaction
         trans.is_rsp_required = 0;
         `uvm_send(trans);   // to reset the write interface
+    endtask
+
+    task automatic perform_toggling;
+        wav_DFI_write_transfer trans = new();
+        trans.is_rsp_required = 0;        
+        trans.cke 				= '{default: 2'b11};
+        trans.cs				= '{default: 2'b11};
+        trans.wck_en            = '{default: 2'b11};
+        trans.wck_toggle        = '{default: 2'b11};
+        trans.wck_cs            = '{default: 2'b11};
+        trans.wrdata_cs         = '{default: 2'b11};
+        trans.wrdata            = '{default: 64'hffff_ffff_ffff_ffff};
+        trans.wrdata_mask       = '{default: 8'hff};
+        trans.wrdata_en         = '{default: 1};
+        trans.dram_clk_disable	= '{default: 1};
+		trans.parity_in			= '{default: 1};
+        trans.address 			= '{default: 14'h0000};
+        `uvm_send(trans);
+        wait_dfi_cycles(10); 
+        
+        trans = new();
+        trans.is_rsp_required = 0;
+        `uvm_send(trans);
+		wait_dfi_cycles(10); 
     endtask
 
 
