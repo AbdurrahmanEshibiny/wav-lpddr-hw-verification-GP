@@ -118,11 +118,14 @@ class wddr_DFI_write_2to1_seq extends wddr_base_seq;
             trans.wrdata_en[2] = 1;
             trans.wrdata_en[3] = 0;
 
+            trans.wrdata_cs[0] = 2'b01;
+            trans.wrdata_cs[1] = 2'b01;
+
         `uvm_send(trans);
 
         @(posedge vif.mp_drv.cb_drv);      
             //ending the write transaction 
-            trans.wrdata_en[3] = 0;
+            
             trans.wrdata_cs[0] = 2'b00;
             trans.wrdata_cs[2] = 2'b00;
             trans.wrdata[0] = 64'hzzzz_zzzz_zzzz_zzzz;

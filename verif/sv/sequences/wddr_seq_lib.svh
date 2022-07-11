@@ -73,8 +73,10 @@ import wav_DFI_pkg::*;
 `include "sv/sequences/dfi/wddr_DFI_lp_ctrl_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_lp_data_seq.sv"
 
-`include "sv/sequences/dfi/wddr_DFI_write_2to1.sv"
-`include "sv/sequences/dfi/wddr_DFI_many_write_2to1.sv"
+`include "sv/sequences/dfi/wddr_DFI_write_2to1_seq.sv"
+`include "sv/sequences/dfi/wddr_DFI_many_write_2to1_seq.sv"
+`include "sv/sequences/dfi/wddr_DFI_many_write_4to1_seq.sv"
+`include "sv/sequences/dfi/wddr_DFI_write_4to1_seq.sv"
 
 `include "sv/sequences/dfi/wddr_DFI_lp_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_several_lp_seq.sv"
@@ -87,6 +89,7 @@ import wav_DFI_pkg::*;
 `include "sv/sequences/dfi/wddr_DFI_power_down_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_control_with_regs_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_wck_seq.sv"
+<<<<<<< Updated upstream
 `include "sv/sequences/dfi/wddr_DFI_write_4to1_seq.sv"
 `include "sv/sequences/dfi/wav_DFI_read_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_all_seq.sv"
@@ -98,3 +101,6 @@ import wav_DFI_pkg::*;
 // `include "sv/sequences/dfi/wav_DFI_read_seq5.sv"
 // `include "sv/sequences/dfi/wav_DFI_read_seq6.sv"
 // `include "sv/sequences/dfi/wav_DFI_read_seq7.sv"
+=======
+
+>>>>>>> Stashed changes

@@ -125,10 +125,12 @@ class wav_DFI_driver extends uvm_driver;
 
     task automatic drive_write(wav_DFI_write_transfer trans);  
         
+        //// command interface 
         vif.mp_drv.cb_drv.dram_clk_disable[0] <= trans.dram_clk_disable[0];
         vif.mp_drv.cb_drv.dram_clk_disable[1] <= trans.dram_clk_disable[1];
         vif.mp_drv.cb_drv.dram_clk_disable[2] <= trans.dram_clk_disable[2];
         vif.mp_drv.cb_drv.dram_clk_disable[3] <= trans.dram_clk_disable[3];
+<<<<<<< Updated upstream
         
         vif.mp_drv.cb_drv.cke[0] <= trans.cke[0];
         vif.mp_drv.cb_drv.cke[1] <= trans.cke[1];
@@ -145,17 +147,9 @@ class wav_DFI_driver extends uvm_driver;
         vif.mp_drv.cb_drv.wck_cs[1] <= trans.wck_cs[1];
         vif.mp_drv.cb_drv.wck_cs[2] <= trans.wck_cs[2];
         vif.mp_drv.cb_drv.wck_cs[3] <= trans.wck_cs[3];
+=======
+>>>>>>> Stashed changes
 
-        vif.mp_drv.cb_drv.wck_en[0] <= trans.wck_en[0];
-        vif.mp_drv.cb_drv.wck_en[1] <= trans.wck_en[1];
-        vif.mp_drv.cb_drv.wck_en[2] <= trans.wck_en[2];
-        vif.mp_drv.cb_drv.wck_en[3] <= trans.wck_en[3];
-            
-        vif.mp_drv.cb_drv.wck_toggle[0] <= trans.wck_toggle[0];
-        vif.mp_drv.cb_drv.wck_toggle[1] <= trans.wck_toggle[1];
-        vif.mp_drv.cb_drv.wck_toggle[2] <= trans.wck_toggle[2];
-        vif.mp_drv.cb_drv.wck_toggle[3] <= trans.wck_toggle[3];
- 
         vif.mp_drv.cb_drv.address[0] <= trans.address[0];
         vif.mp_drv.cb_drv.address[1] <= trans.address[1];
         vif.mp_drv.cb_drv.address[2] <= trans.address[2];
@@ -165,7 +159,18 @@ class wav_DFI_driver extends uvm_driver;
         vif.mp_drv.cb_drv.cs[1] <= trans.cs[1];
         vif.mp_drv.cb_drv.cs[2] <= trans.cs[2];
         vif.mp_drv.cb_drv.cs[3] <= trans.cs[3];
+<<<<<<< Updated upstream
             
+=======
+        
+        vif.mp_drv.cb_drv.cke[0] <= trans.cke[0];
+        vif.mp_drv.cb_drv.cke[1] <= trans.cke[1];
+        vif.mp_drv.cb_drv.cke[2] <= trans.cke[2];
+        vif.mp_drv.cb_drv.cke[3] <= trans.cke[3];
+
+        //// write interface 
+
+>>>>>>> Stashed changes
         vif.mp_drv.cb_drv.wrdata_en[0] <= trans.wrdata_en[0];
         vif.mp_drv.cb_drv.wrdata_en[1] <= trans.wrdata_en[1];
         vif.mp_drv.cb_drv.wrdata_en[2] <= trans.wrdata_en[2];
@@ -178,8 +183,30 @@ class wav_DFI_driver extends uvm_driver;
 
         vif.mp_drv.cb_drv.wrdata_cs[0] <= trans.wrdata_cs[0];
         vif.mp_drv.cb_drv.wrdata_cs[1] <= trans.wrdata_cs[1];
+<<<<<<< Updated upstream
         vif.mp_drv.cb_drv.wrdata_cs[2] <= trans.wrdata_cs[2]; 
         vif.mp_drv.cb_drv.wrdata_cs[3] <= trans.wrdata_cs[3];
+=======
+        vif.mp_drv.cb_drv.wrdata_cs[2] <= trans.wrdata_cs[2];
+        vif.mp_drv.cb_drv.wrdata_cs[3] <= trans.wrdata_cs[3];
+
+        //// wck interface 
+
+        vif.mp_drv.cb_drv.wck_cs[0] <= trans.wck_cs[0];
+        vif.mp_drv.cb_drv.wck_cs[1] <= trans.wck_cs[1];
+        vif.mp_drv.cb_drv.wck_cs[2] <= trans.wck_cs[2];
+        vif.mp_drv.cb_drv.wck_cs[3] <= trans.wck_cs[3];
+
+        vif.mp_drv.cb_drv.wck_en[0] <= trans.wck_en[0];
+        vif.mp_drv.cb_drv.wck_en[1] <= trans.wck_en[1];
+        vif.mp_drv.cb_drv.wck_en[2] <= trans.wck_en[2];
+        vif.mp_drv.cb_drv.wck_en[3] <= trans.wck_en[3];
+            
+        vif.mp_drv.cb_drv.wck_toggle[0] <= trans.wck_toggle[0];
+        vif.mp_drv.cb_drv.wck_toggle[1] <= trans.wck_toggle[1];
+        vif.mp_drv.cb_drv.wck_toggle[2] <= trans.wck_toggle[2];
+        vif.mp_drv.cb_drv.wck_toggle[3] <= trans.wck_toggle[3]; 
+>>>>>>> Stashed changes
 
         vif.mp_drv.cb_drv.wrdata_mask[0] <= trans.wrdata_mask[0];
         vif.mp_drv.cb_drv.wrdata_mask[1] <= trans.wrdata_mask[1];
