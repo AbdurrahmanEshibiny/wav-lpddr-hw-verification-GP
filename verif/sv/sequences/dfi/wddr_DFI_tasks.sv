@@ -282,7 +282,7 @@ endtask
 virtual wav_DFI_if vif = null;
 
 task automatic init_vif;
-    if (!uvm_config_db#(virtual wav_DFI_if)::get(uvm_root::get(), "*", "DFI_vif", vif)) begin
+    if (vif == null && !uvm_config_db#(virtual wav_DFI_if)::get(uvm_root::get(), "*", "DFI_vif", vif)) begin
         `uvm_fatal("NOVIF",{"virtual interface must be set for: ",get_full_name(),".DFI_vif"});
     end
 endtask
@@ -452,3 +452,12 @@ task automatic set_freq_ratio(int freq_ratio);
         set_dfi_clken_pext_cfg (.wr_clken_cycles(4'h7), .rd_clken_cycles(4'hF), .ca_clken_cycles(4'h3));
     end
 endtask
+
+typedef bit [13:0] address_t;
+function  address_t randomize_address(address_t address, address_t mask);
+    address_t rand_address;
+    rand_address = $urandom;
+    rand_address = rand_address & ~mask;
+    rand_address = rand_address | address;
+    return rand_address;
+endfunction //automatic

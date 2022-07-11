@@ -35,12 +35,13 @@ endclass
 class wav_DFI_write_transfer extends wav_DFI_transfer; 
     rand bit [63:0]               wrdata [0:3];
 
-    bit                      parity_in [0:3];
-    bit [7:0]                wrdata_mask [0:3];
+    // randomization will be turned off by default in the "new" the constructor
+    rand bit                      parity_in [0:3];
+    rand bit [7:0]                wrdata_mask [0:3];
 
     bit [1:0]                wrdata_cs [0:3];
     bit                      wrdata_en [0:3];
-    bit [13:0]               address [0:3];
+    rand bit [13:0]          address [0:3];
     bit [1:0]                cs [0:3];
     bit [1:0]                cke [0:3];
     bit [1:0]                wck_cs [0:3];
@@ -66,6 +67,21 @@ class wav_DFI_write_transfer extends wav_DFI_transfer;
     function new(string name=" wav_DFI_write_transfer"); 
         super.new(name); 
         super.tr_type = write; 
+        foreach(parity_in[i])
+            parity_in[i].rand_mode(0);
+        foreach(wrdata_mask[i])
+            wrdata_mask[i].rand_mode(0);
+        foreach(address[i])
+            address[i].rand_mode(0);
+    endfunction
+
+    function void enable_randomization;
+        foreach(parity_in[i])
+            parity_in[i].rand_mode(1);
+        foreach(wrdata_mask[i])
+            wrdata_mask[i].rand_mode(1);
+        foreach(address[i])
+            address[i].rand_mode(1);
     endfunction
 
     virtual function void reset();

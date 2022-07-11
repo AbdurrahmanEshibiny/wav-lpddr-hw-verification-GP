@@ -134,6 +134,11 @@ class wav_DFI_driver extends uvm_driver;
         vif.mp_drv.cb_drv.cke[1] <= trans.cke[1];
         vif.mp_drv.cb_drv.cke[2] <= trans.cke[2];
         vif.mp_drv.cb_drv.cke[3] <= trans.cke[3];
+
+        vif.mp_drv.cb_drv.parity_in[0] <= trans.parity_in[0];
+        vif.mp_drv.cb_drv.parity_in[1] <= trans.parity_in[1];
+        vif.mp_drv.cb_drv.parity_in[2] <= trans.parity_in[2];
+        vif.mp_drv.cb_drv.parity_in[3] <= trans.parity_in[3];
         
             
         vif.mp_drv.cb_drv.wck_cs[0] <= trans.wck_cs[0];
