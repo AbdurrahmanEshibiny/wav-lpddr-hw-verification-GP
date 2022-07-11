@@ -121,6 +121,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 `include "tests/dfi/wddr_DFI_write_2to1_test.sv"
 `include "tests/dfi/wddr_DFI_many_write_2to1_test.sv"
+`include "tests/dfi/wddr_DFI_write_4to1_test.sv"
+`include "tests/dfi/wddr_DFI_many_write_4to1_test.sv"
 
 `include "tests/dfi/wddr_DFI_lp_test.sv"
 `include "tests/dfi/wddr_DFI_several_lp_test.sv"

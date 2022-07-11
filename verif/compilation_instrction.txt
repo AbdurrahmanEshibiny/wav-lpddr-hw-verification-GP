@@ -46,3 +46,5 @@ Hint: You can add the option [-c] to the third step to start questa in CLI mode 
 
 vsim +UVM_TESTNAME=wddr_DFI_write_4to1_test +MVP_FORCE_PLL +vcoFreq1=2112 +gb=2 +freqRatio=2 work.wddr_tb_top -novopt
 vsim +UVM_TESTNAME=wddr_DFI_write_4to1_test work.wddr_tb_top -novopt
+
+#vsim +UVM_TESTNAME=wddr_DFI_read_test +MVP_FORCE_PLL +vcoFreq1=2112 +gb=2 +freqRatio=2 work.wddr_tb_top -voptargs="+acc -O0" -suppress 3839
