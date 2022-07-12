@@ -1,0 +1,25 @@
+compile.bat -coverage
+mkdir coverage_output
+vsim -coverage +UVM_TESTNAME=wddr_DFI_access_control_regs_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_access_control_regs_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_lp_ctrl_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_lp_ctrl_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_lp_data_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_lp_data_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_lp_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_lp_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_phymstr_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_phymstr_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_phyupd_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_phyupd_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_ctrlupd_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_ctrlupd_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_several_control_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_several_control_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_several_lp_small_wakeup_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_several_lp_small_wakeup_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_several_lp_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_several_lp_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_several_phymstr_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_several_phymstr_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_several_phyupd_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_several_phyupd_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_control_with_regs_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_control_with_regs_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_power_down_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_power_down_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_status_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_status_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_write_2to1_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_write_2to1_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_many_write_2to1_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_many_write_2to1_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+vsim -coverage +UVM_TESTNAME=wddr_DFI_read_test -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/wddr_DFI_read_test.ucdb -instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg" -do simulate.do
+(for /F "tokens=*" %%A in (%testcases%) do @echo coverage_output/%%A.ucdb) > coverage_output/ucdb_files.txt
+vsim -c -do "vcover merge -inputs coverage_output/ucdb_files.txt -out coverage_output/final.ucdb; exit"
+vsim -viewcov coverage_output/final.ucdb -c -do "coverage report -html coverage_output/final.ucdb -details=abcdefgst -htmldir coverage_output/final -showcvggoalpcnt; exit"
+
+

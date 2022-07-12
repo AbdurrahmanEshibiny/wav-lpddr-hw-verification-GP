@@ -645,6 +645,27 @@ endfunction
 		wait_dfi_cycles(10); 
     endtask
 
+    task automatic perform_random_write_data;
+        wav_DFI_write_transfer trans = new();
+        trans.enable_randomization();
+        assert(trans.randomize());
+        trans.is_rsp_required = 0;    
+        trans.wck_en = '{default: 1'b1};    
+        trans.wck_toggle = '{default: 2'b11};   
+        trans.wck_cs = '{default: 2'b11};     
+        
+        trans.wrdata_cs = '{default: 2'b11};
+        trans.cs = '{default: 2'b11};
+        trans.dram_clk_disable = '{default: 1};
+        trans.wrdata_en = '{default: 2'b11};
+        `uvm_send(trans);
+        wait_dfi_cycles(10); 
+        
+        trans = new();
+        trans.is_rsp_required = 0;
+        `uvm_send(trans);
+		wait_dfi_cycles(10); 
+    endtask
 
     task automatic perform_control;
         int trans_type;
