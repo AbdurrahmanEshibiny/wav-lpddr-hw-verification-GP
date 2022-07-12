@@ -20,11 +20,12 @@ coverage exclude -togglenode event_1_edge		-scope /wddr_tb_top/u_phy_1x32/u_phy/
 
 
 coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_ahb_ic -r
-coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_ahb_monitor
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_ahb_monitor -r
 coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_cmn -r				
 coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_csr_wrapper -r
 coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu
 coverage exclude -code a 		-scope /wddr_tb_top/u_phy_1x32 -r
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy_vddaon_island/u_aon_freeze_buf
 coverage exclude -du *mcu*
 coverage exclude -du *csr*
 coverage exclude -du *cmn*
@@ -32,6 +33,19 @@ coverage exclude -du *jtag*
 coverage exclude -du *ahb*
 coverage exclude -du *freeze*
 coverage exclude -du ddr_demet_s
+
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_ibex_core -r
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_demet_0 -r
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_demet_1 -r
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_demet_2 -r
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_irq_fast -r
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_ibex_core  -r
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_itcm  -r
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_dtcm   -r
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_inst_ahbm_arbiter_mux  -r
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_data_ahbm_arbiter_mux  -r
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_demet[1]  -r
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_demet[0]  -r
 
 coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl -srcfile ../rtl/wddr/ddr_dfi.sv -linerange 6677-6692
 
