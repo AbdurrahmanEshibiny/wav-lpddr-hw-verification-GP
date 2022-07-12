@@ -135,8 +135,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 `include "tests/dfi/wddr_DFI_power_down_test.sv"
 `include "tests/dfi/wddr_DFI_control_with_regs_test.sv"
 `include "tests/dfi/wddr_DFI_wck_test.sv"
-<<<<<<< Updated upstream
-`include "tests/dfi/wddr_DFI_write_4to1_test.sv"
+
+
 `include "tests/dfi/wddr_DFI_read_test.sv"
 `include "tests/dfi/wddr_DFI_all_test.sv"
 `include "tests/dfi/wddr_DFI_random_write_data_test.sv"
@@ -148,6 +148,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // `include "tests/dfi/wddr_DFI_read_test5.sv"
 // `include "tests/dfi/wddr_DFI_read_test6.sv"
 // `include "tests/dfi/wddr_DFI_read_test7.sv"
-=======
 
->>>>>>> Stashed changes
