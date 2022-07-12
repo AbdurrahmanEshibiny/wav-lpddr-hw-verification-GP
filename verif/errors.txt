@@ -1,1 +1,0 @@
-** Error (suppressible): (vsim-12023) sv/sequences/wddr_base_seq.sv(248): Cannot execute undefined system task/function '$mmsomaset'
