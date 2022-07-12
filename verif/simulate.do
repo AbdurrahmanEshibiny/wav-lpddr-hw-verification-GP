@@ -79,4 +79,6 @@ coverage exclude -togglenode i_event i_req  -du work.ddr_dfi_eg_req_intf
 coverage exclude -du work.ddr_dfi_eg_req_intf -ftrans fsm_state_q RH->AL AH->AL
 coverage exclude -du work.ddr_dfi_ig_req_intf -ftrans fsm_state_q RH->AL AH->AL
 
+coverage exclude -srcfile ./sv/register/wddr_reg_model.sv
+
 run -all
