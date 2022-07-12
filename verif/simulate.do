@@ -34,19 +34,6 @@ coverage exclude -du *ahb*
 coverage exclude -du *freeze*
 coverage exclude -du ddr_demet_s
 
-coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_ibex_core -r
-coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_demet_0 -r
-coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_demet_1 -r
-coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_demet_2 -r
-coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_irq_fast -r
-coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_ibex_core  -r
-coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_itcm  -r
-coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_dtcm   -r
-coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_inst_ahbm_arbiter_mux  -r
-coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_data_ahbm_arbiter_mux  -r
-coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_demet[1]  -r
-coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_mcu/u_demet[0]  -r
-
 coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl -srcfile ../rtl/wddr/ddr_dfi.sv -linerange 6677-6692
 
 coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_phymstr_intf -srcfile ../rtl/wddr/ddr_dfi.sv -linerange 13491-13495

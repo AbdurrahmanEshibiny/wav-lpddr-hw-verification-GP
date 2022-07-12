@@ -221,7 +221,7 @@ class wddr_subscriber extends uvm_component;
 		phyupd_trans = wav_DFI_update_transfer::type_id::create("coverage_phyupd_trans", this);
 
 		DFI_write_trans = wav_DFI_write_transfer::type_id::create("coverage_DFI_write_trans", this);
-		DFI_wck_trans = wav_DFI_wck_transfer::type_id::create("coverage_DFI_write_trans", this);
+		DFI_wck_trans = wav_DFI_wck_transfer::type_id::create("coverage_DFI_wck_trans", this);
 
 		// Instantiate the required scalar data field
 		trans_c = DFI_C;
