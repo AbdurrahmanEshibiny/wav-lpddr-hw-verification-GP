@@ -23,8 +23,9 @@ class wddr_DFI_many_write_4to1_seq extends wddr_base_seq;
         `uvm_create(trans);
         trans.is_rsp_required = 0;
         `uvm_info(get_type_name(), $psprintf("2.POST-CREATE, PRE-RUN OF TRANSACTION"), UVM_LOW);
-
+        trans.is_rsp_required = 0;
         @(posedge vif.mp_drv.cb_drv);
+            assert(trans.randomize());
             //ck_c ck_t dram clock enable 
             trans.dram_clk_disable[0] = 0;
             trans.dram_clk_disable[1] = 0;
@@ -123,11 +124,11 @@ class wddr_DFI_many_write_4to1_seq extends wddr_base_seq;
 
         @(posedge vif.mp_drv.cb_drv); 
             //data
-            trans.wrdata[0] = 64'h1234_ffff_5678_ffff; 
-            trans.wrdata[1] = 64'habcd_0000_ef98_0000;
-            trans.wrdata[2] = 64'hzzzz_zzzz_zzzz_zzzz; 
-            trans.wrdata[3] = 64'hzzzz_zzzz_zzzz_zzzz;
-        
+            //trans.wrdata[0] = 64'h1234_ffff_5678_ffff; 
+            //trans.wrdata[1] = 64'habcd_0000_ef98_0000;
+            //trans.wrdata[2] = 64'hzzzz_zzzz_zzzz_zzzz; 
+            //trans.wrdata[3] = 64'hzzzz_zzzz_zzzz_zzzz;
+            assert(trans.randomize());
 
         `uvm_send(trans);
 
@@ -296,11 +297,11 @@ class wddr_DFI_many_write_4to1_seq extends wddr_base_seq;
 
         @(posedge vif.mp_drv.cb_drv); 
             //data
-            trans.wrdata[0] = 64'h1234_ffff_5678_ffff; 
-            trans.wrdata[1] = 64'habcd_0000_ef98_0000;
-            trans.wrdata[2] = 64'hzzzz_zzzz_zzzz_zzzz; 
-            trans.wrdata[3] = 64'hzzzz_zzzz_zzzz_zzzz;
-        
+            //trans.wrdata[0] = 64'h1234_ffff_5678_ffff; 
+            //trans.wrdata[1] = 64'habcd_0000_ef98_0000;
+            //trans.wrdata[2] = 64'hzzzz_zzzz_zzzz_zzzz; 
+            //trans.wrdata[3] = 64'hzzzz_zzzz_zzzz_zzzz;
+            assert(trans.randomize());
 
         `uvm_send(trans);
 
@@ -471,11 +472,11 @@ class wddr_DFI_many_write_4to1_seq extends wddr_base_seq;
 
         @(posedge vif.mp_drv.cb_drv); 
             //data
-            trans.wrdata[0] = 64'h1234_ffff_5678_ffff; 
-            trans.wrdata[1] = 64'habcd_0000_ef98_0000;
-            trans.wrdata[2] = 64'hzzzz_zzzz_zzzz_zzzz; 
-            trans.wrdata[3] = 64'hzzzz_zzzz_zzzz_zzzz;
-        
+            //trans.wrdata[0] = 64'h1234_ffff_5678_ffff; 
+            //trans.wrdata[1] = 64'habcd_0000_ef98_0000;
+            //trans.wrdata[2] = 64'hzzzz_zzzz_zzzz_zzzz; 
+            //trans.wrdata[3] = 64'hzzzz_zzzz_zzzz_zzzz;
+            assert(trans.randomize());
 
         `uvm_send(trans);
 
