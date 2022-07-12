@@ -130,6 +130,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 
 	virtual gp_LPDDR5_channel_intf ch0_vif;
 	virtual gp_LPDDR5_channel_intf ch1_vif;
+	int ratio;
 
 	semaphore act1_key;// to prevent any bank to recieve act1 command if any other bank wait for act2
 
@@ -142,6 +143,11 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 		if(! uvm_config_db#(virtual gp_LPDDR5_channel_intf)::get(this, "", "ch0_vif", ch0_vif)) begin
 			`uvm_fatal("gp_LPDDR5_monitor", "Failed to get virtual interface from config db")
 		end
+		if(! uvm_config_db#(virtual gp_LPDDR5_channel_intf)::get(this, "", "ch1_vif", ch1_vif)) begin
+			`uvm_fatal("gp_LPDDR5_monitor", "Failed to get virtual interface from config db")
+		end
+		if(! uvm_config_db #(int) :: get(this, "", "ratio", ratio))
+			`uvm_info("gp_LPDDR5_monitor", "Failed Ratio", UVM_MEDIUM)
 		recieved_transaction = new("recieved_transaction", this);
 		subscriber_port_item = new("subscriber_port_item", this);
 		cov_trans_item = gp_LPDDR5_cov_trans::type_id::create("cov_trans_item");
@@ -460,15 +466,15 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 									i = 0;
 									repeat(16) begin
 										@(posedge ch0_vif.dq0_wck_t)begin
-											//item.data[j][i] = DQ[i];
+											item.wrdata[i] = DQ[i];
 											i++;
 										end
 									end
-									j++;
-									if(j == 4)begin
-										// recieved_transaction.write(item); 
-										i = 0; 
-									end
+									//j++;
+									//if(j == 4)begin
+										recieved_transaction.write(item); 
+										//i = 0; 
+									//end
 								end
 								else `uvm_error("gp_lpddr5_monitor", "Failed to Recieve WR16")
 							end
@@ -991,9 +997,11 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						end
 						{1'b1, 7'b011xxxx}: begin
 							next_CA = WR16;
+							`uvm_info("LPDDR5_monitor","WR16", UVM_MEDIUM)
 						end
 						{1'b1, 7'b0010xxx}: begin
 							next_CA = WR32;
+							`uvm_info("LPDDR5_monitor","WR16", UVM_MEDIUM)
 						end
 						{1'b1, 7'b100xxxx}: begin
 							next_CA = RD16;
@@ -1180,7 +1188,6 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 								// end
 								// else begin
 								`else
-									$display("%0p", bank_state);
 									if ((bank_state != '{default:IDLE}) 
 									|| (($time - time_last_refresh_per_bank) < tRFCpb )
 									|| (($time - time_refresh_all_bank) < tpbR2pbR )
@@ -1232,28 +1239,57 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 								i = 0; 
 							end
 						end
-						WR16:begin
-							if (flag_wck_off) begin
-								while($time < (time_WR_command + tWCKPRE_Static + tWCKPRE_Toggle_WR)) 
-								begin
-									if($isunknown(ch0_vif.dq0_wck_t))
-										`uvm_error("gp_lpddr5_monitor", "WCK error")
-								end
+						WR32:begin
+							//while(1) begin
+								//while($isunknown(ch0_vif.dq0))begin end
+									//$display("%0d", i);
+									// uvm_config_db #(int) :: wait_modified(this, "", "ratio");
+									// uvm_config_db #(int) :: get(this, "", "ratio", ratio);
+									// $display("nada__ratio %0d", ratio);
+									while(1) begin 
+										@(ch0_vif.dq0_wck_t)begin
+											if (ch0_vif.DQ[0] == 1'b1 || ch0_vif.DQ[1] == 1'b1|| ch0_vif.DQ[2] == 1'b1|| ch0_vif.DQ[3] == 1'b1 || ch0_vif.DQ[4] == 1'b1
+											|| ch0_vif.DQ[5] == 1'b1 || ch0_vif.DQ[6] == 1'b1 || ch0_vif.DQ[7] == 1'b1 || ch0_vif.DQ[8] == 1'b1 || ch0_vif.DQ[9] == 1'b1
+											|| ch0_vif.DQ[10] == 1'b1 || ch0_vif.DQ[11] == 1'b1 || ch0_vif.DQ[12] == 1'b1 || ch0_vif.DQ[13] == 1'b1 || ch0_vif.DQ[14] == 1'b1
+											|| ch0_vif.DQ[15] == 1'b1) begin
+													//$display("break");
+													break;
+												end
+										end
+									end
+									//$display("OUT");
+									////////////////////////// 2 to 1 /////////////////////////////////////
+									if(ratio == 2) begin
+										i=2;
+										item.wrdata[i] = {16'h0000,ch1_vif.DQ, ch0_vif.DQ};
+										@(ch0_vif.dq0_wck_t)begin
+											i=0;
+												item.wrdata[i] = {16'h0000,ch1_vif.DQ, ch0_vif.DQ};												
+											end
+									end
+									///////////////////// 4 to 1 ////////////////////////////////////////
+									if(ratio == 4) begin
+										i = 1;
+										item.wrdata[i][31:0] = {ch1_vif.DQ, ch0_vif.DQ};
+										@(ch0_vif.dq0_wck_t)begin
+												item.wrdata[i][63:32] = {ch1_vif.DQ, ch0_vif.DQ};
+												i--;
+											end
+										@(ch0_vif.dq0_wck_t)begin
+												item.wrdata[i][31:0] = {ch1_vif.DQ, ch0_vif.DQ};
+											end
+										@(ch0_vif.dq0_wck_t)begin
+												item.wrdata[i][63:32] = {ch1_vif.DQ, ch0_vif.DQ};
+											end
+									end
+									recieved_transaction.write(item); 
+									//break;
+							//end
+									//j++;
+									//if(j == 4)begin
+										//i = 0; 
+									//end
 							end
-							i = 0;
-							repeat(16) begin
-								@(posedge ch0_vif.dq0_wck_t)begin
-									// item.data[j][i] = DQ[i];
-									//TODO fix this @ Nada
-									i++;
-								end
-							end
-							j++;
-							if(j == 4)begin
-								recieved_transaction.write(item); 
-								i = 0; 
-							end
-						end
 						WR32:begin
 							/*
 							if (flag_wck_off) begin
@@ -1331,7 +1367,6 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end
 							
 							else begin //self refresh
-								$display("%0p", bank_state);
 								if(bank_state != '{default:IDLE})
 									`uvm_error("gp_lpddr5_monitor", "Error in self refresh")
 								else

@@ -4,13 +4,15 @@
 class wddr_DFI_write_2to1_test extends wddr_base_test;
 
     `uvm_component_utils(wddr_DFI_write_2to1_test)
-
+    gp_LPDDR5_agent              lpddr5_agent;
     function new (string name = "wddr_DFI_write_2to1_test", uvm_component parent=null);
         super.new(name,parent);
     endfunction:new
 
     virtual function void build_phase(uvm_phase phase);
         super.build_phase(phase);
+        uvm_config_db#(int) :: set(this, "tb.lpddr5_agent.lpddr5_monitor", "ratio", 2);
+        uvm_config_db#(int) :: set(this, "tb.scoreboard", "ratio", 2);
     endfunction :build_phase
 
     function void end_of_elaboration_phase(uvm_phase phase);
