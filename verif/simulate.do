@@ -67,5 +67,9 @@ coverage exclude -du work.ddr_dfi_eg_req_intf -ftrans fsm_state_q RH->AL AH->AL
 coverage exclude -du work.ddr_dfi_ig_req_intf -ftrans fsm_state_q RH->AL AH->AL
 
 coverage exclude -srcfile ./sv/register/wddr_reg_model.sv
+coverage exclude -srcfile ../rtl/jtag/*
+coverage exclude -srcfile ../rtl/ibex/*
+coverage exclude -srcfile ../rtl/ahb/*
+coverage exclude -srcfile ../rtl/mcu_ibex/*
 
 run -all
