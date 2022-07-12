@@ -33,8 +33,37 @@ coverage exclude -du *jtag*
 coverage exclude -du *ahb*
 coverage exclude -du *freeze*
 coverage exclude -du ddr_demet_s
+coverage exclude -du ddr_edge_det
 
 coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl -srcfile ../rtl/wddr/ddr_dfi.sv -linerange 6677-6692
+
+coverage exclude -srcfile ../rtl/wddr/ddr_dfi.sv -linerange 13308-13309 13329-13331 13357-13358 13326-13327
+
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/REQ_RST_LO/u_demet_0 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/REQ_RST_LO/u_demet_1 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/ACK_RST_LO/u_demet_2 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/ACK_RST_LO/u_demet_3 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/u_demet_4 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/u_demet_5 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/u_demet_6 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/u_demet_7 -r
+
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_lp_data_intf/NO_SW_REQ/u_demet_0 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_lp_data_intf/ACK_RST_LO/u_demet_3 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_lp_data_intf/u_demet_4 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_lp_data_intf/u_demet_6 -r
+
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_lp_ctrl_intf/NO_SW_REQ/u_demet_0 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_lp_ctrl_intf/ACK_RST_LO/u_demet_3 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_lp_ctrl_intf/u_demet_4 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_lp_ctrl_intf/u_demet_6 -r
+
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_ctrlupd_intf/NO_SW_REQ/u_demet_0 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_ctrlupd_intf/NO_SW_REQ/u_demet_1 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_ctrlupd_intf/ACK_RST_LO/u_demet_2 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_ctrlupd_intf/ACK_RST_LO/u_demet_3 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_ctrlupd_intf/u_demet_4 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_ctrlupd_intf/u_demet_6 -r
 
 coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_phymstr_intf -srcfile ../rtl/wddr/ddr_dfi.sv -linerange 13491-13495
 coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_phyupd_intf -srcfile ../rtl/wddr/ddr_dfi.sv -linerange 13491-13495
@@ -71,5 +100,8 @@ coverage exclude -srcfile ../rtl/jtag/*
 coverage exclude -srcfile ../rtl/ibex/*
 coverage exclude -srcfile ../rtl/ahb/*
 coverage exclude -srcfile ../rtl/mcu_ibex/*
+coverage exclude -srcfile ../rtl/wddr/*ahb*
+coverage exclude -srcfile ../rtl/wddr/*csr*
+coverage exclude -srcfile ../rtl/wddr/*cmn*
 
 run -all
