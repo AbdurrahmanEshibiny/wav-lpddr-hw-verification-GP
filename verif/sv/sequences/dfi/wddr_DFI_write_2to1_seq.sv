@@ -119,7 +119,7 @@ class wddr_DFI_write_2to1_seq extends wddr_base_seq;
             trans.wrdata_en[3] = 0;
 
             trans.wrdata_cs[0] = 2'b01;
-            trans.wrdata_cs[1] = 2'b01;
+            trans.wrdata_cs[2] = 2'b01;
 
         `uvm_send(trans);
 
@@ -128,8 +128,6 @@ class wddr_DFI_write_2to1_seq extends wddr_base_seq;
             
             trans.wrdata_cs[0] = 2'b00;
             trans.wrdata_cs[2] = 2'b00;
-            trans.wrdata[0] = 64'hzzzz_zzzz_zzzz_zzzz;
-            trans.wrdata[2] = 64'hzzzz_zzzz_zzzz_zzzz;
             trans.wrdata_en[0] = 0;
             trans.wrdata_en[1] = 0;
             trans.wrdata_en[2] = 0;
