@@ -335,20 +335,13 @@ class wddr_DFI_many_write_4to1_seq extends wddr_base_seq;
             trans.wrdata[2] = 64'hzzzz_zzzz_zzzz_zzzz;
             trans.wrdata[3] = 64'hzzzz_zzzz_zzzz_zzzz;
             
-<<<<<<< Updated upstream
+
             //static High       
             EventHandler::trigger_event(EventHandler::setting_wck_static_high);   
             trans.wck_toggle[0] = 2'b01;
             trans.wck_toggle[1] = 2'b01;
             trans.wck_toggle[2] = 2'b01;
             trans.wck_toggle[3] = 2'b01;
-=======
-            //static        
-            trans.wck_toggle[0] = 2'b00;
-            trans.wck_toggle[1] = 2'b00;
-            trans.wck_toggle[2] = 2'b00;
-            trans.wck_toggle[3] = 2'b00;
->>>>>>> Stashed changes
             
         // sendin the transaction
         `uvm_send(trans);
