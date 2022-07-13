@@ -77,7 +77,7 @@ class wddr_DFI_many_write_2to1_seq extends wddr_base_seq;
         @(posedge vif.mp_drv.cb_drv);
             //WR16
             trans.address[0] = 14'b0000000_0000100;
-            trans.address[2] = 14'b0000000_1000000;
+            trans.address[2] = 14'b0000000_0000000;
             // toggle 
             trans.wck_toggle[0] = 2'b01;
             trans.wck_toggle[2] = 2'b01;
@@ -205,7 +205,7 @@ class wddr_DFI_many_write_2to1_seq extends wddr_base_seq;
         @(posedge vif.mp_drv.cb_drv);
             //WR16
             trans.address[0] = 14'b0000000_0000100;
-            trans.address[2] = 14'b0000000_1000000;
+            trans.address[2] = 14'b0000000_0000000;
             // toggle 
             trans.wck_toggle[0] = 2'b01;
             trans.wck_toggle[2] = 2'b01;
@@ -333,7 +333,7 @@ class wddr_DFI_many_write_2to1_seq extends wddr_base_seq;
         @(posedge vif.mp_drv.cb_drv);
             //WR16
             trans.address[0] = 14'b0000000_0000100;
-            trans.address[2] = 14'b0000000_1000000;
+            trans.address[2] = 14'b0000000_0000000;
             // toggle 
             trans.wck_toggle[0] = 2'b01;
             trans.wck_toggle[2] = 2'b01;

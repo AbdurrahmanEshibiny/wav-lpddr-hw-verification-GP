@@ -75,18 +75,6 @@ class wddr_DFI_write_4to1_seq extends wddr_base_seq;
             trans.wck_toggle[2] = 2'b00;
             trans.wck_toggle[3] = 2'b00;
 
-        `uvm_send(trans);
-
-       
-           
-        
-        
-
-        @(posedge vif.mp_drv.cb_drv);
-            //ACT1
-            trans.address[0] = 14'b0000000_0000111;
-            trans.address[1] = 14'b0000000_0000000;
-
             trans.cs[0] = 2'b00;
             trans.cs[1] = 2'b00;
             trans.cs[2] = 2'b00;
@@ -95,23 +83,30 @@ class wddr_DFI_write_4to1_seq extends wddr_base_seq;
         `uvm_send(trans);
 
         @(posedge vif.mp_drv.cb_drv);
-            //ACT2
-            trans.address[0] = 14'b0000000_0000011;
-            trans.address[1] = 14'b0000000_0000000;
+            
+            trans.address[0] = 14'b0000000_0000111;
+            trans.address[1] = 14'b0000000_0000011;
+
+        `uvm_send(trans);
+
+        @(posedge vif.mp_drv.cb_drv);
+            
+            trans.address[0] = 14'b0000000_0011100;
+            trans.address[1] = 14'b0000000_0000100;
         
         `uvm_send(trans);
 
         @(posedge vif.mp_drv.cb_drv);
-            //CAS_WR
-            trans.address[0] = 14'b0000000_0011100;
+        
+            trans.address[0] = 14'b0000000_0000000;
             trans.address[1] = 14'b0000000_0000000;
 
         `uvm_send(trans);
 
         @(posedge vif.mp_drv.cb_drv);
-            //WR16
-            trans.address[0] = 14'b0000000_0000100;
-            trans.address[1] = 14'b0000000_1000000;
+    
+            trans.address[0] = 14'b0000000_0000000;
+            trans.address[1] = 14'b0000000_0000000;
             // fast toggle 
             EventHandler::trigger_event(EventHandler::setting_wck_fast_toggle);
             trans.wck_toggle[0] = 2'b11;
@@ -189,6 +184,16 @@ class wddr_DFI_write_4to1_seq extends wddr_base_seq;
             
         // sendin the transaction
         `uvm_send(trans);
+
+        @(posedge vif.mp_drv.cb_drv); 
+        @(posedge vif.mp_drv.cb_drv);  
+        @(posedge vif.mp_drv.cb_drv); 
+        @(posedge vif.mp_drv.cb_drv); 
+        @(posedge vif.mp_drv.cb_drv); 
+        @(posedge vif.mp_drv.cb_drv);  
+        @(posedge vif.mp_drv.cb_drv); 
+        @(posedge vif.mp_drv.cb_drv);      
+        @(posedge vif.mp_drv.cb_drv);
 
         `uvm_info(get_type_name(), $psprintf("3.POST-CREATE, PPOST-RUN, PRE-RSP OF TRANSACTION"), UVM_LOW);
 
