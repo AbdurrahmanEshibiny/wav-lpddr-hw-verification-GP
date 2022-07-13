@@ -104,4 +104,10 @@ coverage exclude -srcfile ../rtl/wddr/*ahb*
 coverage exclude -srcfile ../rtl/wddr/*csr*
 coverage exclude -srcfile ../rtl/wddr/*cmn*
 
+coverage exclude -srcfile ../rtl/mvp_pll/*
+coverage exclude -srcfile ../rtl/mvppll_ip/*
+coverage exclude -srcfile ../rtl/pll_shared/*
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_ctrl_plane -r	
+coverage exclude -du *pll*
+
 run -all
