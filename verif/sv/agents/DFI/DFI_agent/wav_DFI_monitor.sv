@@ -892,6 +892,9 @@ class wav_DFI_monitor extends uvm_monitor;
         wav_DFI_wck_transfer wck_sl = new(wav_DFI_wck_transfer::static_low, 1);
         wav_DFI_wck_transfer wck_t  = new(wav_DFI_wck_transfer::toggle, 1);
         wav_DFI_wck_transfer wck_ft = new(wav_DFI_wck_transfer::fast_toggle, 1);
+        wav_DFI_transfer read_trans = new();
+        bit flag = 0, prevflag = 0;
+        read_trans.tr_type = read;
         fork
             forever begin
                 EventHandler::wait_for_event(EventHandler::setting_wck_static_high, 1);
@@ -911,6 +914,18 @@ class wav_DFI_monitor extends uvm_monitor;
             forever begin
                 EventHandler::wait_for_event(EventHandler::setting_wck_fast_toggle, 1);
                 write_to_port(wck_ft);
+            end
+
+            forever begin
+                flag = 0;
+                @(vif.mp_mon.cb_mon);
+                foreach (vif.mp_mon.cb_mon.rddata_en[i]) begin
+                    if (vif.mp_mon.cb_mon.rddata_en[i])
+                        flag = 1;
+                end
+                if (flag == 1 && prevflag == 0)
+                    write_to_port(read_trans);
+                prevflag = flag;
             end
         join
     endtask

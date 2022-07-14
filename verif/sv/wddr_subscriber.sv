@@ -328,10 +328,10 @@ class wddr_subscriber extends uvm_component;
 				`uvm_info(get_name(), "Received a wck trans", UVM_MEDIUM);
 				return;
 			end
-			// read: begin     
+			read: begin     
 				// $cast(DFI_read_trans, trans);
-				// trans_c = read_c;
-			// end
+				trans_c = read_c;
+			end
 		endcase    
 
 		basic_DFI_cg.sample();
