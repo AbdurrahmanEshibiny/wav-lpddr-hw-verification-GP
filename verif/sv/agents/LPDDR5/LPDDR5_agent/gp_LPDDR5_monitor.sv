@@ -1421,7 +1421,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 					if(CA==MRW2 && MA==41 && OP[4]==1) begin
 						time start;
 						if(bank_state!='{default: IDLE}) begin
-							`uvm_error("PPR_checker", "Attempting to enter PPR mode while there are non-idle banks")
+							`uvm_warning("PPR_checker", "Attempting to enter PPR mode while there are non-idle banks")
 							disable PPR_checker;
 						end
 					
@@ -1432,7 +1432,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						if((($time - start)/int'(`tCK) < `tMRD) || !(CA==MRW2 && MA==42 && OP==8'b1100_1111)) begin
-							`uvm_error("PPR_checker", "Guard key not entered correctly during Post Package Repair entry")
+							`uvm_warning("PPR_checker", "Guard key not entered correctly during Post Package Repair entry")
 							disable PPR_checker;
 						end
 					
@@ -1443,7 +1443,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						if((($time - start)/int'(`tCK) < `tMRD) || !(CA==MRW2 && MA==42 && OP==8'b0111_0011)) begin
-							`uvm_error("PPR_checker", "Guard key not entered correctly during Post Package Repair entry")
+							`uvm_warning("PPR_checker", "Guard key not entered correctly during Post Package Repair entry")
 							disable PPR_checker;
 						end
 					
@@ -1454,7 +1454,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						if((($time - start)/int'(`tCK) < `tMRD) || !(CA==MRW2 && MA==42 && OP==8'b1011_1011)) begin
-							`uvm_error("PPR_checker", "Guard key not entered correctly during Post Package Repair entry")
+							`uvm_warning("PPR_checker", "Guard key not entered correctly during Post Package Repair entry")
 							disable PPR_checker;
 						end
 					
@@ -1465,7 +1465,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						if((($time - start)/int'(`tCK) < `tMRD) || !(CA==MRW2 && MA==42 && OP==8'b0011_1011)) begin
-							`uvm_error("PPR_checker", "Guard key not entered correctly during Post Package Repair entry")
+							`uvm_warning("PPR_checker", "Guard key not entered correctly during Post Package Repair entry")
 							disable PPR_checker;
 						end
 					
@@ -1476,13 +1476,13 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						if((($time - start)/int'(`tCK) < `tMRD) || !(CA==ACT1)) begin
-							`uvm_error("PPR_checker", "Guard key not entered correctly during Post Package Repair entry")
+							`uvm_warning("PPR_checker", "Guard key not entered correctly during Post Package Repair entry")
 							disable PPR_checker;
 						end
 					
 						@(CA) 
 						if (!(CA==ACT2)) begin
-							`uvm_error("PPR_checker", "Guard key not entered correctly during Post Package Repair entry")
+							`uvm_warning("PPR_checker", "Guard key not entered correctly during Post Package Repair entry")
 							disable PPR_checker;
 						end  
 
@@ -1494,7 +1494,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						if((($time - start)/int'(`tCK) < `tPGM) || !(CA==PRE)) begin
-							`uvm_error("PPR_checker", "Error during PPR")
+							`uvm_warning("PPR_checker", "Error during PPR")
 							disable PPR_checker;
 						end
 					
@@ -1505,7 +1505,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						if((($time - start)/int'(`tCK) < `tPGM_EXIT) || !(CA==MRW2 && MA==41 && OP[4]==0)) begin
-							`uvm_error("PPR_checker", "Error during PPR")
+							`uvm_warning("PPR_checker", "Error during PPR")
 							disable PPR_checker;
 						end
 					
@@ -1516,7 +1516,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						if((($time - start)/int'(`tCK) < `tPGM_PST) || ch0_vif.ddr_reset_n) begin
-							`uvm_error("PPR_checker", "Error during PPR")
+							`uvm_warning("PPR_checker", "Error during PPR")
 							disable PPR_checker;
 						end
 
@@ -1528,7 +1528,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 					if(CA==MRW2 && MA==27 && OP[7]==1) begin
 						time start;
 						if(bank_state!='{default: IDLE}) begin
-							`uvm_error("TRR_checker", "Attempting to enter TRR mode while there are non-idle banks")
+							`uvm_warning("TRR_checker", "Attempting to enter TRR mode while there are non-idle banks")
 							disable TRR_checker;
 						end
 		
@@ -1539,12 +1539,12 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						if((($time - start)/int'(`tCK) < `tMRD) || !(CA==ACT1)) begin
-							`uvm_error("TRR_checker", "Error during TRR")
+							`uvm_warning("TRR_checker", "Error during TRR")
 							disable TRR_checker;
 						end
 						@(CA) 
 						if (!(CA==ACT2)) begin
-							`uvm_error("TRR_checker", "ACT1 not followed by ACT2")
+							`uvm_warning("TRR_checker", "ACT1 not followed by ACT2")
 							disable TRR_checker;
 						end
 		
@@ -1555,7 +1555,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						if((($time - start)/int'(`tCK) < `tRAS*1.5) || !(CA==PRE)) begin
-							`uvm_error("TRR_checker", "Error during TRR")
+							`uvm_warning("TRR_checker", "Error during TRR")
 							disable TRR_checker;
 						end
 		
@@ -1566,12 +1566,12 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						if((($time - start)/int'(`tCK) < `tRP) || !(CA==ACT1)) begin
-							`uvm_error("TRR_checker", "Error during TRR")
+							`uvm_warning("TRR_checker", "Error during TRR")
 							disable TRR_checker;
 						end
 						@(CA) 
 						if (!(CA==ACT2)) begin
-							`uvm_error("TRR_checker", "ACT1 not followed by ACT2")
+							`uvm_warning("TRR_checker", "ACT1 not followed by ACT2")
 							disable TRR_checker;
 						end
 		
@@ -1582,7 +1582,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						if((($time - start)/int'(`tCK) < `tRAS) || !(CA==PRE)) begin
-							`uvm_error("TRR_checker", "Error during TRR")
+							`uvm_warning("TRR_checker", "Error during TRR")
 							disable TRR_checker;
 						end
 		
@@ -1593,12 +1593,12 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						if((($time - start)/int'(`tCK) < `tRP) || !(CA==ACT1)) begin
-							`uvm_error("TRR_checker", "Error during TRR")
+							`uvm_warning("TRR_checker", "Error during TRR")
 							disable TRR_checker;
 						end
 						@(CA) 
 						if (!(CA==ACT2)) begin
-							`uvm_error("TRR_checker", "ACT1 not followed by ACT2")
+							`uvm_warning("TRR_checker", "ACT1 not followed by ACT2")
 							disable TRR_checker;
 						end
 		
@@ -1609,7 +1609,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						if((($time - start)/int'(`tCK) < `tRAS) || !(CA==PRE)) begin
-							`uvm_error("TRR_checker", "Error during TRR")
+							`uvm_warning("TRR_checker", "Error during TRR")
 							disable TRR_checker;
 						end
 		
@@ -1620,7 +1620,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						if(($time - start)/int'(`tCK) < (`tRP+`tMRD)) begin
-							`uvm_error("TRR_checker", "Error during TRR")
+							`uvm_warning("TRR_checker", "Error during TRR")
 							disable TRR_checker;
 						end
 		
@@ -1639,7 +1639,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						if(CA==PRE) begin
 							if(BA == prev_BA) begin
 								if(($time - start)/int'(`tCK) < $ceil(real'(`tRAS)/real'(`tCK))) begin
-									`uvm_error("PRE_timing_checker", "Timing violation between ACT2 and PRE (same bank)")
+									`uvm_warning("PRE_timing_checker", "Timing violation between ACT2 and PRE (same bank)")
 								end
 							end
 						end
@@ -1654,7 +1654,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						if(CA==PRE) begin
 							if(BA == prev_BA) begin
 								if(($time - start)/int'(`tCK) < (`BLn_min+$ceil(real'(`tRBTP)/`tCK))) begin
-									`uvm_error("PRE_timing_checker", "Timing violation between RD16/32 and PRE (same bank)")
+									`uvm_warning("PRE_timing_checker", "Timing violation between RD16/32 and PRE (same bank)")
 								end
 							end
 						end
@@ -1669,7 +1669,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						if(CA==PRE) begin
 							if(BA == prev_BA) begin
 								if(($time - start)/int'(`tCK) < (`WL+1+`BLn_min+$ceil(real'(`tWR)/`tCK))) begin
-									`uvm_error("PRE_timing_checker", "Timing violation between WR16/32 & MWR and PRE (same bank)")
+									`uvm_warning("PRE_timing_checker", "Timing violation between WR16/32 & MWR and PRE (same bank)")
 								end
 							end
 						end
@@ -1684,7 +1684,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						if(CA==ACT1) begin
 							if(BA == prev_BA) begin
 								if(($time - start)/int'(`tCK) < $ceil(real'(`tRP)/real'(`tCK))) begin
-									`uvm_error("PRE_timing_checker", "Timing violation between PRE and ACT1 (same bank)")
+									`uvm_warning("PRE_timing_checker", "Timing violation between PRE and ACT1 (same bank)")
 								end
 							end
 						end
@@ -1802,12 +1802,12 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							if(BA == prev_BA) begin
 								if(CA==ACT1) begin
 									if(($time - start)/int'(`tCK) < (`BLn + `nRBTP + $ceil(real'(`tRPpb)/real'(`tCK)))) begin
-										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between RD16/RD32(with AP) and ACT (same bank)")
+										`uvm_warning("AUTO_PRECHARGE_checkers", "Timing violation between RD16/RD32(with AP) and ACT (same bank)")
 									end
 								end
 								else if (CA==PRE) begin
 									if(($time - start)/int'(`tCK) < (`BLn + `nRBTP)) begin
-										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between RD16/RD32(with AP) and PRE (same bank)")
+										`uvm_warning("AUTO_PRECHARGE_checkers", "Timing violation between RD16/RD32(with AP) and PRE (same bank)")
 									end
 								end
 							end 
@@ -1815,12 +1815,12 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							else begin
 								if(CA==RD16 || CA==RD32) begin
 									if(($time - start)/int'(`tCK) < (`BLn)) begin
-										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between RD16/RD32(with AP) and RD16/RD32 (different group)")
+										`uvm_warning("AUTO_PRECHARGE_checkers", "Timing violation between RD16/RD32(with AP) and RD16/RD32 (different group)")
 									end
 								end
 								if(CA==WR16 || CA==WR32 || CA==MWR) begin
 									if(($time - start)/int'(`tCK) < (`BLn + `RL + $ceil(real'(`tWCKDQO)/`tCK) - `WL)) begin
-										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between RD16/RD32(with AP) and WR16/WR32/MWR (different group)")
+										`uvm_warning("AUTO_PRECHARGE_checkers", "Timing violation between RD16/RD32(with AP) and WR16/WR32/MWR (different group)")
 									end
 								end
 							end 
@@ -1835,12 +1835,12 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							if(BA == prev_BA) begin
 								if(CA==ACT1) begin
 									if(($time - start)/int'(`tCK) < (`WL + `BLn + `nWR + 1 + $ceil(real'(`tRPpb)/real'(`tCK)))) begin
-										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between WR16/WR32/MWR(with AP) and ACT (same bank)")
+										`uvm_warning("AUTO_PRECHARGE_checkers", "Timing violation between WR16/WR32/MWR(with AP) and ACT (same bank)")
 									end
 								end
 								else if (CA==PRE) begin
 									if(($time - start)/int'(`tCK) < (`WL + 1 + `BLn + `nWR)) begin
-										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between WR16/WR32/MWR(with AP) and PRE (same bank)")
+										`uvm_warning("AUTO_PRECHARGE_checkers", "Timing violation between WR16/WR32/MWR(with AP) and PRE (same bank)")
 									end
 								end
 							end 
@@ -1848,12 +1848,12 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							else if(BA[3:2] == prev_BA[3:2]) begin
 								if(CA==RD16 || CA==RD32) begin
 									if(($time - start)/int'(`tCK) < (`WL + `BLn + $ceil(`tWTR_L/real'(`tCK)))) begin
-										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between WR16/WR32/MWRD16/RD32(with AP) and RD16/RD32 (different group)")
+										`uvm_warning("AUTO_PRECHARGE_checkers", "Timing violation between WR16/WR32/MWRD16/RD32(with AP) and RD16/RD32 (different group)")
 									end
 								end
 								if(CA==WR16 || CA==WR32 || CA==MWR) begin
 									if(($time - start)/int'(`tCK) < (`BLn)) begin
-										`uvm_error("AUTO_PRECHARGE_checkers", "Timing violation between WR16/WR32/MWR(with AP) and WR16/WR32/MWR (different group)")
+										`uvm_warning("AUTO_PRECHARGE_checkers", "Timing violation between WR16/WR32/MWR(with AP) and WR16/WR32/MWR (different group)")
 									end
 								end
 							end  
