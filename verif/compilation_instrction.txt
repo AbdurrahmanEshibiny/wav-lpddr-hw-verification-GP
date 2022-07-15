@@ -47,4 +47,9 @@ Hint: You can add the option [-c] to the third step to start questa in CLI mode 
 vsim +UVM_TESTNAME=wddr_DFI_write_4to1_test +MVP_FORCE_PLL +vcoFreq1=2112 +gb=2 +freqRatio=2 work.wddr_tb_top -novopt
 vsim +UVM_TESTNAME=wddr_DFI_write_4to1_test work.wddr_tb_top -novopt
 
-#vsim +UVM_TESTNAME=wddr_DFI_read_test +MVP_FORCE_PLL +vcoFreq1=2112 +gb=2 +freqRatio=2 work.wddr_tb_top -voptargs="+acc -O0" -suppress 3839
+# you can conduct tests on questasim 2021 using -voptargs="+acc -O0" -suppress 3839 to acheive a smiliar
+# effect of using -novopt in modelsim 2016 
+#vsim +UVM_TESTNAME=wddr_DFI_read_test +vcoFreq1=2112 +gb=2 +freqRatio=2 work.wddr_tb_top -voptargs="+acc -O0" -suppress 3839
+
+# this is the random CA test by ziad and genina
+#vsim +UVM_TESTNAME=dfi_ca_rand_test +vcoFreq1=2112 +gb=2 +freqRatio=2 work.wddr_tb_top -voptargs="+acc -O0" -suppress 3839

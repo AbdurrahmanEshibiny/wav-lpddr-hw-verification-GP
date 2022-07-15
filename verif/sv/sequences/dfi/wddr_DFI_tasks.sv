@@ -406,12 +406,6 @@ task automatic set_freq_ratio(int freq_ratio);
         set_dfi_clken_pext_cfg (.wr_clken_cycles(4'h7), .rd_clken_cycles(4'hF), .ca_clken_cycles(4'h3));
     end
 
-
-
-
-
-
-
     // Case3: DDR - DP 4to1 - egress QDR2to1
     else begin
         set_txdq_sdr_fc_dly   (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .fc_dly  ('h0000_0000) );
@@ -528,7 +522,7 @@ task genina_t_ddr_sanity;
             //set_dfiwckctrl_wdp_cfg   (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
             set_dfirctrl_wdp_cfg   (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
             set_dfi_rdgb_mode      (DFIRGB_1TO1);
-            set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h1),   .wck_oe_cycles(4'h1),   .ie_cycles(4'h2),       .re_cycles(4'h6), .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0)); // RE extended to 6 cycles to confirm independent control on RE.
+            set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h1),   .wck_oe_cycles(4'h1),   .ie_cycles(4'h2), .re_cycles(4'h6), .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0)); // RE extended to 6 cycles to confirm independent control on RE.
             set_dfi_clken_pext_cfg (.wr_clken_cycles(4'h7), .rd_clken_cycles(4'hF), .ca_clken_cycles(4'h3));
         end
 
@@ -566,7 +560,7 @@ task genina_t_ddr_sanity;
             //set_dfiwckctrl_wdp_cfg (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
             set_dfirctrl_wdp_cfg   (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
             set_dfi_rdgb_mode      (DFIRGB_2TO2);
-            set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h3),   .wck_oe_cycles(4'h1),   .ie_cycles(4'h2),       .re_cycles(4'h2), .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0));
+            set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h3),   .wck_oe_cycles(4'h1),   .ie_cycles(4'h2), .re_cycles(4'h6) /*.re_cycles(4'h2)*/, .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0));
             set_dfi_clken_pext_cfg (.wr_clken_cycles(4'h7), .rd_clken_cycles(4'hF), .ca_clken_cycles(4'h3));
         end
 
@@ -606,7 +600,7 @@ task genina_t_ddr_sanity;
             //set_dfiwckctrl_wdp_cfg (.gb_mode(DFIWGB_4TO4), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
             set_dfirctrl_wdp_cfg   (.gb_mode(DFIWGB_4TO4), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
             set_dfi_rdgb_mode      (DFIRGB_4TO4);
-            set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h2),   .wck_oe_cycles(4'h1),      .ie_cycles(4'h2),       .re_cycles(4'h2), .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0));
+            set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h2),   .wck_oe_cycles(4'h1),      .ie_cycles(4'h2), .re_cycles(4'h6) /*.re_cycles(4'h2)*/, .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0));
             set_dfi_clken_pext_cfg (.wr_clken_cycles(4'h7), .rd_clken_cycles(4'hF), .ca_clken_cycles(4'h3));
         end 
     endcase
@@ -614,9 +608,9 @@ task genina_t_ddr_sanity;
     sw_csp_byte_sync();
     set_dfi_wdata_clr;
     set_dfi_rdata_clr;
-    set_dfibuf_ts_cfg(.en(1'b1), .rst(1'b0));
+    // set_dfibuf_ts_cfg(.en(1'b1), .rst(1'b0));
     wait_hclk (10);
-    set_dfibuf_ts_cfg(.en(1'b0), .rst(1'b1));
+    // set_dfibuf_ts_cfg(.en(1'b0), .rst(1'b1));
 
     //----------------------------------------------------------------------------------
     // Case4: DFI 1:4 mode - DDR - DP 4to1 - egress QDR2to1
