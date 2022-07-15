@@ -11,6 +11,10 @@ class wddr_DFI_write_4to1_test extends wddr_base_test;
 
     virtual function void build_phase(uvm_phase phase);
         super.build_phase(phase);
+        uvm_config_db#(int) :: set(this, "tb.lpddr5_agent.lpddr5_monitor", "ratio", 4);
+        uvm_config_db#(int) :: set(this, "tb.scoreboard", "ratio", 4);
+
+
     endfunction :build_phase
 
     function void end_of_elaboration_phase(uvm_phase phase);

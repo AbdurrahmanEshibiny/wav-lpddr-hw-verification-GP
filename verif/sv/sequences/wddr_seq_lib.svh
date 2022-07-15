@@ -90,10 +90,12 @@ import wav_DFI_pkg::*;
 `include "sv/sequences/dfi/wddr_DFI_control_with_regs_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_wck_seq.sv"
 
+
 `include "sv/sequences/dfi/wddr_DFI_write_4to1_seq.sv"
 `include "sv/sequences/dfi/CA_rand_seq.sv"
 `include "sv/sequences/dfi/wav_DFI_read_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_all_seq.sv"
+`include "sv/sequences/dfi/wddr_DFI_random_write_data_seq.sv"
 
 // `include "sv/sequences/dfi/wav_DFI_read_seq1.sv"
 // `include "sv/sequences/dfi/wav_DFI_read_seq2.sv"
@@ -102,3 +104,4 @@ import wav_DFI_pkg::*;
 // `include "sv/sequences/dfi/wav_DFI_read_seq5.sv"
 // `include "sv/sequences/dfi/wav_DFI_read_seq6.sv"
 // `include "sv/sequences/dfi/wav_DFI_read_seq7.sv"
+

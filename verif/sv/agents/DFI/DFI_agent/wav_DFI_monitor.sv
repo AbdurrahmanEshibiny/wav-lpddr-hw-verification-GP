@@ -7,9 +7,9 @@ class wav_DFI_monitor extends uvm_monitor;
 
     wav_DFI_vif vif;
     uvm_phase monitor_run_phase;
-
     uvm_analysis_port #(wav_DFI_transfer) subscriber_port_item;
-
+    uvm_analysis_port #(wav_DFI_write_transfer) sent_transaction;  
+    wav_DFI_write_transfer write_item;
 
     semaphore subscriber_port_item_sem;
     task automatic write_to_port(wav_DFI_transfer trans);
@@ -30,8 +30,10 @@ class wav_DFI_monitor extends uvm_monitor;
 
     function void build_phase(uvm_phase phase);
         super.build_phase(phase);
-        subscriber_port_item = new("subscriber_port_item", this);
+        subscriber_port_item     = new("subscriber_port_item", this);
+        sent_transaction          = new("sent_transaction", this);
         subscriber_port_item_sem = new(1);
+        write_item               = new();
     endfunction
 
 	/*add collect for remaining interface signals*/
@@ -55,6 +57,13 @@ class wav_DFI_monitor extends uvm_monitor;
             trans.wck_en[i] =  vif.mp_mon.cb_mon.wck_en[i];
         foreach(vif.mp_mon.cb_mon.wck_toggle[i])
             trans.wck_toggle[i] = vif.mp_mon.cb_mon.wck_toggle[i];
+    endtask
+
+
+    task automatic score_write(ref wav_DFI_write_transfer trans); 
+        foreach(vif.mp_mon.cb_mon.wrdata[i]) 
+            trans.wrdata[i] = vif.mp_mon.cb_mon.wrdata[i];
+        sent_transaction.write(trans);
     endtask
 
     task automatic collect_lp_ctrl(ref wav_DFI_lp_transfer trans); 
@@ -870,6 +879,7 @@ class wav_DFI_monitor extends uvm_monitor;
             if (flag && !prevflag) begin
                 `uvm_info(get_name(), "write transaction is detected", UVM_MEDIUM);
                 collect_write(trans);
+                score_write(trans);
                 write_to_port(trans);
                 // handle_write();
             end
@@ -957,6 +967,9 @@ class wav_DFI_monitor extends uvm_monitor;
         wav_DFI_wck_transfer wck_sl = new(wav_DFI_wck_transfer::static_low, 1);
         wav_DFI_wck_transfer wck_t  = new(wav_DFI_wck_transfer::toggle, 1);
         wav_DFI_wck_transfer wck_ft = new(wav_DFI_wck_transfer::fast_toggle, 1);
+        wav_DFI_transfer read_trans = new();
+        bit flag = 0, prevflag = 0;
+        read_trans.tr_type = read;
         fork
             forever begin
                 EventHandler::wait_for_event(EventHandler::setting_wck_static_high, 1);
@@ -976,6 +989,18 @@ class wav_DFI_monitor extends uvm_monitor;
             forever begin
                 EventHandler::wait_for_event(EventHandler::setting_wck_fast_toggle, 1);
                 write_to_port(wck_ft);
+            end
+
+            forever begin
+                flag = 0;
+                @(vif.mp_mon.cb_mon);
+                foreach (vif.mp_mon.cb_mon.rddata_en[i]) begin
+                    if (vif.mp_mon.cb_mon.rddata_en[i])
+                        flag = 1;
+                end
+                if (flag == 1 && prevflag == 0)
+                    write_to_port(read_trans);
+                prevflag = flag;
             end
         join
     endtask

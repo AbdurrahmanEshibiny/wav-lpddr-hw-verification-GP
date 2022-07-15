@@ -221,7 +221,7 @@ class wddr_subscriber extends uvm_component;
 		phyupd_trans = wav_DFI_update_transfer::type_id::create("coverage_phyupd_trans", this);
 
 		DFI_write_trans = wav_DFI_write_transfer::type_id::create("coverage_DFI_write_trans", this);
-		DFI_wck_trans = wav_DFI_wck_transfer::type_id::create("coverage_DFI_write_trans", this);
+		DFI_wck_trans = wav_DFI_wck_transfer::type_id::create("coverage_DFI_wck_trans", this);
 
 		// Instantiate the required scalar data field
 		trans_c = DFI_C;
@@ -287,7 +287,7 @@ class wddr_subscriber extends uvm_component;
 		wav_DFI_update_transfer update_trans;
 		// To ensure that we are not counting the same transaction twice
 		current_time = $realtime;
-		if ((current_time - last_time) > 10) begin
+		if ((current_time - last_time) > 10 && trans.tr_type != wck) begin
 			last_time = current_time;
 			reset_DFI_objects();
 		end
@@ -326,11 +326,12 @@ class wddr_subscriber extends uvm_component;
 				$cast(DFI_wck_trans, trans);
 				DFI_wck_cg.sample();
 				`uvm_info(get_name(), "Received a wck trans", UVM_MEDIUM);
+				return;
 			end
-			// read: begin     
+			read: begin     
 				// $cast(DFI_read_trans, trans);
-				// trans_c = read_c;
-			// end
+				trans_c = read_c;
+			end
 		endcase    
 
 		basic_DFI_cg.sample();

@@ -24,8 +24,10 @@ class wddr_DFI_write_4to1_seq extends wddr_base_seq;
 
         `uvm_info(get_type_name(), $psprintf("1.PRE-CREATE OF TRANSACTION"), UVM_LOW);
         `uvm_create(trans);
+        trans.is_rsp_required = 0;
         `uvm_info(get_type_name(), $psprintf("2.POST-CREATE, PRE-RUN OF TRANSACTION"), UVM_LOW);
-
+        trans.is_rsp_required = 0;
+        assert(trans.randomize());
         @(posedge vif.mp_drv.cb_drv);
             //ck_c ck_t dram clock enable 
             trans.dram_clk_disable[0] = 0;
@@ -43,6 +45,7 @@ class wddr_DFI_write_4to1_seq extends wddr_base_seq;
             trans.wck_en[2] = 1;
             trans.wck_en[3] = 1;
             //static low
+            EventHandler::trigger_event(EventHandler::setting_wck_static_low);
             trans.wck_toggle[0] = 2'b00;
             trans.wck_toggle[1] = 2'b00;
             trans.wck_toggle[2] = 2'b00;
@@ -72,18 +75,6 @@ class wddr_DFI_write_4to1_seq extends wddr_base_seq;
             trans.wck_toggle[2] = 2'b00;
             trans.wck_toggle[3] = 2'b00;
 
-        `uvm_send(trans);
-
-       
-           
-        
-        
-
-        @(posedge vif.mp_drv.cb_drv);
-            //ACT1
-            trans.address[0] = 14'b0000000_0000111;
-            trans.address[1] = 14'b0000000_0000000;
-
             trans.cs[0] = 2'b00;
             trans.cs[1] = 2'b00;
             trans.cs[2] = 2'b00;
@@ -92,24 +83,32 @@ class wddr_DFI_write_4to1_seq extends wddr_base_seq;
         `uvm_send(trans);
 
         @(posedge vif.mp_drv.cb_drv);
-            //ACT2
-            trans.address[0] = 14'b0000000_0000011;
-            trans.address[1] = 14'b0000000_0000000;
+            
+            trans.address[0] = 14'b0000000_0000111;
+            trans.address[1] = 14'b0000000_0000011;
+
+        `uvm_send(trans);
+
+        @(posedge vif.mp_drv.cb_drv);
+            
+            trans.address[0] = 14'b0000000_0011100;
+            trans.address[1] = 14'b0000000_0000100;
         
         `uvm_send(trans);
 
         @(posedge vif.mp_drv.cb_drv);
-            //CAS_WR
-            trans.address[0] = 14'b0000000_0011100;
+        
+            trans.address[0] = 14'b0000000_0000000;
             trans.address[1] = 14'b0000000_0000000;
 
         `uvm_send(trans);
 
         @(posedge vif.mp_drv.cb_drv);
-            //WR16
-            trans.address[0] = 14'b0000000_0000100;
-            trans.address[1] = 14'b0000000_1000000;
+    
+            trans.address[0] = 14'b0000000_0000000;
+            trans.address[1] = 14'b0000000_0000000;
             // fast toggle 
+            EventHandler::trigger_event(EventHandler::setting_wck_fast_toggle);
             trans.wck_toggle[0] = 2'b11;
             trans.wck_toggle[1] = 2'b11;
             trans.wck_toggle[2] = 2'b11;
@@ -125,11 +124,11 @@ class wddr_DFI_write_4to1_seq extends wddr_base_seq;
 
         @(posedge vif.mp_drv.cb_drv); 
             //data
-            trans.wrdata[0] = 64'h1234_ffff_5678_ffff; 
-            trans.wrdata[1] = 64'habcd_0000_ef98_0000;
-            trans.wrdata[2] = 64'hzzzz_zzzz_zzzz_zzzz; 
-            trans.wrdata[3] = 64'hzzzz_zzzz_zzzz_zzzz;
-        
+            //trans.wrdata[0] = 64'h1234_ffff_5678_ffff; 
+            //trans.wrdata[1] = 64'habcd_0000_ef98_0000;
+            //trans.wrdata[2] = 64'hzzzz_zzzz_zzzz_zzzz; 
+            //trans.wrdata[3] = 64'hzzzz_zzzz_zzzz_zzzz;
+            assert(trans.randomize());
 
         `uvm_send(trans);
 
@@ -185,6 +184,16 @@ class wddr_DFI_write_4to1_seq extends wddr_base_seq;
             
         // sendin the transaction
         `uvm_send(trans);
+
+        @(posedge vif.mp_drv.cb_drv); 
+        @(posedge vif.mp_drv.cb_drv);  
+        @(posedge vif.mp_drv.cb_drv); 
+        @(posedge vif.mp_drv.cb_drv); 
+        @(posedge vif.mp_drv.cb_drv); 
+        @(posedge vif.mp_drv.cb_drv);  
+        @(posedge vif.mp_drv.cb_drv); 
+        @(posedge vif.mp_drv.cb_drv);      
+        @(posedge vif.mp_drv.cb_drv);
 
         `uvm_info(get_type_name(), $psprintf("3.POST-CREATE, PPOST-RUN, PRE-RSP OF TRANSACTION"), UVM_LOW);
 
