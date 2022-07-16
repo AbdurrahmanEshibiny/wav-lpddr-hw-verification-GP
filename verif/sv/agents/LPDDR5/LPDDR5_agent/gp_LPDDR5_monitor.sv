@@ -95,7 +95,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 	int tpbR2pbR = 90;
 	int tRP = `tRP;
 	int tRRD = `tRRD;
-	int	tCSPD = `max(7.5ns, 3*`tCK);
+	time tCSPD = `max(1.75ns, 2*`tCK);
 	int tPDN = 0;
 	int tXSR_DSM = 200*1000;
 	int tWCKPRE_Static = 2;
@@ -979,6 +979,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						end
 						{1'b1, 7'b0000001}: begin
 							next_CA = PDE;
+							$display("entered");
 						end
 						{1'b1, 7'b111xxxx}: begin
 							next_CA = ACT1;
@@ -1058,7 +1059,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						//`uvm_info("gp_LPDDR5_monitor", $psprintf("counter = %d", counter), UVM_NONE)
 					end
 					//`uvm_info("gp_LPDDR5_monitor", $psprintf("DQ = %h", ch0_vif.DQ), UVM_NONE)
-					//`uvm_info("gp_LPDDR5_monitor", $psprintf("next_CA %b", ch0_vif.ca), UVM_NONE)
+					`uvm_info("gp_LPDDR5_monitor", $psprintf("next_CA %b", ch0_vif.ca), UVM_NONE)
 					//`uvm_info("gp_LPDDR5_monitor", next_CA.name, UVM_NONE)
 				end 
 				@(negedge ch0_vif.ck_t) begin
@@ -1076,15 +1077,15 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 							end 
 						end
 						PDE:begin
-							if((($time - time_SRE) <2*nck )
-								|| ((CA != (REF || PRE)) && !AUTO_PRECHARGE)
-								|| (($time - time_last_read) < (`RL + RU*((tWCK2CK + tWCKDQO)/tCK) + BL/8 +1))
-								|| (($time - time_last_write) < (WL + RU*((tWCK2CK + tWCKDQI)/tCK) + BL/8 +1)) 
-								|| (($time - time_last_MW_with_auto) < ( WL + RU*((tWCK2CK + tWCKDQI)/tCK) + nWR + BL/8 +1))
-								|| (($time - time_last_MRR) < (`RL + RU*((tWCK2CK + tWCKDQO)/tCK) + nWR + BL/8 +1)) 
-								|| (($time - time_last_command) < (tCMDPD)) 
-								|| (($time - time_last_MRW) < (tMRWPD))
-								|| (($time - time_SRE) < tESPD) )
+							if((($time - time_SRE) <2*nck ))
+								// || ((CA != (REF || PRE)) && !AUTO_PRECHARGE)
+								// || (($time - time_last_read) < (`RL + RU*((tWCK2CK + tWCKDQO)/tCK) + BL/8 +1))
+								// || (($time - time_last_write) < (WL + RU*((tWCK2CK + tWCKDQI)/tCK) + BL/8 +1)) 
+								// || (($time - time_last_MW_with_auto) < ( WL + RU*((tWCK2CK + tWCKDQI)/tCK) + nWR + BL/8 +1))
+								// || (($time - time_last_MRR) < (`RL + RU*((tWCK2CK + tWCKDQO)/tCK) + nWR + BL/8 +1)) 
+								// || (($time - time_last_command) < (tCMDPD)) 
+								// || (($time - time_last_MRW) < (tMRWPD))
+								// || (($time - time_SRE) < tESPD) )
 									`uvm_error("gp_lpddr5_monitor", "Cannot enter power down")
 								else
 								begin
@@ -1094,14 +1095,19 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 									subscriber_port_item.write(cov_trans_item);
 									if (CA == SRE) bank_state = '{default:SELF_REFRESH_POWER_DOWN};
 									else bank_state = '{default:IDLE_POWER_DOWN};
+									$display("entered power down");
 									while(1) begin
 										@(ch0_vif.cs)begin //wait for cs to toggle for DSX
-											if( ($time - time_PDE) < tCSPD )
-												`uvm_error("gp_lpddr5_monitor", "Cannot exit deep sleep mode too soon")
+											if( ($time - time_PDE) < tCSPD ) begin
+												`uvm_error("gp_lpddr5_monitor", "Cannot exit power down too soon")
+												$display("%0t, %0t, %0t", $time, time_PDE, tCSPD);
+											end
 											else begin
 												time_PDX = $time;
-												bank_state = '{default:ACTIVE_POWER_DOWN};
+												bank_state = '{default:IDLE};
+												$display("OUTT, %t", $time);
 												CA = SRE;
+												break;
 											end
 										end
 										cov_trans_item.CA = CA;
