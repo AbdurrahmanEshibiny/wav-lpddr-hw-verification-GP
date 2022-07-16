@@ -170,17 +170,23 @@ class wddr_DFI_power_down_seq extends wddr_base_seq;
         `uvm_info(get_name(), "power down entry", UVM_MEDIUM);
         trans.cke[0]  = 2'b01;
         trans.cs[0]	= 2'b10;
-        trans.cs[2]	= 2'b00;
+        trans.cs[2]	= 2'b10;
         trans.dram_clk_disable[0] = 0;
         trans.dram_clk_disable[1] = 1;
         trans.dram_clk_disable[2] = 1;
         trans.dram_clk_disable[3] = 1;
 
-        trans.address[0] = 14'h04;
-        trans.address[2] = 14'h00;
+        trans.address[0] = 7'b1000000;
+        trans.address[2] = 7'b0000000;
         `uvm_send(trans);
 
-        wait_dfi_cycles(1);
+        wait_dfi_cycles(2);
+        trans.address[0] = 14'h00;
+        trans.cs[0]	= 2'b00;
+        trans.cs[2]	= 2'b00;
+        `uvm_send(trans);
+        
+        wait_dfi_cycles(10);
         `uvm_info(get_name(), "power down exit", UVM_MEDIUM);
         trans.address[0] = 14'h00;
         trans.cs[0]	= 2'b10;
