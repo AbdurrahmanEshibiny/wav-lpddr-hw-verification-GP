@@ -97,6 +97,25 @@ class ca_rand_seq extends wddr_base_seq; // uvm_sequence #(wav_DFI_write_transfe
             rd_seq_item.slice_q[$].address[0] = cmd_qq[i];
         end
 
+        foreach (rd_seq_item.slice_q[i]) begin
+            rd_seq_item.slice_q[i].cs[0] = 2'b01;
+            rd_seq_item.slice_q[i].cs[1] = 2'b01;
+            rd_seq_item.slice_q[i].cs[2] = 2'b01;
+            rd_seq_item.slice_q[i].cs[3] = 2'b01;
+
+            rd_seq_item.slice_q[i].wck_cs[0] = 2'b01;
+            rd_seq_item.slice_q[i].wck_cs[1] = 2'b01;
+            rd_seq_item.slice_q[i].wck_cs[2] = 2'b01;
+            rd_seq_item.slice_q[i].wck_cs[3] = 2'b01;
+            
+            rd_seq_item.slice_q[i].rddata_cs[0] = 2'b01;
+            rd_seq_item.slice_q[i].rddata_cs[1] = 2'b01;
+            rd_seq_item.slice_q[i].rddata_cs[2] = 2'b01;
+            rd_seq_item.slice_q[i].rddata_cs[3] = 2'b01;
+        
+        end
+        
+
         // rd_seq_data.randomize();
         // rd_seq_data.data_len = 10; // can be randomized
 

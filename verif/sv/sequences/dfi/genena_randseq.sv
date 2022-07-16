@@ -72,6 +72,24 @@ typedef enum bit [0:6] {
 	  _WFF=7'b0000011, 
 	  _RFF=7'b0000010
 		} command;
+function int min_WR16_after_WR16orMWR_ANB_fn();
+  return int'(`RU(`min_WR16_after_WR16orMWR_ANB));
+endfunction
+
+function int max_WR16_after_WR16orMWR_ANB_fn();
+  return int'(`RU(`max_WR16orMWR_after_WR16orMWR_ANB));
+endfunction
+
+function int max_MWR_after_WR16orMWR_SB_fn();
+  return int'(`RU(`max_MWR_after_WR16orMWR_SB));
+endfunction
+
+function int min_MWR_after_WR16orMWR_SB();
+  return int'(`RU(`min_MWR_after_WR16orMWR_SB));
+endfunction
+
+
+
 
 class seqitem;
 	  
