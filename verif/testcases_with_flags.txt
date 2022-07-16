@@ -1,0 +1,3 @@
+wddr_DFI_all_part2_test
+wddr_DFI_read_test
+dfi_ca_rand_test

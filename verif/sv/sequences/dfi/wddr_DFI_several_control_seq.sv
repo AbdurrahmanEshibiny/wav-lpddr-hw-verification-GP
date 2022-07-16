@@ -41,7 +41,7 @@ class wddr_DFI_several_control_seq extends wddr_base_seq;
                     `uvm_rand_send(trans);
                     trans.print();
                     EventHandler::wait_for_transaction(EventHandler::lp_ctrl);
-                    get_response(rsp); 
+                    // get_response(rsp); 
                 end
 
                 1: begin                    
@@ -53,7 +53,7 @@ class wddr_DFI_several_control_seq extends wddr_base_seq;
                     `uvm_rand_send(trans);
                     trans.print();
                     EventHandler::wait_for_transaction(EventHandler::lp_data);
-                    get_response(rsp); 
+                    // get_response(rsp); 
                 end
 
                 2: begin
@@ -73,7 +73,7 @@ class wddr_DFI_several_control_seq extends wddr_base_seq;
                     trans.is_ctrl = 1'b1;
                     `uvm_rand_send(trans);
                     EventHandler::wait_for_transaction(EventHandler::ctrlupd);
-                    get_response(rsp);
+                    // get_response(rsp);
                 end
 
                 5: begin
@@ -81,7 +81,7 @@ class wddr_DFI_several_control_seq extends wddr_base_seq;
                     assert(trans.randomize());
                     `uvm_send(trans);
                     EventHandler::wait_for_transaction(EventHandler::status);
-                    get_response(rsp);
+                    // get_response(rsp);
                 end
               endcase
         end

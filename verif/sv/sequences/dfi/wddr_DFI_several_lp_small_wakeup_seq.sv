@@ -36,7 +36,7 @@ class wddr_DFI_several_lp_small_wakeup_seq extends wddr_base_seq;
                     EventHandler::wait_for_transaction(EventHandler::lp_ctrl);
                 else
                     EventHandler::wait_for_transaction(EventHandler::lp_data);
-                get_response(rsp);   
+                // get_response(rsp);   
             end
         end
 

@@ -95,6 +95,7 @@ import wav_DFI_pkg::*;
 `include "sv/sequences/dfi/CA_rand_seq.sv"
 `include "sv/sequences/dfi/wav_DFI_read_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_all_seq.sv"
+`include "sv/sequences/dfi/wddr_DFI_all_part2_seq.sv"
 `include "sv/sequences/dfi/wddr_DFI_random_write_data_seq.sv"
 
 // `include "sv/sequences/dfi/wav_DFI_read_seq1.sv"

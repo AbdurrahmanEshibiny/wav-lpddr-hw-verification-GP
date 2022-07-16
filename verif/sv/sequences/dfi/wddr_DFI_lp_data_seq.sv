@@ -29,7 +29,7 @@ class wddr_DFI_lp_data_seq extends wddr_base_seq;
         trans.print();
 
         EventHandler::wait_for_transaction(EventHandler::lp_data);
-        get_response(rsp);  
+        // get_response(rsp);  
         `uvm_info(get_type_name(), "done sequence", UVM_LOW);
     endtask
 
