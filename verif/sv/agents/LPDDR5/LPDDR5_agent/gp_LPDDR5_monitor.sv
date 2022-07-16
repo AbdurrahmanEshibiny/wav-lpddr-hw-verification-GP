@@ -242,7 +242,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 	// endtask
 
 	task automatic ziad_checks();
-		BA <= {ch0_vif.ca0,ch0_vif.ca1,ch0_vif.ca2,ch0_vif.ca3};
+		BA = {ch0_vif.ca0,ch0_vif.ca1,ch0_vif.ca2,ch0_vif.ca3};
 		case  (next_CA)
 			ACT1:begin
               if(!act1_key.try_get(1)) `uvm_error("gp_lpddr5_monitor", "Failed to Recieve ACT1 command") //$error("Failed to Recieve ACT1 command");
