@@ -200,4 +200,87 @@ interface wav_DFI_if(input clock, input reset);
     // no read or write transactions at lp mode    
     item_30: assert property(@(posedge clock) lp_data_req |-> (`wrdata_en_is_idle && `rddata_en_is_idle));
     item_27: assert property(@(posedge clock) ~(lp_ctrl_req & !(`address_is_idle)));
+
+/*
+
+// TODO: PROTOTYPE FOR AN ACTUAL READ DRIVER!
+
+    dfi_cmd_t cmd_q[$];
+    DFI_rd_seq_item rd_item_q[$];
+
+    int curr_rd_item_en_end_cntr;
+    int curr_rd_item_en_dly_cntr;
+    int next_rd_item_en_dly_cntr;
+    bit is_curr_instr_sent;
+    bit is_next_instr_sent;
+    bit [1:0] phase;
+    int freq_ratio;
+
+    always @(cb_drv) begin
+        do begin
+            if (cmd_q.size() == 0) begin
+                cb_drv.address[phase] <= '0;
+                cb_drv.rddata_en[phase] <= '0;
+                cb_drv.rddata_cs[phase] <= '0;
+            end else if (cmd_q[0].preamble.size() != 0) begin
+                cb_drv.address[phase] <= cmd_q[0].preamble.pop();
+            end else if (!is_curr_instr_sent) begin
+                // TODO: modify to insert address
+                cb_drv.address[phase] <= DFI_RD16;
+                is_curr_instr_sent = '1;
+            end else if (cmd_q.size() > 1) begin
+                if ((cmd_q[1].preamble.size() + 1) >= cmd_q[1].data_len) begin
+                    if (cmd_q[1].preamble.size() != 0) begin
+                        cb_drv.address[phase] <= cmd_q[1].preamble.pop();
+                    end else if (!is_next_instr_sent) begin
+                        // TODO: modify to insert address
+                        cb_drv.address[phase] <= DFI_RD16;
+                        is_next_instr_sent = '1;
+                    end else begin
+                        cb_drv.address[phase] <= '0;
+                    end
+                end
+            end else begin
+                cb_drv.address[phase] <= '0;
+            end
+            phase = (phase + 1) % freq_ratio;
+        end while (phase != 0);
+    end
+
+
+*/
+
+/*
+    always @(cb_drv) begin
+        do begin
+            cb_drv.address[phase] <= cmd_q.size() == 0 ? DFI_NOP : cmd_q.pop();
+            if (curr_rd_item_en_end_cntr == 0) begin
+                cb_drv.rddata_en[phase] <= 0;
+            end else begin
+                if (cmd_q.size() == 0) begin
+                    cb_drv.rddata_en[phase] <= 0;
+                end else begin
+                    if (curr_rd_item_en_dly_cntr != 0) begin
+                        cb_drv.rddata_en[phase] <= 0;
+                    end else begin
+                        cb_drv.rddata_en[phase] <= 1;
+                    end
+                    
+                    if (curr_rd_item_en_end_cntr > 0) begin
+                        curr_rd_item_en_end_cntr--;
+                    end
+                    if (next_rd_item_en_dly_cntr > 0) begin
+                        next_rd_item_en_dly_cntr--;
+                    end
+                end
+                
+
+            end
+            phase = (phase + 1) % freq_ratio;
+        end while (phase != 0);
+    end
+
+*/
+
+    
 endinterface

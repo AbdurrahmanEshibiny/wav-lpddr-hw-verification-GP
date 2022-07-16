@@ -6,6 +6,8 @@ class wav_DFI_agent extends uvm_agent;
     wav_DFI_sequencer sequencer;
     wav_DFI_monitor monitor;
     wav_DFI_vif vif;
+
+    int DFI_freq_ratio;
   
     function new (string name, uvm_component parent);
         super.new(name, parent);
@@ -16,6 +18,10 @@ class wav_DFI_agent extends uvm_agent;
         monitor = wav_DFI_monitor::type_id::create("wav_DFI_monitor", this);
         sequencer = wav_DFI_sequencer::type_id::create("wav_DFI_sequencer", this);
         driver = wav_DFI_driver::type_id::create("wav_DFI_driver", this);
+        if(!$value$plusargs("freqRatio=%0d", DFI_freq_ratio))
+            DFI_freq_ratio = 2;
+
+        uvm_config_db#(int)::set(null,"*", "DFI_freq_ratio", DFI_freq_ratio);
 
         `uvm_info(get_type_name(), $psprintf("DFI Agent subcomponenets are built"), UVM_MEDIUM);
 

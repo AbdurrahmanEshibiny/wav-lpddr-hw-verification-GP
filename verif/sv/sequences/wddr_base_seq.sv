@@ -114,7 +114,7 @@ class wddr_base_seq extends uvm_sequence;
         super.new(name);
         //trans=new;
         cfg = wddr_config::type_id::create("cfg");
-        uvm_config_db#(wddr_config)::set(uvm_root::get(), "*", "cfg_obj", cfg);
+        uvm_config_db#(wddr_config)::set(null, "*", "cfg_obj", cfg);
     endfunction
 
     //`uvm_declare_p_sequencer(virtual_sequencer)

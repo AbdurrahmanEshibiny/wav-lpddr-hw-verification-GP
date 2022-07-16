@@ -113,16 +113,15 @@ class dfi_rd_seq extends wddr_base_seq; // uvm_sequence #(wav_DFI_write_transfer
         end
         
         super.body();
-        // ddr_boot(err);
-        genina_t_ddr_sanity(err, 3); // not working yet, use t_ddr_sanity
+        ddr_boot(err);
         // phy_bringup(err);
         config_vips(vcoFreq1, freqRatio);
-        // set_freq_ratio(freqRatio);
+        set_freq_ratio(freqRatio);
         // gb_set = 1;
         
         // t_mcu_boot(err_cnt);
         set_dfi_ca_rddata_en(1); // included in the functions
-        set_dfi_rdout_mode(1,1);
+        // set_dfi_rdout_mode(1,1);
         set_dfi_wck_mode(1);
         
         if (err != 0) begin

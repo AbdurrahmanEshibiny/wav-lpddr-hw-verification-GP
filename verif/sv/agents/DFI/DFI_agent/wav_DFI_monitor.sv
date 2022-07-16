@@ -1,3 +1,5 @@
+`include "../../../sequences/wddr_config.sv"
+
 class wav_DFI_monitor extends uvm_monitor;
 
     `uvm_component_utils_begin(wav_DFI_monitor)
@@ -97,7 +99,6 @@ class wav_DFI_monitor extends uvm_monitor;
         trans.ack = vif.mp_mon.cb_mon.ctrlupd_ack; 
     endtask
 
-    `define READ_INST 0
 
    typedef struct {
         bit [13:0] command;
@@ -110,116 +111,150 @@ class wav_DFI_monitor extends uvm_monitor;
         int timestamp;
    } read_slice_st;
 
-
-/*
     task automatic serialize_read(
-        ref read_slice_st slices[$]
+        ref read_slice_st slices[$],
+        input int DFI_freq_ratio
     );
         read_slice_st new_slices[$] = {};
-        foreach(vif.mp_mon.cb_mon.address[i]) begin
+        int i;
+        i = 0;
+        @(vif.cb_mon) repeat (DFI_freq_ratio) begin
             read_slice_st temp;
-            temp.command = vif.mp_mon.cb_mon.address[i];
-            temp.r_data = vif.mp_mon.cb_mon.rddata[i];
-            temp.dbi = vif.mp_mon.cb_mon.rddata_dbi[i];
-            temp.en = vif.mp_mon.cb_mon.rddata_en[i];
-            temp.valid = vif.mp_mon.cb_mon.rddata_valid[i];
+            temp.command = vif.cb_mon.address[i];
+            temp.r_data = vif.cb_mon.rddata[i];
+            temp.dbi = vif.cb_mon.rddata_dbi[i];
+            temp.en = vif.cb_mon.rddata_en[i];
+            temp.valid = vif.cb_mon.rddata_valid[i];
             temp.dfi_phase = i;
-            temp.cs = vif.mp_mon.cb_mon.rddata_cs[i];
+            temp.cs = vif.cb_mon.rddata_cs[i];
             temp.timestamp = $time;
             new_slices.push_back(temp);
+            i++;
         end
         slices = {slices, new_slices};
     endtask
 
-    task automatic extend_read_queue(
-        ref read_slice_st slices[$]
+    task automatic extend_read_queue (
+        ref read_slice_st slices[$],
+        input int DFI_freq_ratio
     );
         // the behaviour for an empty queue is to
         // advance 1 timestep before extending
         if ((slices.size() == 0) || (slices[$].timestamp == $time))
         begin
-            @(vif.mp_mon.cb_mon);
+            @(vif.cb_mon);
         end
-        serialize_read(slices);
+        serialize_read(slices, DFI_freq_ratio);
     endtask
 
     task automatic collect_read (
-        output wav_DFI_read_transfer trans,
+        output DFI_rd_seq_item trans,
         ref bit [1:0] word_ptr,
-        ref read_slice_st slices[$]
+        ref read_slice_st slices[$],
+        input int DFI_freq_ratio
     );
         // TODO: find the values of these parameters
-        int t_rddata_en = 0;
-        int t_phy_rdcslat = 0;
+        wddr_config cfg;
 
-        int data_len = 0;
+        dfi_data d;
 
-        // TODO: ratio of the DFI clk to the DFI PHY clk
+        read_slice_st rolled_slices[$];
+        
+        int t_rddata_en;
+        int t_phy_rdcslat;
+        
+        int data_len;
 
-        int en_cntr = 1;
         int max_data_len;
-        bit is_max_len_def = 0;
+        bit is_max_len_def;
 
         int slice_index;
 
         bit is_data_len_done;
 
-        read_slice_st rolled_slices[$];
+        bit [1:0] old_word_ptr;
 
-        read_data_t d;
-
-        bit [1:0] old_word_ptr;        
+        int send_deadline;
 
         // OPERATION STARTS HERE
-        trans = new();
+        // initialize everything first
+
+        // TODO: assign address first
+        trans = DFI_rd_seq_item::type_id::create("rd_trans");
+        d = dfi_data::type_id::create("d");
+        // cfg = wddr_config::type_id::create("cfg");
+        if (!uvm_config_db#(wddr_config)::get(null, "*", "cfg_obj", cfg))
+        begin
+            `uvm_warning (get_name(), "Could not get cfg object")
+            t_rddata_en = 0;
+            t_phy_rdcslat = 0;
+        end else begin
+            t_rddata_en = cfg.trddata_en;
+            t_phy_rdcslat = cfg.tphy_rdcslat;    
+        end
+
         
+
+        is_max_len_def = 0;
+
         while(slices.size() <= t_rddata_en) begin
-            extend_read_queue(slices);
+            extend_read_queue(slices, DFI_freq_ratio);
         end
 
-        slice_index = 1;
-
-        while(en_cntr < t_rddata_en) begin
-            // TODO: find the exact value of the read command
-            if(slices[slice_index].command != `READ_INST) begin
-                slice_index++;
-                en_cntr++;
-            end else begin
-                max_data_len = en_cntr;
-                is_max_len_def = 1;
-                break;
+        slice_index = 0;
+        while (slice_index < t_rddata_en) begin
+            if (slice_index != 0) begin
+                if (
+                    !is_max_len_def && 
+                    (slices[slice_index].command == DFI_RD16)
+                ) begin
+                    max_data_len = slice_index;
+                    is_max_len_def = 1;
+                end
             end
+            slice_index++;
         end
-        
+
+        data_len = 0;
         is_data_len_done = 0;
 
-        while(is_data_len_done == 0) begin
+        while (!is_data_len_done) begin
             if (slices.size() < slice_index + 1) begin
-                extend_read_queue(slices);
+                extend_read_queue(slices, DFI_freq_ratio);
             end
-            if(slices[slice_index].en == 1) begin
+            if(slices[slice_index].en) begin
                 data_len++;
-                slice_index++;
                 if (is_max_len_def == 1) begin
-                    if (data_len == max_data_len) begin
-                        is_data_len_done = 1;    
+                    if (data_len >= max_data_len) begin
+                        data_len = max_data_len;
+                        is_data_len_done = 1;
                     end
-                    // TODO: find the exact value of the read command
-                end else if (slices[slice_index].command == `READ_INST)
-                begin
-                    max_data_len = data_len + t_rddata_en;
+                end else if (
+                    (slice_index != 0) && 
+                    (slices[slice_index].command ==? DFI_RD16)
+                ) begin
+                    max_data_len = slice_index;
                     is_max_len_def = 1;
                 end                
             end else begin
                 is_data_len_done = 1;
             end
+            slice_index++;
         end // here we have the correct data length
+        
+        trans.data_len = data_len;
+
+        `uvm_info(
+            get_name(),
+            $sformatf("detected data_len = %0d", data_len),
+            UVM_MEDIUM
+        )
 
         slice_index = 0;
         
         while (1) begin
             if (slices.size() < slice_index + 1) begin
-                extend_read_queue(slices);
+                extend_read_queue(slices, DFI_freq_ratio);
             end
             if ((slices[slice_index].valid == 1) && 
                 (slices[slice_index].dfi_phase == word_ptr)) begin
@@ -229,9 +264,15 @@ class wav_DFI_monitor extends uvm_monitor;
             end
         end // here we have the location of the first data slice
 
+        if (slices.size() < slice_index+DFI_freq_ratio) begin
+            extend_read_queue(slices, DFI_freq_ratio);
+        end
+
         rolled_slices =
-        slices[slice_index-word_ptr : slice_index-word_ptr+3];
+        slices[slice_index-word_ptr : slice_index-word_ptr+DFI_freq_ratio-1];
         
+        // here we roll the slices to infer data correctly
+        // according to the word pointer
         while (rolled_slices[0].dfi_phase != word_ptr) begin
             read_slice_st tmp = rolled_slices[0];
             rolled_slices[0:$-1] = rolled_slices[1:$];
@@ -240,21 +281,30 @@ class wav_DFI_monitor extends uvm_monitor;
 
         old_word_ptr = word_ptr;
 
+        // here we collect data from the rolled slices
         foreach (rolled_slices[i]) begin
             if (data_len != 0) begin
                 if (rolled_slices[i].valid == 1) begin
                     rolled_slices[i].valid = 0;
+                    if (!$cast(d, d.clone())) begin
+                        `uvm_warning(
+                            get_name(),
+                            "Failed to clone data slice"
+                        )
+                    end
                     d.data = rolled_slices[i].r_data;
                     d.dbi = rolled_slices[i].dbi;
-                    trans.rd.push_back(d);
+                    trans.data.push_back(d);
                     data_len--;
-                    word_ptr = rolled_slices[i].dfi_phase + 1;
+                    word_ptr = 
+                        (rolled_slices[i].dfi_phase + 1) % DFI_freq_ratio;
                 end
             end else begin
                 break;
             end
         end
 
+        // deroll the slices
         while (rolled_slices[0].dfi_phase != 0) begin
             read_slice_st tmp = rolled_slices[0];
             rolled_slices[0:$-1] = rolled_slices[1:$];
@@ -262,27 +312,41 @@ class wav_DFI_monitor extends uvm_monitor;
         end
 
         slices [slice_index-old_word_ptr : 
-                slice_index-old_word_ptr+3] = rolled_slices;
+                slice_index-old_word_ptr+DFI_freq_ratio-1] = rolled_slices;
 
-        slice_index += (4-old_word_ptr);
+        slice_index += (DFI_freq_ratio-old_word_ptr);
 
-        while (data_len != 0) begin
+        
+        send_deadline = trans.data_len * 2;
+
+        while ((data_len != 0) && (send_deadline > 0)) begin
             if (slices.size() < slice_index + 1) begin
-                extend_read_queue(slices);
+                extend_read_queue(slices, DFI_freq_ratio);
             end
             if (slices[slice_index].valid == 1) begin
                 slices[slice_index].valid = 0;
                 d.data = slices[slice_index].r_data;
                 d.dbi = slices[slice_index].dbi;
-                trans.rd.push_back(d);
+                trans.data.push_back(d);
+                if (!$cast(d, d.clone())) begin
+                    `uvm_warning (
+                        get_name(),
+                        "Failed to clone data slice"
+                    )
+                end
                 data_len--;
-                word_ptr = slices[slice_index].dfi_phase + 1;
+                word_ptr = 
+                    (slices[slice_index].dfi_phase + 1) % DFI_freq_ratio;
             end
             slice_index++;
+            send_deadline--;
         end
-
+            
+        if (data_len > 0) begin
+            `uvm_warning (get_name(), "Timeout: Could not receive all data")
+        end
         slice_index = t_phy_rdcslat;
-        trans.cs = slices[slice_index].cs;
+        trans.address.cs = slices[slice_index].cs;
 
         // TODO: check for the cs signal staying constant for
         // dfi_rw_length + tphy_rdcsgap here
@@ -291,27 +355,38 @@ class wav_DFI_monitor extends uvm_monitor;
     endtask
 
     task monitor_read();
-        bit [1:0] data_word_ptr = 0;
+        bit [1:0] data_word_ptr;
+        int DFI_freq_ratio;
+        dram_address address;
+        DFI_rd_seq_item rd_seq_item;
+        read_slice_st rd_slices[$];
         // TODO: detect conditions of resetting
         // the data_word_ptr
-        read_slice_st rd_slices[$] = {};
-        wav_DFI_read_transfer rd_seq_item;
+        data_word_ptr = 0;
+        // rd_slices = {};
+        address = dram_address::type_id::create("address");
+        
         forever begin
-            extend_read_queue(rd_slices);
+            extend_read_queue(rd_slices, 4); // needs work
             while (rd_slices.size() != 0) begin
-                // TODO: find the exact value of the read command
-                if (rd_slices[0].command != `READ_INST) begin
+                if (rd_slices[0].command !=? DFI_RD16) begin
+                    // TODO: get address from the slices
                     rd_slices.pop_front();
                 end else begin
-                    // TODO: add detection `uvm_info
-                    collect_read(rd_seq_item, data_word_ptr, rd_slices);
+                    if (!uvm_config_db#(int)::get(null, "*", "DFI_freq_ratio", DFI_freq_ratio))
+                    begin
+                        `uvm_warning (get_name(), "Failed to find DFI_freq_ratio!")
+                        DFI_freq_ratio = 2;
+                    end
+                    `uvm_info (get_name(), "Read Transaction detected", UVM_MEDIUM)
+                    collect_read (rd_seq_item, data_word_ptr, rd_slices, DFI_freq_ratio);
                     // TODO: send rd_seq_item to scoreboard
                 end
             end
         end
     endtask
 
-*/
+
 
     task monitor_status();
         int init_complete_cntr;
@@ -892,6 +967,9 @@ class wav_DFI_monitor extends uvm_monitor;
         wav_DFI_wck_transfer wck_sl = new(wav_DFI_wck_transfer::static_low, 1);
         wav_DFI_wck_transfer wck_t  = new(wav_DFI_wck_transfer::toggle, 1);
         wav_DFI_wck_transfer wck_ft = new(wav_DFI_wck_transfer::fast_toggle, 1);
+        wav_DFI_transfer read_trans = new();
+        bit flag = 0, prevflag = 0;
+        read_trans.tr_type = read;
         fork
             forever begin
                 EventHandler::wait_for_event(EventHandler::setting_wck_static_high, 1);
@@ -912,6 +990,18 @@ class wav_DFI_monitor extends uvm_monitor;
                 EventHandler::wait_for_event(EventHandler::setting_wck_fast_toggle, 1);
                 write_to_port(wck_ft);
             end
+
+            forever begin
+                flag = 0;
+                @(vif.mp_mon.cb_mon);
+                foreach (vif.mp_mon.cb_mon.rddata_en[i]) begin
+                    if (vif.mp_mon.cb_mon.rddata_en[i])
+                        flag = 1;
+                end
+                if (flag == 1 && prevflag == 0)
+                    write_to_port(read_trans);
+                prevflag = flag;
+            end
         join
     endtask
 
@@ -928,7 +1018,7 @@ class wav_DFI_monitor extends uvm_monitor;
             monitor_write();
             event_emitter();
             event_listener();
-            // monitor_read();
+            monitor_read();
             monitor_status();
 /*add monitor function to the remaining interface signals*/    
         join    // FIXME: should we use it as join_none to prevent latencies in each of them?

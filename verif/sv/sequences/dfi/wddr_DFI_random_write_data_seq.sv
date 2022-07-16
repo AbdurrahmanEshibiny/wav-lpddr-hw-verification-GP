@@ -18,6 +18,8 @@ class wddr_DFI_random_write_data_seq extends wddr_base_seq;
         my_config.init = 1;
         for (int i = 0; i < 50; ++i) begin
             assert(my_config.randomize());
+            `uvm_info(get_name(), "The new configurations", UVM_MEDIUM);
+            my_config.print();
             random_configuration(my_config);
             wait_dfi_cycles(10);
 

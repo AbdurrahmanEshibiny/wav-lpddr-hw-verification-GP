@@ -406,12 +406,6 @@ task automatic set_freq_ratio(int freq_ratio);
         set_dfi_clken_pext_cfg (.wr_clken_cycles(4'h7), .rd_clken_cycles(4'hF), .ca_clken_cycles(4'h3));
     end
 
-
-
-
-
-
-
     // Case3: DDR - DP 4to1 - egress QDR2to1
     else begin
         set_txdq_sdr_fc_dly   (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .fc_dly  ('h0000_0000) );
@@ -528,7 +522,7 @@ task genina_t_ddr_sanity;
             //set_dfiwckctrl_wdp_cfg   (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
             set_dfirctrl_wdp_cfg   (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h2), .pre_gb_pipe_en(1'b1));
             set_dfi_rdgb_mode      (DFIRGB_1TO1);
-            set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h1),   .wck_oe_cycles(4'h1),   .ie_cycles(4'h2),       .re_cycles(4'h6), .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0)); // RE extended to 6 cycles to confirm independent control on RE.
+            set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h1),   .wck_oe_cycles(4'h1),   .ie_cycles(4'h2), .re_cycles(4'h6), .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0)); // RE extended to 6 cycles to confirm independent control on RE.
             set_dfi_clken_pext_cfg (.wr_clken_cycles(4'h7), .rd_clken_cycles(4'hF), .ca_clken_cycles(4'h3));
         end
 
@@ -566,7 +560,7 @@ task genina_t_ddr_sanity;
             //set_dfiwckctrl_wdp_cfg (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
             set_dfirctrl_wdp_cfg   (.gb_mode(DFIWGB_2TO2), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
             set_dfi_rdgb_mode      (DFIRGB_2TO2);
-            set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h3),   .wck_oe_cycles(4'h1),   .ie_cycles(4'h2),       .re_cycles(4'h2), .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0));
+            set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h3),   .wck_oe_cycles(4'h1),   .ie_cycles(4'h2), .re_cycles(4'h6) /*.re_cycles(4'h2)*/, .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0));
             set_dfi_clken_pext_cfg (.wr_clken_cycles(4'h7), .rd_clken_cycles(4'hF), .ca_clken_cycles(4'h3));
         end
 
@@ -606,7 +600,7 @@ task genina_t_ddr_sanity;
             //set_dfiwckctrl_wdp_cfg (.gb_mode(DFIWGB_4TO4), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
             set_dfirctrl_wdp_cfg   (.gb_mode(DFIWGB_4TO4), .gb_pipe_dly(2'h3), .pre_gb_pipe_en(1'b1));
             set_dfi_rdgb_mode      (DFIRGB_4TO4);
-            set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h2),   .wck_oe_cycles(4'h1),      .ie_cycles(4'h2),       .re_cycles(4'h2), .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0));
+            set_dfi_paden_pext_cfg (.wrd_oe_cycles(4'h2),   .wck_oe_cycles(4'h1),      .ie_cycles(4'h2), .re_cycles(4'h6) /*.re_cycles(4'h2)*/, .ren_cycles(4'h0), .wrd_en_cycles(4'h0), .rcs_cycles(4'h0));
             set_dfi_clken_pext_cfg (.wr_clken_cycles(4'h7), .rd_clken_cycles(4'hF), .ca_clken_cycles(4'h3));
         end 
     endcase
@@ -614,9 +608,9 @@ task genina_t_ddr_sanity;
     sw_csp_byte_sync();
     set_dfi_wdata_clr;
     set_dfi_rdata_clr;
-    set_dfibuf_ts_cfg(.en(1'b1), .rst(1'b0));
+    // set_dfibuf_ts_cfg(.en(1'b1), .rst(1'b0));
     wait_hclk (10);
-    set_dfibuf_ts_cfg(.en(1'b0), .rst(1'b1));
+    // set_dfibuf_ts_cfg(.en(1'b0), .rst(1'b1));
 
     //----------------------------------------------------------------------------------
     // Case4: DFI 1:4 mode - DDR - DP 4to1 - egress QDR2to1
@@ -635,15 +629,30 @@ function  address_t randomize_address(address_t address, address_t mask);
 endfunction //automatic
 
 
-class configurations extends uvm_object;
+class configurations extends uvm_sequence_item;
     rand dgb_t dgb;
     rand byte_sel_t byte_sel;
     rand fgb_t fgb;
     rand dwgb_t dwgb;
     rand wgb_t wgb;
     rand drgb_t drgb;
+    rand bit [6:0] egress_mode;
+    
+    `uvm_object_utils_begin(configurations)
+        `uvm_field_enum(dgb_t, dgb, UVM_DEFAULT)
+        `uvm_field_enum(byte_sel_t, byte_sel, UVM_DEFAULT)
+        `uvm_field_enum(fgb_t, fgb, UVM_DEFAULT)
+        `uvm_field_enum(dwgb_t, dwgb, UVM_DEFAULT)
+        `uvm_field_enum(wgb_t, wgb, UVM_DEFAULT)
+        `uvm_field_enum(drgb_t, drgb, UVM_DEFAULT)
+        `uvm_field_int(egress_mode, UVM_DEFAULT)
+    `uvm_object_utils_end  
 
-    bit init;
+    constraint egress_mode_cc {
+        $countones(egress_mode) < 2;
+    };
+
+    int init;
 
     function new(string name = "configurations");
         super.new(name);
@@ -651,7 +660,49 @@ class configurations extends uvm_object;
 endclass //configurations
 
 task automatic random_configuration(ref configurations my_config);
-    if (my_config.init) begin
+    if (my_config.init == 1) begin
+        set_txdq_sdr_fc_dly   (.byte_sel(ALL),    .dq ('hff), .rank_sel(RANK_ALL), .fc_dly  (0) );
+        wait_dfi_cycles(20);
+        `uvm_info(get_name(), "finished 1", UVM_MEDIUM);        
+        set_txdq_sdr_pipe_en  (.byte_sel(ALL),    .dq ('hff), .rank_sel(RANK_ALL), .pipe_en ('h7654_312f) );
+        wait_dfi_cycles(20);
+        `uvm_info(get_name(), "finished 2", UVM_MEDIUM);
+        set_txdq_sdr_x_sel    (.byte_sel(ALL),    .dq ('hff), .rank_sel(RANK_ALL), .x_sel   ('h7654_312f) );
+        wait_dfi_cycles(20);
+        `uvm_info(get_name(), "finished 3", UVM_MEDIUM);
+
+        set_txdqs_sdr_fc_dly  (.byte_sel(ALL),    .dqs('hff), .rank_sel(RANK_ALL), .fc_dly  (0) );
+        wait_dfi_cycles(20);
+        `uvm_info(get_name(), "finished 4", UVM_MEDIUM);
+        set_txdqs_sdr_pipe_en (.byte_sel(ALL),    .dqs('hff), .rank_sel(RANK_ALL), .pipe_en ('h7654_312f) );
+        wait_dfi_cycles(20);
+        `uvm_info(get_name(), "finished 5", UVM_MEDIUM);
+        set_txdqs_sdr_x_sel   (.byte_sel(ALL),    .dqs('hff), .rank_sel(RANK_ALL), .x_sel   ('h7654_312f) );
+        wait_dfi_cycles(20);
+        `uvm_info(get_name(), "finished 6", UVM_MEDIUM);
+        set_txdqs_sdr_x_sel   (.byte_sel(ALL),    .dqs('hff),  .rank_sel(RANK_ALL), .x_sel   ('h7654_312f) );// WCK
+        wait_dfi_cycles(20);
+        `uvm_info(get_name(), "finished 7", UVM_MEDIUM);
+        set_txdqs_sdr_x_sel   (.byte_sel(ALL),    .dqs('hff),  .rank_sel(RANK_ALL), .x_sel   ('h7654_312f) );// DQS/Parity
+        wait_dfi_cycles(20);
+        `uvm_info(get_name(), "finished 8", UVM_MEDIUM);
+
+        set_txdq_ddr_pipe_en  (.byte_sel(ALL),    .dq ('hff), .rank_sel(RANK_ALL), .pipe_en ('h7654_312f) );
+        wait_dfi_cycles(20);
+        `uvm_info(get_name(), "finished 9", UVM_MEDIUM);
+        set_txdq_ddr_x_sel    (.byte_sel(ALL),    .dq ('hff), .rank_sel(RANK_ALL), .x_sel   ('h7654_312f) );
+        wait_dfi_cycles(20);
+        `uvm_info(get_name(), "finished 10", UVM_MEDIUM);
+        // set_txdqs_ddr_pipe_en (.byte_sel(ALL),    .dqs('hff), .rank_sel(RANK_ALL), .pipe_en ('h7654_312f) );
+        set_txdqs_ddr_pipe_en (.byte_sel(ALL),    .dqs(8'd99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
+        wait_dfi_cycles(20);
+        `uvm_info(get_name(), "finished 11", UVM_MEDIUM);
+        // set_txdqs_ddr_x_sel   (.byte_sel(ALL),    .dqs('hff), .rank_sel(RANK_ALL), .x_sel   ('h7654_312f) );
+        set_txdqs_ddr_x_sel   (.byte_sel(ALL),    .dqs(99), .rank_sel(RANK_ALL), .x_sel   ('h0000_3210) );
+        wait_dfi_cycles(20);
+        `uvm_info(get_name(), "finished 12", UVM_MEDIUM);
+    end
+    else if (my_config.init == 2) begin
         set_txdq_sdr_fc_dly   (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .fc_dly  ('h0000_0000) );
         set_txdq_sdr_pipe_en  (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
         set_txdq_sdr_x_sel    (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .x_sel   ('h7654_3120) );
@@ -666,13 +717,13 @@ task automatic random_configuration(ref configurations my_config);
         set_txdq_ddr_x_sel    (.byte_sel(ALL),    .dq (99), .rank_sel(RANK_ALL), .x_sel   ('h0000_3210) );
         set_txdqs_ddr_pipe_en (.byte_sel(ALL),    .dqs(99), .rank_sel(RANK_ALL), .pipe_en ('h0000_0000) );
         set_txdqs_ddr_x_sel   (.byte_sel(ALL),    .dqs(99), .rank_sel(RANK_ALL), .x_sel   ('h0000_3210) );
-
-        //EGRESS_MODE 6:0 DEF=0x02 "Egress mode (one-hot) - 0:SDR, 1:DDR_2to1, 2:QDR_2to1, 3: ODR_2to1, 4:QDR_4to1, 5:ODR_4to1, 6:BSCAN";
-        set_dq_egress_mode    (.byte_sel(ALL),    .dq (99), .mode('h04) );
-        set_dqs_egress_mode   (.byte_sel(ALL),    .dqs(99), .mode('h04) );
     end
 
-    set_rx_gb             (.byte_sel(DQ_ALL),     .rgb_mode (my_config.dgb), .fgb_mode(my_config.fgb),  .wck_mode(1'b0)); // DQS Loop back
+    //EGRESS_MODE 6:0 DEF=0x02 "Egress mode (one-hot) - 0:SDR, 1:DDR_2to1, 2:QDR_2to1, 3: ODR_2to1, 4:QDR_4to1, 5:ODR_4to1, 6:BSCAN";
+    set_dq_egress_mode    (.byte_sel(ALL),    .dq ('hff), .mode(my_config.egress_mode) );
+    set_dqs_egress_mode   (.byte_sel(ALL),    .dqs('hff), .mode(my_config.egress_mode) );
+
+    set_rx_gb             (.byte_sel(DQ_ALL),     .rgb_mode (my_config.dgb), .fgb_mode(my_config.fgb),  .wck_mode(1'b1)); // DQS Loop back
     set_rx_gb             (.byte_sel(CA),         .rgb_mode (my_config.dgb), .fgb_mode(my_config.fgb),   .wck_mode(1'b1)); // CK  Loop back
     set_tx_gb             (.byte_sel(ALL),        .tgb_mode (my_config.dgb), .wgb_mode(my_config.wgb));
 

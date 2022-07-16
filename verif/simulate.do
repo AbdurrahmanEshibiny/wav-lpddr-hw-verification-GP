@@ -41,8 +41,8 @@ coverage exclude -srcfile ../rtl/wddr/ddr_dfi.sv -linerange 13308-13309 13329-13
 
 coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/REQ_RST_LO/u_demet_0 -r
 coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/REQ_RST_LO/u_demet_1 -r
-coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/ACK_RST_LO/u_demet_2 -r
-coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/ACK_RST_LO/u_demet_3 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/ACK_RST_HI/u_demet_2 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/ACK_RST_HI/u_demet_3 -r
 coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/u_demet_4 -r
 coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/u_demet_5 -r
 coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/u_demet_6 -r
@@ -103,5 +103,23 @@ coverage exclude -srcfile ../rtl/mcu_ibex/*
 coverage exclude -srcfile ../rtl/wddr/*ahb*
 coverage exclude -srcfile ../rtl/wddr/*csr*
 coverage exclude -srcfile ../rtl/wddr/*cmn*
+
+coverage exclude -srcfile ../rtl/mvp_pll/*
+coverage exclude -srcfile ../rtl/mvppll_ip/*
+coverage exclude -srcfile ../rtl/pll_shared/*
+coverage exclude -code abcdefst -scope /wddr_tb_top/u_phy_1x32/u_phy/u_ctrl_plane -r	
+coverage exclude -du *pll*
+
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_ctrlupd_intf/u_edge_det_0 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_ctrlupd_intf/u_edge_det_1 -r
+
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_lp_ctrl_intf/u_edge_det_0 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_lp_ctrl_intf/u_edge_det_1 -r
+
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_lp_data_intf/u_edge_det_0 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_lp_data_intf/u_edge_det_1 -r
+
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/u_edge_det_0 -r
+coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/u_edge_det_1 -r
 
 run -all

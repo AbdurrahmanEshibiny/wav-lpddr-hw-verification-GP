@@ -33,15 +33,13 @@ class wddr_DFI_write_2to1_seq extends wddr_base_seq;
             //enable ca dram bus
             trans.cke[0] = 2'b01;
             trans.cke[2] = 2'b01;
-            //wck initialized to static mood
-            // trans.wck_cs[0] = 2'b11;
-            // trans.wck_cs[1] = 2'b11;
-            // trans.wck_cs[2] = 2'b11;
-            // trans.wck_cs[3] = 2'b11;
-            trans.wck_cs = '{default: 2'b11};
-            trans.wrdata_cs = '{default: 2'b11};
-            trans.cs = '{default: 2'b11};
 
+            //wck initialized to static mood
+            trans.wck_cs[0] = 2'b11;
+            trans.wck_cs[1] = 2'b11;
+            trans.wck_cs[2] = 2'b11;
+            trans.wck_cs[3] = 2'b11;
+            
             trans.wck_en[0] = 1;
             trans.wck_en[1] = 0;
             trans.wck_en[2] = 0;
@@ -81,7 +79,7 @@ class wddr_DFI_write_2to1_seq extends wddr_base_seq;
         @(posedge vif.mp_drv.cb_drv);
             //WR16
             trans.address[0] = 14'b0000000_0000100;
-            trans.address[2] = 14'b0000000_1000000;
+            trans.address[2] = 14'b0000000_0000000;
             // toggle 
             trans.wck_toggle[0] = 2'b01;
             trans.wck_toggle[2] = 2'b01;
