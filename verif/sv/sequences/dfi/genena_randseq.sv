@@ -40,41 +40,50 @@
 `define RU(a) $ceil(``a``/`tCK)
 //`define abs(a) (``a`` > 0)? ``a``: -1*``a``
 
-typedef enum bit [0:6] {	
+typedef enum bit [6:0] {	
 	  _DES=7'b1111111, 
 	  _NOP=7'b0000000, 
-	  _PDE=7'b0000001,
+	  _PDE=7'b1000000,
 	  //_ACT1=7'b111xxxx, 
-	  _ACT1=7'b1110000,
+	  _ACT1=7'b0000111,
 	  //_ACT2=7'b110xxxx, 
-	  _ACT2=7'b1100000,
-	  _PRE=7'b0001111,
-	  _REF=7'b0001110,
+	  _ACT2=7'b0000011,
+	  _PRE=7'b1111000,
+	  _REF=7'b0111000,
 	  //_MWR=7'b010xxxx, 
-	  _MWR=7'b0100000,
+	  _MWR=7'b0000010,
 	  //_WR16=7'b011xxxx, 
-	  _WR16=7'b0110000,
+	  _WR16=7'b0000110,
 	  //WR32=7'b0010xxx,
 	  //_RD16=7'b100xxxx,
-	  _RD16=7'b1000000,
+	  _RD16=7'b0000001,
 	  //RD32=7'b101xxxx,
 	  _CAS_WR=7'b0011100,
-	  _CAS_RD=7'b0011010,
-	  _CAS_FS=7'b0011001,
-	  _CAS_OFF=7'b0011111,
+	  _CAS_RD=7'b0101100,
+	  _CAS_FS=7'b1001100,
+	  _CAS_OFF=7'b1111100,
 	  /*_MPC=7'b000011x, 
 	  _MRW1=7'b0001101,
 	  _MRW2=7'b000100x,*/
-	  _MPC=7'b0000110, 
-	  _MRW1=7'b0001101,
+	  _MPC=7'b0110000, 
+	  _MRW1=7'b1011000,
 	  _MRW2=7'b0001000,
-	  _MRR=7'b0001100, 
-	  _WFF=7'b0000011, 
-	  _RFF=7'b0000010
+	  _MRR=7'b0011000, 
+	  _WFF=7'b1100000, 
+	  _RFF=7'b0100000
 		} command;
 
 class seqitem;
-	  
+      int min_WR16_after_WR16orMWR_ANB = int'(`RU(`min_WR16_after_WR16orMWR_ANB));
+      int max_WR16orMWR_after_WR16orMWR_ANB = int'(`RU(`max_WR16orMWR_after_WR16orMWR_ANB));
+      int max_MWR_after_WR16orMWR_SB = int'(`RU(`max_MWR_after_WR16orMWR_SB));
+      int min_MWR_after_WR16orMWR_SB = int'(`RU(`min_MWR_after_WR16orMWR_SB));
+      
+      int min_RD16_after_RD16_ANB = int'(`RU(`min_RD16_after_RD16_ANB));
+      int max_RD16orWR16orMWR_after_RD16_ANB = int'(`RU(`max_RD16orWR16orMWR_after_RD16_ANB));
+      int min_WR16orMWR_after_RD16_ANB = int'(`RU(`min_WR16orMWR_after_RD16_ANB));
+      int min_RD16_after_WR16orMWR_ANB = int'(`RU(`min_RD16_after_WR16orMWR_ANB));
+
       int tAAD_tb= `tAAD;//between _ACT1 and _ACT2 for the same bank
       int tRRD_tb= `tRRD;//4//between _ACT2 commands for two different banks
       int tRC_tb= `tRC;//12//between _ACT2 commands for the same bank
@@ -105,20 +114,20 @@ class seqitem;
       rand int iterations;
       constraint const1{
         tr inside {_WR16,_MWR,_RD16};
-        wr_after_wr_ANB inside{[int'(`RU(`min_WR16_after_WR16orMWR_ANB)):int'(`RU(`max_WR16orMWR_after_WR16orMWR_ANB)+1)]};
-        wr_after_wr_ANB !=int'(`RU(`max_WR16orMWR_after_WR16orMWR_ANB));
-        if (`min_MWR_after_WR16orMWR_SB>`max_MWR_after_WR16orMWR_SB){
-          wr_after_wr_SB inside{[int'(`RU(`max_MWR_after_WR16orMWR_SB)):int'(`RU(`min_MWR_after_WR16orMWR_SB))+1]};
-          wr_after_wr_SB != int'(`RU(`min_MWR_after_WR16orMWR_SB));
+        wr_after_wr_ANB inside{[min_WR16_after_WR16orMWR_ANB:max_WR16orMWR_after_WR16orMWR_ANB+1]};
+        wr_after_wr_ANB !=max_WR16orMWR_after_WR16orMWR_ANB;
+        if (min_MWR_after_WR16orMWR_SB>max_MWR_after_WR16orMWR_SB){
+          wr_after_wr_SB inside{[max_MWR_after_WR16orMWR_SB:min_MWR_after_WR16orMWR_SB+1]};
+          wr_after_wr_SB != min_MWR_after_WR16orMWR_SB;
         }else {
-        wr_after_wr_SB inside{[int'(`RU(`min_MWR_after_WR16orMWR_SB)):int'(`RU(`max_MWR_after_WR16orMWR_SB))+1]};
-        wr_after_wr_SB != int'(`RU(`max_MWR_after_WR16orMWR_SB));
+        wr_after_wr_SB inside{[min_MWR_after_WR16orMWR_SB:max_MWR_after_WR16orMWR_SB+1]};
+        wr_after_wr_SB != max_MWR_after_WR16orMWR_SB;
         }
-        rd_after_rd inside{[int'(`RU(`min_RD16_after_RD16_ANB)):int'(`RU(`max_RD16orWR16orMWR_after_RD16_ANB))+1]};
-        rd_after_rd != int'(`RU(`max_RD16orWR16orMWR_after_RD16_ANB));
-        wr_after_rd inside {[int'(`RU(`min_WR16orMWR_after_RD16_ANB)):int'(`RU(`max_RD16orWR16orMWR_after_RD16_ANB))+1]};
-        wr_after_rd != int'(`RU(`max_RD16orWR16orMWR_after_RD16_ANB));
-        rd_after_wr inside{[int'(`RU(`min_RD16_after_WR16orMWR_ANB)):int'(`RU(`min_RD16_after_WR16orMWR_ANB))+1]};
+        rd_after_rd inside{[min_RD16_after_RD16_ANB:max_RD16orWR16orMWR_after_RD16_ANB+1]};
+        rd_after_rd != max_RD16orWR16orMWR_after_RD16_ANB;
+        wr_after_rd inside {[min_WR16orMWR_after_RD16_ANB:max_RD16orWR16orMWR_after_RD16_ANB+1]};
+        wr_after_rd != max_RD16orWR16orMWR_after_RD16_ANB;
+        rd_after_wr inside{[min_RD16_after_WR16orMWR_ANB:min_RD16_after_WR16orMWR_ANB+1]};
         iterations inside {[1:2]};
       }
 	  
