@@ -71,9 +71,9 @@ class wddr_subscriber extends uvm_component;
 													item != CAS_OFF &&
 													item != CAS_FS &&
 													item != WFF &&
-													item != RFF);
+													item != RFF &&
+													item != SRX);
 
-			//TODO VR 253?? 
 			bins VR256 = (ACT2[=1] => PRE);
 			bins VR257 = (ACT2[=1] => ACT2);
 
