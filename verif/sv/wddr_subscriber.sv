@@ -581,10 +581,10 @@ class wddr_subscriber extends uvm_component;
 			// end
 
 			//VR259_ab
-			if( lpddr5_trans.CA == PRE && lpddr5_trans.ALL_BANKS == 1) begin
-				lpddr5_cover_reqs = VR259_ab;
-				lpddr5_cg.sample();
-			end
+			// if( lpddr5_trans.CA == PRE && lpddr5_trans.ALL_BANKS == 1) begin
+			// 	lpddr5_cover_reqs = VR259_ab;
+			// 	lpddr5_cg.sample();
+			// end
 
 			//VR259_pb
 			if( lpddr5_trans.CA == PRE && lpddr5_trans.ALL_BANKS == 0) begin
