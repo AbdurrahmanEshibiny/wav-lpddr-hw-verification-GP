@@ -22,7 +22,7 @@ class wav_DFI_transfer extends uvm_sequence_item;
     function new(string name="wav_DFI_transfer"); 
         super.new(name); 
         tr_type = DFI;
-        is_rsp_required = 1;
+        is_rsp_required = 0;
     endfunction
 
     virtual function void reset();

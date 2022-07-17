@@ -28,7 +28,7 @@ class wddr_DFI_lp_ctrl_seq extends wddr_base_seq;
         `uvm_info(get_type_name(), "--------PRINTING THE REQ ITEM--------", UVM_DEBUG); 
         trans.print();
         EventHandler::wait_for_transaction(EventHandler::lp_ctrl);
-        get_response(rsp);  
+        // get_response(rsp);  
         `uvm_info(get_type_name(), "done sequence", UVM_LOW);
     endtask
 

@@ -1,6 +1,7 @@
 REM set %1
 set instances=
 set testcases=testcases.txt
+set testcases_with_flags=testcases_with_flags.txt
 
 for %%x in (%*) do (
     if "%%x" == "-short" (set instances=-instance /wddr_tb_top/u_phy_1x32 -du work.wddr_pkg) 
@@ -13,9 +14,11 @@ CALL compile.bat -coverage
 mkdir coverage_output
 REM for /F "tokens=*" %%A in (%testcases%) do vsim -coverage +UVM_TESTNAME=%%A -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do simulate.do
 for /F "tokens=*" %%A in (%testcases%) do vsim -coverage +UVM_TESTNAME=%%A -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/%%A.ucdb %instances%" -do simulate.do
+for /F "tokens=*" %%A in (%testcases_with_flags%) do vsim -coverage +UVM_TESTNAME=%%A -voptargs="+cover=becfst" -c +gb=2 +freqRatio=2 -novopt work.wddr_tb_top -suppress 3839 -suppress 12023 -do "coverage save -onexit coverage_output/%%A.ucdb %instances%" -do simulate.do
 REM commented out this line, for /F "tokens=*" %%A in (%testcases%) do vsim -viewcov coverage_output/%%A.ucdb -c -do "coverage report -html coverage_output/%%A.ucdb -details=abcdefgst -source -htmldir coverage_output/%%A -showcvggoalpcnt; exit"
 
 (for /F "tokens=*" %%A in (%testcases%) do @echo coverage_output/%%A.ucdb) > coverage_output/ucdb_files.txt
+(for /F "tokens=*" %%A in (%testcases_with_flags%) do @echo coverage_output/%%A.ucdb) >> coverage_output/ucdb_files.txt
 vsim -c -do "vcover merge -inputs coverage_output/ucdb_files.txt -out coverage_output/final.ucdb; exit"
 vsim -viewcov coverage_output/final.ucdb -c -do "coverage report -html coverage_output/final.ucdb -details=abcdefgst -htmldir coverage_output/final -showcvggoalpcnt; exit"
 

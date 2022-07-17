@@ -32,6 +32,7 @@ coverage exclude -du *cmn*
 coverage exclude -du *jtag*
 coverage exclude -du *ahb*
 coverage exclude -du *freeze*
+coverage exclude -du *clk*
 coverage exclude -du ddr_demet_s
 coverage exclude -du ddr_edge_det
 
@@ -123,3 +124,4 @@ coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_
 coverage exclude -scope /wddr_tb_top/u_phy_1x32/u_phy/u_dfi/u_dfi_ctrl/u_status_intf/u_edge_det_1 -r
 
 run -all
+exit
