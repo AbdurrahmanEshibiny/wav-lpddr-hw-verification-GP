@@ -1,0 +1,94 @@
+var g_data = {
+g1627976380_0590302524_0:[
+{name:'lpddr5_cg',f:1,type:1,id:61244,tb:'35',h:'5',hp:'14.28%',cov:['14.54%','R'],g:'100.00%',gp:['14.54%','R']},
+{name:'\\/wddr_pkg::wddr_subscriber::lpddr5_cg ',f:1,type:2,id:61247,tb:'35',h:'5',hp:'14.28%',cov:['14.54%','R'],g:'100.00%',gp:['14.54%','R'],cvg:'lpddr5_cg'},
+{name:'basic_DFI_cg',f:1,type:1,id:61250,tb:'8',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],opts:[['merge_instance','true']]},
+{name:'phymstr_cg',f:1,type:1,id:61252,tb:'10',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],opts:[['merge_instance','true']]},
+{name:'update_cg',f:1,type:1,id:61256,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],opts:[['merge_instance','true']]},
+{name:'lp_cg',f:1,type:1,id:61258,tb:'8',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],opts:[['merge_instance','true']]},
+{name:'DFI_wck_cg',f:1,type:1,id:61261,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],opts:[['merge_instance','true']]},
+{name:'advanced_control_cg',f:1,type:1,id:61263,tb:'40',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R']},
+{name:'\\/wddr_pkg::wddr_subscriber::advanced_control_cg ',f:1,type:2,id:61266,tb:'40',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],cvg:'advanced_control_cg'}
+],
+c61244:{name:'lpddr5_cg',type:1,pHash:'1627976380_0590302524_0',pPath:'work.wddr_pkg::wddr_subscriber',totals:[35,5,'14.28%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'COMMANDS_COVER',f:1,type:4,id:61245,tb:'17',h:'4',hp:'23.52%',cov:['23.52%','R'],g:'100.00%',gp:['23.52%','R']},
+{name:'COVER_REQUIREMENTS',f:1,type:4,id:61246,tb:'18',h:'1',hp:'5.55%',cov:['5.55%','R'],g:'100.00%',gp:['5.55%','R']}
+]},
+c61247:{name:'\\/wddr_pkg::wddr_subscriber::lpddr5_cg ',type:2,pHash:'1627976380_0590302524_0',pPath:'work.wddr_pkg::wddr_subscriber',totals:[35,5,'14.28%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'COMMANDS_COVER',f:1,type:4,id:61248,tb:'17',h:'4',hp:'23.52%',cov:['23.52%','R'],g:'100.00%',gp:['23.52%','R'],hasb:1},
+{name:'COVER_REQUIREMENTS',f:1,type:4,id:61249,tb:'18',h:'1',hp:'5.55%',cov:['5.55%','R'],g:'100.00%',gp:['5.55%','R'],hasb:1}
+]},
+c61250:{name:'basic_DFI_cg',type:1,pHash:'1627976380_0590302524_0',pPath:'work.wddr_pkg::wddr_subscriber',totals:[8,0,'0.00%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'basic_cp',f:1,type:4,id:61251,tb:'8',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1}
+]},
+c61252:{name:'phymstr_cg',type:1,pHash:'1627976380_0590302524_0',pPath:'work.wddr_pkg::wddr_subscriber',totals:[10,0,'0.00%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'phymstr_type_cp',f:1,type:4,id:61253,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1},
+{name:'phymstr_cs_state_cp',f:1,type:4,id:61254,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1},
+{name:'phymstr_state_sel_cp',f:1,type:4,id:61255,tb:'2',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1}
+]},
+c61256:{name:'update_cg',type:1,pHash:'1627976380_0590302524_0',pPath:'work.wddr_pkg::wddr_subscriber',totals:[4,0,'0.00%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'phyupd_type_cp',f:1,type:4,id:61257,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1}
+]},
+c61258:{name:'lp_cg',type:1,pHash:'1627976380_0590302524_0',pPath:'work.wddr_pkg::wddr_subscriber',totals:[8,0,'0.00%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'lp_ctrl_wakeup_cp',f:1,type:4,id:61259,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1},
+{name:'lp_data_wakeup_cp',f:1,type:4,id:61260,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1}
+]},
+c61261:{name:'DFI_wck_cg',type:1,pHash:'1627976380_0590302524_0',pPath:'work.wddr_pkg::wddr_subscriber',totals:[4,0,'0.00%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'wck_modes_cp',f:1,type:4,id:61262,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1}
+]},
+c61263:{name:'advanced_control_cg',type:1,pHash:'1627976380_0590302524_0',pPath:'work.wddr_pkg::wddr_subscriber',totals:[40,0,'0.00%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'lp_ctrl_and_data_cp',f:1,type:4,id:61264,tb:'1',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R']},
+{name:'transitions_cp',f:1,type:4,id:61265,tb:'39',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R']}
+]},
+c61266:{name:'\\/wddr_pkg::wddr_subscriber::advanced_control_cg ',type:2,pHash:'1627976380_0590302524_0',pPath:'work.wddr_pkg::wddr_subscriber',totals:[40,0,'0.00%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'lp_ctrl_and_data_cp',f:1,type:4,id:61267,tb:'1',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1},
+{name:'transitions_cp',f:1,type:4,id:61268,tb:'39',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1}
+]},
+g0536127018_4221842686_0:[
+{name:'lpddr5_cg',f:1,type:1,id:206853,tb:'35',h:'5',hp:'14.28%',cov:['14.54%','R'],g:'100.00%',gp:['14.54%','R']},
+{name:'\\/wddr_pkg::wddr_subscriber::lpddr5_cg ',f:1,type:2,id:206856,tb:'35',h:'5',hp:'14.28%',cov:['14.54%','R'],g:'100.00%',gp:['14.54%','R'],cvg:'lpddr5_cg'},
+{name:'basic_DFI_cg',f:1,type:1,id:206859,tb:'8',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],opts:[['merge_instance','auto(true)']]},
+{name:'phymstr_cg',f:1,type:1,id:206861,tb:'10',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],opts:[['merge_instance','auto(true)']]},
+{name:'update_cg',f:1,type:1,id:206865,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],opts:[['merge_instance','auto(true)']]},
+{name:'lp_cg',f:1,type:1,id:206867,tb:'8',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],opts:[['merge_instance','auto(true)']]},
+{name:'DFI_wck_cg',f:1,type:1,id:206870,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],opts:[['merge_instance','auto(true)']]},
+{name:'advanced_control_cg',f:1,type:1,id:206872,tb:'40',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R']},
+{name:'\\/wddr_pkg::wddr_subscriber::advanced_control_cg ',f:1,type:2,id:206875,tb:'40',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],cvg:'advanced_control_cg'}
+],
+c206853:{name:'lpddr5_cg',type:1,pHash:'0536127018_4221842686_0',pPath:'/\wddr_pkg /wddr_subscriber',totals:[35,5,'14.28%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'COMMANDS_COVER',f:1,type:4,id:206854,tb:'17',h:'4',hp:'23.52%',cov:['23.52%','R'],g:'100.00%',gp:['23.52%','R']},
+{name:'COVER_REQUIREMENTS',f:1,type:4,id:206855,tb:'18',h:'1',hp:'5.55%',cov:['5.55%','R'],g:'100.00%',gp:['5.55%','R']}
+]},
+c206856:{name:'\\/wddr_pkg::wddr_subscriber::lpddr5_cg ',type:2,pHash:'0536127018_4221842686_0',pPath:'/\wddr_pkg /wddr_subscriber',totals:[35,5,'14.28%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'COMMANDS_COVER',f:1,type:4,id:206857,tb:'17',h:'4',hp:'23.52%',cov:['23.52%','R'],g:'100.00%',gp:['23.52%','R'],hasb:1},
+{name:'COVER_REQUIREMENTS',f:1,type:4,id:206858,tb:'18',h:'1',hp:'5.55%',cov:['5.55%','R'],g:'100.00%',gp:['5.55%','R'],hasb:1}
+]},
+c206859:{name:'basic_DFI_cg',type:1,pHash:'0536127018_4221842686_0',pPath:'/\wddr_pkg /wddr_subscriber',totals:[8,0,'0.00%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'basic_cp',f:1,type:4,id:206860,tb:'8',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1}
+]},
+c206861:{name:'phymstr_cg',type:1,pHash:'0536127018_4221842686_0',pPath:'/\wddr_pkg /wddr_subscriber',totals:[10,0,'0.00%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'phymstr_type_cp',f:1,type:4,id:206862,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1},
+{name:'phymstr_cs_state_cp',f:1,type:4,id:206863,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1},
+{name:'phymstr_state_sel_cp',f:1,type:4,id:206864,tb:'2',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1}
+]},
+c206865:{name:'update_cg',type:1,pHash:'0536127018_4221842686_0',pPath:'/\wddr_pkg /wddr_subscriber',totals:[4,0,'0.00%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'phyupd_type_cp',f:1,type:4,id:206866,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1}
+]},
+c206867:{name:'lp_cg',type:1,pHash:'0536127018_4221842686_0',pPath:'/\wddr_pkg /wddr_subscriber',totals:[8,0,'0.00%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'lp_ctrl_wakeup_cp',f:1,type:4,id:206868,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1},
+{name:'lp_data_wakeup_cp',f:1,type:4,id:206869,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1}
+]},
+c206870:{name:'DFI_wck_cg',type:1,pHash:'0536127018_4221842686_0',pPath:'/\wddr_pkg /wddr_subscriber',totals:[4,0,'0.00%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'wck_modes_cp',f:1,type:4,id:206871,tb:'4',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1}
+]},
+c206872:{name:'advanced_control_cg',type:1,pHash:'0536127018_4221842686_0',pPath:'/\wddr_pkg /wddr_subscriber',totals:[40,0,'0.00%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'lp_ctrl_and_data_cp',f:1,type:4,id:206873,tb:'1',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R']},
+{name:'transitions_cp',f:1,type:4,id:206874,tb:'39',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R']}
+]},
+c206875:{name:'\\/wddr_pkg::wddr_subscriber::advanced_control_cg ',type:2,pHash:'0536127018_4221842686_0',pPath:'/\wddr_pkg /wddr_subscriber',totals:[40,0,'0.00%','R',0,0,'0.00%','R'],cvpcrx:[
+{name:'lp_ctrl_and_data_cp',f:1,type:4,id:206876,tb:'1',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1},
+{name:'transitions_cp',f:1,type:4,id:206877,tb:'39',h:'0',hp:'0.00%',cov:['0.00%','R'],g:'100.00%',gp:['0.00%','R'],hasb:1}
+]},
+dummyEnd:0
+};
+processCovergroupsData(g_data);

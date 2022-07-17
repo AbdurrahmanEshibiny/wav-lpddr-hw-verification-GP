@@ -1,0 +1,23 @@
+# vcover merge -inputs coverage_output/ucdb_files_wavious_include.txt -out coverage_output/final_wavious_include.ucdb
+# Model Technology ModelSim SE-64 vcover 10.5 Coverage Utility 2016.02 Feb 13 2016
+# Start time: 01:40:30 on Jul 18,2022
+# vcover merge -inputs coverage_output/ucdb_files_wavious_include.txt -out coverage_output/final_wavious_include.ucdb 
+# ** Error: (vcover-19017) Could not open command file 'coverage_output/ucdb_files_wavious_include.txt' for reading.
+#        vcover merge <merge_options> <outfile> <input1> [<input2>...<inputn>]
+#        <merge_options> = [-and] [-append] [-ignoredusig] [-inputs <cmdfile>]
+#                    [-install <path>] [-log <file>] [-notagging] [-strip <n>]
+#                    [(-instance <path> | -du <du_fullname>) [-recursive]]
+#                    [-master <ucdb_file_name>] [-out <ucdb_file_name>] [-outputstore <output_coverstore_path>]
+#                    [-quiet] [-trend] [-combine|-combinemax|-combinemin|-testassociated|-totals]
+#                    [-backup] [-checkinputs] [-date <YYYYMMDDHHMMSS>]
+#                    [-pathseparator (-=;~!@%^&+|:./)]
+#                    [-ucdbchecks] [-verbose] [-version]
+#                    [-level <1-4>]  [-silent] [-preservetestcounts] [-forceall] [-ucdb62] [-mergebytokenno]
+#        <input>          = [<ucdbfile>|<coverstore[:<testname>[,<testname>]*]]
+#        <du_fullname>    = [library.]primary[(secondary)]
+#        <common options> = [(-suppress|-note|-warning|-error|-fatal) <msgNumber>[,<msgNumber>...]] 
+#                           [-stats[=[+-]all,none,time,cmd,msg,perf,verbose,list,kb]] [-[w]prof=<filename>] [-proftick=<integer>]
+#                           [-lockingnone|-lockingfull] [-timeout <n>]
+# End time: 01:40:30 on Jul 18,2022, Elapsed time: 0:00:00
+# Errors: 1, Warnings: 0
+#  exit

@@ -1,0 +1,6 @@
+-html
+coverage_output/final.ucdb
+-details=abcdefgst
+-htmldir
+coverage_output/final
+-showcvggoalpcnt

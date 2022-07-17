@@ -1,0 +1,5 @@
+coverage_output/wddr_dt_ddr_test.ucdb
+coverage_output/wddr_dt_ddr_spice_test.ucdb
+coverage_output/wddr_dt_dfistatus_test.ucdb
+coverage_output/wddr_dt_mcu_test.ucdb
+coverage_output/wddr_dt_pll_test.ucdb
