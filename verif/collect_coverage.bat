@@ -14,7 +14,7 @@ CALL compile.bat -coverage
 mkdir coverage_output
 REM for /F "tokens=*" %%A in (%testcases%) do vsim -coverage +UVM_TESTNAME=%%A -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do simulate.do
 for /F "tokens=*" %%A in (%testcases%) do vsim -coverage +UVM_TESTNAME=%%A -voptargs="+cover=becfst" -c work.wddr_tb_top -novopt -do "coverage save -onexit coverage_output/%%A.ucdb %instances%" -do simulate.do
-for /F "tokens=*" %%A in (%testcases_with_flags%) do vsim -coverage +UVM_TESTNAME=%%A -voptargs="+cover=becfst +acc -O0" -c +gb=2 +freqRatio=2 work.wddr_tb_top -suppress 3839 -suppress 12023 -do "coverage save -onexit coverage_output/%%A.ucdb %instances%" -do simulate.do
+for /F "tokens=*" %%A in (%testcases_with_flags%) do vsim -coverage +UVM_TESTNAME=%%A -voptargs="+cover=becfst" -c +gb=2 +freqRatio=2 -novopt work.wddr_tb_top -suppress 3839 -suppress 12023 -do "coverage save -onexit coverage_output/%%A.ucdb %instances%" -do simulate.do
 REM commented out this line, for /F "tokens=*" %%A in (%testcases%) do vsim -viewcov coverage_output/%%A.ucdb -c -do "coverage report -html coverage_output/%%A.ucdb -details=abcdefgst -source -htmldir coverage_output/%%A -showcvggoalpcnt; exit"
 
 (for /F "tokens=*" %%A in (%testcases%) do @echo coverage_output/%%A.ucdb) > coverage_output/ucdb_files.txt
