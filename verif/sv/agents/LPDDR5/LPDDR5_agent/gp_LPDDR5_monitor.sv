@@ -242,7 +242,6 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 	// endtask
 
 	task automatic ziad_checks();
-		BA = {ch0_vif.ca0,ch0_vif.ca1,ch0_vif.ca2,ch0_vif.ca3};
 		case  (next_CA)
 			ACT1:begin
               if(!act1_key.try_get(1)) `uvm_error("gp_lpddr5_monitor", "Failed to Recieve ACT1 command") //$error("Failed to Recieve ACT1 command");
@@ -345,6 +344,18 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 								end
                               else `uvm_error("gp_lpddr5_monitor", "Failed to Recieve WR16") //$error("Failed to Recieve WR16");
 							end
+							MRR:begin
+								if (($time-time_of_last_wr_or_rd<=`max_WR16orMWR_after_MRR_ANB)&&($time-time_of_last_wr_or_rd>=`min_WR16orMWR_after_MRR_ANB))begin
+									prev_CA=WR16;
+									prev_BA=BA;
+                                    time_of_last_wr_or_rd=$time;
+                                    type_last_wr_or_rd=WR16;
+                                    BA_of_last_wr_or_rd=BA;
+									we_have_WR_before=1;
+                                  //$display("at time=%0t,i'am in WR16",$time);
+								end
+                              else `uvm_error("gp_lpddr5_monitor", "Failed to Recieve WR16")//$error("Failed to Recieve WR16");
+							end
 							PRE:begin
                               if (prev_BA==BA) `uvm_error("gp_lpddr5_monitor", "Failed to Recieve WR16") //$error("Failed to Recieve WR16");
 								else begin
@@ -381,6 +392,18 @@ class gp_LPDDR5_monitor extends uvm_monitor;
                                         end
                                         else `uvm_error("gp_lpddr5_monitor", "Failed to Recieve WR16") //$error("Failed to Recieve WR16");
                                     end
+									MRR:begin
+										if (($time-time_of_last_wr_or_rd<=`max_WR16orMWR_after_MRR_ANB)&&($time-time_of_last_wr_or_rd>=`min_WR16orMWR_after_MRR_ANB))begin
+											prev_CA=WR16;
+											prev_BA=BA;
+											time_of_last_wr_or_rd=$time;
+											type_last_wr_or_rd=WR16;
+											BA_of_last_wr_or_rd=BA;
+											we_have_WR_before=1;
+										//$display("at time=%0t,i'am in WR16",$time);
+										end
+									    else `uvm_error("gp_lpddr5_monitor", "Failed to Recieve WR16")//$error("Failed to Recieve WR16");
+									end
                                     RD16:begin
                                         if (($time-time_of_last_wr_or_rd<=`max_WR16_after_RD16_ANB)&&($time-time_of_last_wr_or_rd>=`min_WR16_after_RD16_ANB))begin
                                                 prev_CA=WR16;
@@ -456,6 +479,18 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 									  `uvm_error("gp_lpddr5_monitor", "Failed to Recieve MWR") //$error("Failed to Recieve MWR");
 								  end
 							end
+							MRR:begin
+								if (($time-time_of_last_wr_or_rd<=`max_WR16orMWR_after_MRR_ANB)&&($time-time_of_last_wr_or_rd>=`min_WR16orMWR_after_MRR_ANB))begin
+									prev_CA=MWR;
+									prev_BA=BA;
+                                    time_of_last_wr_or_rd=$time;
+                                    type_last_wr_or_rd=MWR;
+                                    BA_of_last_wr_or_rd=BA;
+									we_have_WR_before=1;
+                                  //$display("at time=%0t,i'am in WR16",$time);
+								end
+                                else `uvm_error("gp_lpddr5_monitor", "Failed to Recieve MWR") //$error("Failed to Recieve WR16");
+							end
 							RD16:begin
 								if (($time-time_of_last_wr_or_rd<=`max_MWR_after_RD16_ANB)&&($time-time_of_last_wr_or_rd>=`min_MWR_after_RD16_ANB))begin
 									prev_CA=MWR;
@@ -500,6 +535,18 @@ class gp_LPDDR5_monitor extends uvm_monitor;
                                         end
                                         else `uvm_error("gp_lpddr5_monitor", "Failed to Recieve MWR") //$error("Failed to Recieve MWR");
                                     end
+									MRR:begin
+										if (($time-time_of_last_wr_or_rd<=`max_WR16orMWR_after_MRR_ANB)&&($time-time_of_last_wr_or_rd>=`min_WR16orMWR_after_MRR_ANB))begin
+											prev_CA=MWR;
+											prev_BA=BA;
+											time_of_last_wr_or_rd=$time;
+											type_last_wr_or_rd=MWR;
+											BA_of_last_wr_or_rd=BA;
+											we_have_WR_before=1;
+										//$display("at time=%0t,i'am in WR16",$time);
+										end
+										else `uvm_error("gp_lpddr5_monitor", "Failed to Recieve MWR") //$error("Failed to Recieve WR16");
+									end
                                     RD16:begin
                                         if (($time-time_of_last_wr_or_rd<=`max_MWR_after_RD16_ANB)&&($time-time_of_last_wr_or_rd>=`min_MWR_after_RD16_ANB))begin
                                             prev_CA=MWR;
@@ -594,6 +641,30 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 				 `uvm_error("gp_lpddr5_monitor", "Failed to Recieve RD16") //$error("Failed to Recieve RD16");
 			  end
 			end
+			MRR:begin
+				case (prev_CA)
+				MRR:begin
+					if (($time-time_of_last_wr_or_rd>=`min_MRR_after_MRR_ANB) && ($time-time_of_last_wr_or_rd>=`min_MRR_after_MRR_ANB)) begin
+						    prev_CA=MRR;
+							prev_BA=BA;
+							time_of_last_wr_or_rd=$time;
+							type_last_wr_or_rd=MRR;
+							BA_of_last_wr_or_rd=BA;
+					end
+					else `uvm_error("gp_lpddr5_monitor", "Failed to Recieve MRR") //$error("Failed to Recieve MRR");
+				end
+				CAS_RD:begin
+					if (($time-time_of_last_cas_rd)==`tcas_rd) begin
+						    prev_CA=MRR;
+							prev_BA=BA;
+							time_of_last_wr_or_rd=$time;
+							type_last_wr_or_rd=MRR;
+							BA_of_last_wr_or_rd=BA;
+					end
+					else `uvm_error("gp_lpddr5_monitor", "Failed to Recieve MRR") //$error("Failed to Recieve MRR");
+				end
+				endcase
+			end
 			PRE:begin
               if(($time-act2_time[BA]>=$ceil(`tRAS/`tCK)*`tCK) && (bank_state[BA]==BANK_ACTIVE)) begin
 					case(type_last_wr_or_rd)
@@ -627,6 +698,71 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 					endcase
 				end
 				else `uvm_error("gp_lpddr5_monitor", "Failed to Recieve  PRE") //$error("Failed to Recieve PRE");
+			end
+			RD16:begin
+              if ((($time-act2_time[BA])>=$ceil(`tRCD/`tCK)*`tCK) && (bank_state[BA]==BANK_ACTIVE)) begin
+				if (prev_CA!=CAS_RD) begin
+						case (prev_CA) 
+							RD16:begin
+								if (($time-time_of_last_wr_or_rd<=`max_RD16_after_RD16_ANB)&&($time-time_of_last_wr_or_rd>=`min_RD16_after_RD16_ANB))begin
+									prev_CA=RD16;
+									prev_BA=BA;
+                                    time_of_last_wr_or_rd=$time;
+                                    type_last_wr_or_rd=RD16;
+                                    BA_of_last_wr_or_rd=BA;
+								end
+                              else `uvm_error("gp_lpddr5_monitor", "Failed to Recieve RD16") //$error("Failed to Recieve RD16");
+							end
+							PRE:begin
+                              if (prev_BA==BA) `uvm_error("gp_lpddr5_monitor", "Failed to Recieve RD16") //$error("Failed to Recieve RD16");
+								else begin
+									prev_CA=RD16;
+									prev_BA=BA;
+									type_last_wr_or_rd=RD16;
+                                    BA_of_last_wr_or_rd=BA;
+								end
+							end
+                            ACT2:begin
+                                case(type_last_wr_or_rd)
+                                RD16:begin
+                                    if (($time-time_of_last_wr_or_rd<=`max_RD16_after_RD16_ANB)&&($time-time_of_last_wr_or_rd>=`min_RD16_after_RD16_ANB))begin
+                                        prev_CA=RD16;
+                                        prev_BA=BA;
+                                        time_of_last_wr_or_rd=$time;
+                                        type_last_wr_or_rd=RD16;
+                                        BA_of_last_wr_or_rd=BA;
+                                    end
+                                    else `uvm_error("gp_lpddr5_monitor", "Failed to Recieve RD16") //$error("Failed to Recieve RD16");
+                                end
+                                endcase
+                            end
+                              default: `uvm_error("gp_lpddr5_monitor", "Failed to Recieve RD16") //$error("Failed to Recieve RD16");
+						endcase
+					end
+					else if (prev_CA==CAS_RD && (($time-time_of_last_cas_rd)==`tcas_rd)) begin
+						if (we_have_WR_before && ($time-time_of_last_wr_or_rd>=`min_RD16_after_WR16_ANB) && ($time-time_of_last_wr_or_rd>=`min_RD16_after_MWR_ANB) )
+						begin
+							prev_CA=RD16;
+							prev_BA=BA;
+							time_of_last_wr_or_rd=$time;
+							type_last_wr_or_rd=RD16;
+							BA_of_last_wr_or_rd=BA;
+						end
+						else begin
+							prev_CA=RD16;
+							prev_BA=BA;
+							time_of_last_wr_or_rd=$time;
+							type_last_wr_or_rd=RD16;
+							BA_of_last_wr_or_rd=BA;
+						end
+					end
+					else begin
+						`uvm_error("gp_lpddr5_monitor", "Failed to Recieve RD16") // $error("Failed to Recieve RD16");
+					end
+              end
+              else begin
+				 `uvm_error("gp_lpddr5_monitor", "Failed to Recieve RD16") //$error("Failed to Recieve RD16");
+			  end
 			end
           default: begin
               //do nothing this means it's another command that out of the scope of this task
@@ -751,7 +887,7 @@ class gp_LPDDR5_monitor extends uvm_monitor;
 						PRE: begin
 							bank_state[BA] = PRECHARGING;
 							assert(!$isunknown(ch0_vif.ca4) && !$isunknown(ch0_vif.ca4)) begin
-								`uvm_error("gp_LPDDR5_monitor", "Invalid signals are supposed to be valid")
+								`uvm_warning("gp_LPDDR5_monitor", "Invalid signals are supposed to be valid")
 							end 
 						end
 						PDE:begin

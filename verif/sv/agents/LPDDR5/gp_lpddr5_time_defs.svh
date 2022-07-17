@@ -19,7 +19,6 @@ int place_holder = 1;
 `define BLn 16
 `define BLn_min 8
 `define nWR 5
-// FIXME
 `define tRBTP (`max(7.5ns,4*`tCK)-4*`tCK)
 `define tWR (`max(34ns, 3*`tCK))
 // tWCKDQO is assumed to be 0 because it is DRAM dependant and we assumed an ideal
@@ -29,7 +28,7 @@ int place_holder = 1;
 `define tRPpb (`max(18ns, 2*`tCK))
 `define tWTR_L (`max(12ns, 4*`tCK))
 `define tPPD 2
-
+`define tMRR 2*`tCK
 `define tWTR (`max(12ns,4*`tCK))
 `define n 4//in case 2:1 & n=8 in case 4:1
 `define BL_nmax `BL/`n
@@ -56,7 +55,6 @@ int place_holder = 1;
 `define tWCKPST (2.5*(`tCK/4))
 
 //Ziad's timing params
-/// defines
 `define max_WR16_after_WR16_ANB (`WL+`BL_nmax+$floor(`tWCKPST/`tCK))*`tCK//(4+4+0)=8*tCK
 `define min_WR16_after_WR16_ANB `BL_nmax*`tCK//4*tCK
 `define max_MWR_after_WR16_SB /*20*`tCK*/(`WL+`BL_nmax+$floor(`tWCKPST/`tCK))*`tCK//(4+4+0)=8*tCK
@@ -79,3 +77,12 @@ int place_holder = 1;
 `define min_MWR_after_RD16_ANB (`RL+`BL_nmax+$ceil(`tWCKDQO/`tCK)-`WL)*`tCK//(6+4+0-4)*tCK=6*TCK
 `define max_RD16_after_RD16_ANB (`RL+`BL_nmax+$floor(`tWCKPST/`tCK))*`tCK//(6+4+0)*tCK=10*tCK
 `define min_RD16_after_RD16_ANB `BL_nmax*`tCK//4*tCK
+///////////////////////
+//current command is MRR
+`define max_WR16orMWR_after_MRR_ANB (`RL+`BL_nmax+$floor(`tWCKPST/`tCK))*`tCK//(6+4+0)*tCK=10*tCK
+`define min_WR16orMWR_after_MRR_ANB (`RL+`BL_nmax+$ceil(`tWCKDQO/`tCK)-`WL+2)*`tCK//(6+4+-4+2)*tCK=8*tCK
+`define min_RD16_after_MRR_ANB (`RL+`BL_nmax+$floor(`tWCKPST/`tCK)+2)*`tCK//(6+4+0+2)*tCK=12*tCK
+`define max_MRR_after_MRR_ANB (`RL+`BL_nmax+$floor(`tWCKPST/`tCK))*`tCK//(6+4+0)*tCK=10*tCK
+`define min_MRR_after_MRR_ANB`tMRR*`tCK//*tCK
+`define min_MRR_after_WR16orMWR_ANB (`WL+`BL_nmax+$ceil(`tWTR/`tCK))*`tCK
+`define min_MRR_after_RD_ANB (`RL+`BL_nmax+$floor(`tWCKPST/`tCK)+2)*`tCK

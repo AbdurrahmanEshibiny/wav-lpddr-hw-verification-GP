@@ -53,8 +53,8 @@ class wddr_subscriber extends uvm_component;
 		// RDC_AFTER_RDC_NO_CAS,
 		// RDC_AFTER_RDC_WITH_CAS,
 		DIFF_BANK_DURING_ACT,
-		VR258,
-		VR259_ab,
+		// VR258,
+		// VR259_ab,
 		VR259_pb,
 		CMD_AFTER_CMD_SAME_BANK,
 		CMD_AFTER_CMD_DIFF_BANK
@@ -77,8 +77,8 @@ class wddr_subscriber extends uvm_component;
 			bins VR256 = (ACT2[=1] => PRE);
 			bins VR257 = (ACT2[=1] => ACT2);
 
-			bins PPR_COMMANDS = (MRW1 => MRW2 => ACT1 => ACT2 => PRE => MRW1 => MRW2);
-			bins TTR_COMMANDS = (MRW1 => MRW2 => ACT1 => ACT2 => PRE => ACT1 => ACT2 => PRE => ACT1 => ACT2 => PRE);
+			// bins PPR_COMMANDS = (MRW1 => MRW2 => ACT1 => ACT2 => PRE => MRW1 => MRW2);
+			// bins TTR_COMMANDS = (MRW1 => MRW2 => ACT1 => ACT2 => PRE => ACT1 => ACT2 => PRE => ACT1 => ACT2 => PRE);
 		}
 		COVER_REQUIREMENTS: coverpoint lpddr5_cover_reqs;
 	endgroup
@@ -572,13 +572,13 @@ class wddr_subscriber extends uvm_component;
 			end
 
 			//VR258
-			if( lpddr5_trans.CA == ACT2) begin
-				if( prev_CA_time.max()[0] == prev_CA_time[ACT1] &&
-					lpddr5_trans.prev_BA != lpddr5_trans.BA) begin
-						lpddr5_cover_reqs = VR258;
-						lpddr5_cg.sample();
-				end 
-			end
+			// if( lpddr5_trans.CA == ACT2) begin
+			// 	if( prev_CA_time.max()[0] == prev_CA_time[ACT1] &&
+			// 		lpddr5_trans.prev_BA != lpddr5_trans.BA) begin
+			// 			lpddr5_cover_reqs = VR258;
+			// 			lpddr5_cg.sample();
+			// 	end 
+			// end
 
 			//VR259_ab
 			if( lpddr5_trans.CA == PRE && lpddr5_trans.ALL_BANKS == 1) begin

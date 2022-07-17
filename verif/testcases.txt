@@ -1,4 +1,3 @@
-dfi_ca_rand_test
 wddr_DFI_access_control_regs_test
 wddr_DFI_lp_ctrl_test
 wddr_DFI_lp_data_test
@@ -20,3 +19,4 @@ wddr_DFI_all_test
 wddr_DFI_random_write_data_test
 wddr_DFI_write_4to1_test
 wddr_DFI_many_write_4to1_test
+dfi_ca_rand_test

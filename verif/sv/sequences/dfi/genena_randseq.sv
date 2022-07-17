@@ -14,17 +14,26 @@
 `define max_RD16orWR16orMWR_after_RD16_ANB (`RL+`BL_nmax+$floor(`tWCKPST/`tCK))*`tCK//10*tCK
 `define min_WR16orMWR_after_RD16_ANB (`RL+`BL_nmax+$ceil(`tWCKDQO/`tCK)-`WL)*`tCK//6*tCK
 `define min_RD16_after_RD16_ANB `BL_nmax*`tCK//4*tCK
-`define tAAD 8//between _ACT1 and _ACT2 for the same bank
-`define tRAS (`max(42,3*`tCK))//3*10//between PRECHARGE and  _ACT2 for the same bank
-`define tRP (`max(18ns,2*`tCK))//2*10//between _ACT2 and PRECHARGE for the same bank
-`define tRRD (`max(5ns,2*`tCK)) //2*10//4//between _ACT2 commands for two different banks
-`define tRC (`tRAS+`tRP)//3+2*10//12//between _ACT2 commands for the same bank
-`define tRCD (`max(18ns,2*`tCK))//2*10//between _ACT2 and (READ OR WRITE Operations)
+//current command is MRR
+`define max_WR16orMWR_after_MRR (`RL+`BL_nmax+$floor(`tWCKPST/`tCK))*`tCK//(6+4+0)*tCK=10*tCK
+`define min_WR16orMWR_after_MRR (`RL+`BL_nmax+$ceil(`tWCKDQO/`tCK)-`WL+2)*`tCK//(6+4+-4+2)*tCK=8*tCK
+`define min_RD16_after_MRR (`RL+`BL_nmax+$floor(`tWCKPST/`tCK)+2)*`tCK//(6+4+0+2)*tCK=12*tCK
+`define max_MRR_after_MRR (`RL+`BL_nmax+$floor(`tWCKPST/`tCK))*`tCK//(6+4+0)*tCK=10*tCK
+`define min_MRR_after_MRR `tMRR//*tCK
+`define min_MRR_after_WR16orMWR (`WL+`BL_nmax+$ceil(`tWTR/`tCK))*`tCK
+`define min_MRR_after_RD (`RL+`BL_nmax+$floor(`tWCKPST/`tCK)+2)*`tCK
+/////////////////////////////////////////////////////////////
+`define tAAD 8//between ACT1 and ACT2 for the same bank
+`define tRAS (`max(42,3*`tCK))//3*10//between PRECHARGE and  ACT2 for the same bank
+`define tRP (`max(18ns,2*`tCK))//2*10//between ACT2 and PRECHARGE for the same bank
+`define tRRD (`max(5ns,2*`tCK)) //2*10//4//between ACT2 commands for two different banks
+`define tRC (`tRAS+`tRP)//3+2*10//12//between ACT2 commands for the same bank
+`define tRCD (`max(18ns,2*`tCK))//2*10//between ACT2 and (READ OR WRITE Operations)
 `define tRBTP (`max(7.5ns,4*`tCK)-4*`tCK)//0*10//between read operation and precharge in case 2:1
 `define tWR (`max(34ns, 3*`tCK))//3*10between write operation and precahrge
 `define tPPD 2//precharge to precharge delay for the same bank
-`define tcas_wr 1*`tCK// to check write shoulb be after only one cycle from _CAS_WR
-`define tcas_rd 1*`tCK// to check READ shoulb be after only one cycle from _CAS_RD
+`define tcas_wr 1*`tCK// to check write shoulb be after only one cycle from CAS_WR
+`define tcas_rd 1*`tCK// to check READ shoulb be after only one cycle from CAS_RD
 `define BL 16//Burst length is 16
 `define n 4//in case 2:1 & n=8 in case 4:1
 `define BL_nmax `BL/`n
@@ -37,6 +46,7 @@
 `define tWCKDQI 0
 `define tWRTOPRE ((`WL+`BL_nmax+1+$ceil(`tWR/`tCK))*`tCK)
 `define tRDTOPRE ((`BL_nmax+$ceil(`tRBTP/`tCK))*`tCK)
+`define tMRR 2*`tCK
 `define RU(a) $ceil(``a``/`tCK)
 //`define abs(a) (``a`` > 0)? ``a``: -1*``a``
 
@@ -102,6 +112,14 @@ class seqitem;
       int min_WR16orMWR_after_RD16_ANB = int'(`RU(`min_WR16orMWR_after_RD16_ANB));
       int min_RD16_after_WR16orMWR_ANB = int'(`RU(`min_RD16_after_WR16orMWR_ANB));
 
+      int max_WR16orMWR_after_MRR=int'(`RU(`max_WR16orMWR_after_MRR));
+      int min_WR16orMWR_after_MRR=int'(`RU(`min_WR16orMWR_after_MRR));
+      int min_RD16_after_MRR=int'(`RU(`min_RD16_after_MRR));
+      int max_MRR_after_MRR=int'(`RU(`max_MRR_after_MRR));
+      int min_MRR_after_MRR=int'(`RU(`min_MRR_after_MRR));
+      int min_MRR_after_WR16orMWR=int'(`RU(`min_MRR_after_WR16orMWR));
+      int min_MRR_after_RD=int'(`RU(`min_MRR_after_RD));
+
       int tAAD_tb= `tAAD;//between _ACT1 and _ACT2 for the same bank
       int tRRD_tb= `tRRD;//4//between _ACT2 commands for two different banks
       int tRC_tb= `tRC;//12//between _ACT2 commands for the same bank
@@ -118,6 +136,12 @@ class seqitem;
       rand int wr_after_wr_ANB;
       rand int wr_after_wr_SB;
       rand int rd_after_rd;
+    ///////////////////////////////
+      rand int wr_after_mrr;
+      rand int rd_after_mrr;
+      rand int mrr_after_mrr;
+      rand int mrr_after_wr;
+      rand int mrr_after_rd;
       time last_act2;
       time last_rd_or_wr;
       time temp;
@@ -130,6 +154,7 @@ class seqitem;
       rand command tr;
       rand bit [3:0]address;
       rand int iterations;
+      bit ab_flag[$];
       constraint const1{
         tr inside {_WR16,_MWR,_RD16};
         wr_after_wr_ANB inside{[min_WR16_after_WR16orMWR_ANB:max_WR16orMWR_after_WR16orMWR_ANB+1]};
@@ -146,6 +171,18 @@ class seqitem;
         wr_after_rd inside {[min_WR16orMWR_after_RD16_ANB:max_RD16orWR16orMWR_after_RD16_ANB+1]};
         wr_after_rd != max_RD16orWR16orMWR_after_RD16_ANB;
         rd_after_wr inside{[min_RD16_after_WR16orMWR_ANB:min_RD16_after_WR16orMWR_ANB+1]};
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+        wr_after_mrr inside{[min_WR16orMWR_after_MRR:max_WR16orMWR_after_MRR+1]};
+        wr_after_mrr !=max_WR16orMWR_after_MRR;
+
+        rd_after_mrr inside{[min_RD16_after_MRR:min_RD16_after_MRR+1]};
+
+        mrr_after_mrr inside{[min_MRR_after_MRR:max_MRR_after_MRR+1]};
+        mrr_after_mrr !=max_MRR_after_MRR;
+
+        mrr_after_wr inside{[min_MRR_after_WR16orMWR:min_MRR_after_WR16orMWR+1]};
+
+        mrr_after_rd inside{[min_MRR_after_RD:min_MRR_after_RD+1]};
         iterations inside {[1:2]};
       }
 	  
@@ -153,14 +190,15 @@ class seqitem;
 		repeat(delay) begin
 			cmd=_NOP;
 			this.cmd_queue.push_back(cmd);
-			this.BA_queue.push_back(BA);
+            this.BA_queue.push_back(BA);
+            ab_flag.push_back(0);
 		end
 	  endtask
 
 	  task generate_seq(int loops);
 	    repeat(loops) begin 
       randsequence(main)
-        main:single_trans|multi_trans;
+        main:single_trans|multi_trans|mode_register_read|pre_all|ttr|ppr;
         single_trans: {
           delay(`RU(this.tRP_tb));
           $display("at time=%0t i'm inside single test num%0d",$time,this.i);
@@ -168,34 +206,39 @@ class seqitem;
           this.old_address=this.address;
           BA=this.address;
           cmd=_ACT1;
-          this.cmd_queue.push_back(cmd);this.BA_queue.push_back(BA);
-          
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          ab_flag.push_back(0);
           cmd=_ACT2;
           this.cmd_queue.push_back(cmd);
-this.BA_queue.push_back(BA);
+          this.BA_queue.push_back(BA);
+          ab_flag.push_back(0);
           this.last_act2=$time;
           delay(`RU(this.tRCD_tb));
-          
           if (this.tr==_RD16) begin
             cmd=_CAS_RD;
             this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
             
             this.prev=this.tr;
             cmd=this.tr;
             this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
             this.last_rd_or_wr=$time;
           end
           else begin
             cmd=_CAS_WR;
             this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
             
             this.prev=this.tr;
             cmd=this.tr;
             this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
             this.last_rd_or_wr=$time;
           end
           if (this.prev==_RD16) begin
@@ -203,6 +246,7 @@ this.BA_queue.push_back(BA);
               cmd=_PRE;
               this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
               this.last_rd_or_wr=$time;
           end
           else begin
@@ -210,12 +254,13 @@ this.BA_queue.push_back(BA);
               cmd=_PRE;
               this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
           end
           repeat (1) begin
-            
             cmd=_NOP;
             this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
           end
           i++;
         };
@@ -228,32 +273,38 @@ this.BA_queue.push_back(BA);
           cmd=_ACT1;
           this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
           
           cmd=_ACT2;
           this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
           this.last_act2=$time;
           delay(`RU(this.tRCD_tb));
           if (this.tr==_RD16) begin
             cmd=_CAS_RD;
             this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
             
             this.prev=this.tr;
             cmd=this.tr;
             this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
              this.last_rd_or_wr=$time;
           end
           else begin
             cmd=_CAS_WR;
             this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
             
             this.prev=this.tr;
             cmd=this.tr;
             this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
              this.last_rd_or_wr=$time;
           end
           for (int j=0;j<this.iterations;j++) begin
@@ -265,22 +316,26 @@ this.BA_queue.push_back(BA);
                 cmd=_PRE;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
               end
               else begin
                 delay(`RU(this.tWRTOPRE_tb));
                 cmd=_PRE;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
               end
               
               BA=this.address;
               cmd=_ACT1;
               this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
               
               cmd=_ACT2;
               this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
               this.last_act2=$time;
               this.temp=this.last_act2-this.last_rd_or_wr;
               if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_WR16) && (this.wr_after_wr_ANB*`period+this.temp> `max_WR16orMWR_after_WR16orMWR_ANB)) begin //we need to send _CAS_WR first
@@ -288,28 +343,33 @@ this.BA_queue.push_back(BA);
                 cmd=_CAS_WR;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 
                 this.prev=this.tr;
                 cmd=this.tr;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
               end
               if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_MWR) && (this.wr_after_wr_ANB*`period+this.temp> `max_WR16orMWR_after_WR16orMWR_ANB)) begin //we need to send _CAS_WR first
                 delay(this.wr_after_wr_ANB+`RU(this.temp));
                 cmd=_CAS_WR;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 
                 this.prev=this.tr;
                 cmd=this.tr;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
               end
               else if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_WR16) && (this.wr_after_wr_ANB*`period+this.temp<=`max_WR16orMWR_after_WR16orMWR_ANB) && (this.wr_after_wr_ANB*`period+this.temp>=`min_WR16_after_WR16orMWR_ANB)) begin//we don't need to send sync
                delay(this.wr_after_wr_ANB+`RU(this.temp));
                 cmd=this.tr;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 this.prev=this.tr;
               end
               else if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_MWR) && (this.wr_after_wr_ANB*`period+this.temp<=`max_WR16orMWR_after_WR16orMWR_ANB) && (this.wr_after_wr_ANB*`period+this.temp>=`min_MWR_after_WR16orMWR_DB)) begin//we don't need to send sync
@@ -317,6 +377,7 @@ this.BA_queue.push_back(BA);
                 cmd=this.tr;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 this.prev=this.tr;
               end
               else if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_RD16)&& (this.rd_after_wr*`period+this.temp>=`min_RD16_after_WR16orMWR_ANB)) begin//we don't need to send sync for just now but it should
@@ -324,10 +385,12 @@ this.BA_queue.push_back(BA);
                 cmd=_CAS_RD;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 
                 cmd=this.tr;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 this.prev=this.tr;
               end
               else if((this.prev==_RD16) && (this.tr==_RD16 || this.tr==_MWR || this.tr==_WR16) &&( (this.rd_after_rd*`period+this.temp>`max_RD16orWR16orMWR_after_RD16_ANB) || (this.wr_after_rd*`period+this.temp>`max_RD16orWR16orMWR_after_RD16_ANB))) begin//we should send sync
@@ -336,22 +399,26 @@ this.BA_queue.push_back(BA);
                   cmd=_CAS_RD;
                   this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                   
                   this.prev=this.tr;
                   cmd=_RD16;
                   this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 end
                 else begin                
                   delay(this.wr_after_rd+`RU(this.temp));
                   cmd=_CAS_WR;
                   this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                   
                   this.prev=this.tr;
                   cmd=this.tr;
                   this.cmd_queue.push_back(cmd);
-this.BA_queue.push_back(BA); 
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0); 
                 end
               end
               else if((this.prev==_RD16) && (this.tr==_MWR || this.tr==_WR16) && (this.wr_after_rd*`period+this.temp<=`max_RD16orWR16orMWR_after_RD16_ANB) && (this.wr_after_rd*`period+this.temp>=`min_WR16orMWR_after_RD16_ANB)) begin//we don't need to send sync              
@@ -359,6 +426,7 @@ this.BA_queue.push_back(BA);
                 cmd=this.tr;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 this.prev=this.tr;
               end
               else if((this.prev==_RD16) && (this.tr==_RD16) && (this.rd_after_rd*`period+this.temp<=`max_RD16orWR16orMWR_after_RD16_ANB) && (this.rd_after_rd*`period+this.temp>=`min_RD16_after_RD16_ANB)) begin//we don't need to send sync            
@@ -366,6 +434,7 @@ this.BA_queue.push_back(BA);
                 cmd=this.tr;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 this.prev=this.tr;
               end
             end
@@ -376,11 +445,13 @@ this.BA_queue.push_back(BA);
                 cmd=_CAS_WR;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 
                 this.prev=this.tr;
                 cmd=this.tr;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
               end
               else if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_MWR)) begin
                 if (`max_MWR_after_WR16orMWR_SB>`min_MWR_after_WR16orMWR_SB) begin
@@ -389,11 +460,13 @@ this.BA_queue.push_back(BA);
                     cmd=_CAS_WR;
                     this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                     
                     this.prev=this.tr;
                     cmd=this.tr;
                     this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                   end
                   else begin//we don't need to send sync
                     delay(this.wr_after_wr_SB);
@@ -401,6 +474,7 @@ this.BA_queue.push_back(BA);
                     cmd=this.tr;
                     this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                   end
                 end
                 else begin // this means max is less than min so we have to send sync first
@@ -408,11 +482,13 @@ this.BA_queue.push_back(BA);
                   cmd=_CAS_WR;
                   this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                   
                   this.prev=this.tr;
                   cmd=this.tr;
                   this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 end
               end
               else if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_WR16) && (this.wr_after_wr_ANB*`period<=`max_WR16orMWR_after_WR16orMWR_ANB) && (this.wr_after_wr_ANB*`period>=`min_WR16_after_WR16orMWR_ANB)) begin//we don't need to send sync
@@ -420,6 +496,7 @@ this.BA_queue.push_back(BA);
                 cmd=this.tr;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 this.prev=this.tr;
               end            
               else if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_RD16) && (this.rd_after_wr*`period>=`min_RD16_after_WR16orMWR_ANB)) begin//we don't need to send sync for just now but it should
@@ -427,10 +504,12 @@ this.BA_queue.push_back(BA);
                 cmd=_CAS_RD;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 
                 cmd=this.tr;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 this.prev=this.tr;
               end
               else if((this.prev==_RD16) && (this.tr==_RD16 || this.tr==_MWR || this.tr==_WR16) && ((this.rd_after_rd*`period>`max_RD16orWR16orMWR_after_RD16_ANB) || (this.wr_after_rd*`period>`max_RD16orWR16orMWR_after_RD16_ANB))) begin//we should send sync
@@ -439,22 +518,26 @@ this.BA_queue.push_back(BA);
                   cmd=_CAS_RD;
                   this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                   
                   this.prev=this.tr;
                   cmd=_RD16;
                   this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 end
                 else begin              
                 delay(this.wr_after_rd);
                   cmd=_CAS_WR;
                   this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                   
                   this.prev=this.tr;
                   cmd=this.tr;
                   this.cmd_queue.push_back(cmd);
-this.BA_queue.push_back(BA); 
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0); 
                 end
               end
               else if((this.prev==_RD16) && (this.tr==_MWR || this.tr==_WR16) && (this.wr_after_rd*`period<=`max_RD16orWR16orMWR_after_RD16_ANB) && (this.wr_after_rd*`period>=`min_WR16orMWR_after_RD16_ANB)) begin//we don't need to send sync              
@@ -462,6 +545,7 @@ this.BA_queue.push_back(BA);
                 cmd=this.tr;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 this.prev=this.tr;
               end
               else if((this.prev==_RD16) && (this.tr==_RD16) && (this.rd_after_rd*`period<=`max_RD16orWR16orMWR_after_RD16_ANB) && (this.rd_after_rd*`period>=`min_RD16_after_RD16_ANB)) begin//we don't need to send sync
@@ -469,6 +553,7 @@ this.BA_queue.push_back(BA);
                 cmd=this.tr;
                 this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
                 this.prev=this.tr;
               end
             end
@@ -480,14 +565,564 @@ this.BA_queue.push_back(BA);
               cmd=_PRE;
               this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
           end
           else begin
             delay(`RU(this.tWRTOPRE_tb));
               cmd=_PRE;
               this.cmd_queue.push_back(cmd);
 this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
           end
           this.i++;
+        };
+        mode_register_read:{
+          delay(`RU(this.tRP_tb));
+          $display("at time=%0t i'm inside mode register read test num%0d",$time,i);
+          this.randomize();
+          cmd=_ACT1;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          cmd=_ACT2;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          //s.last_act2=$time;*/
+          delay(`RU(this.tRCD_tb));
+          if (this.tr==_RD16) begin
+            cmd=_CAS_RD;
+            this.cmd_queue.push_back(cmd);
+            this.BA_queue.push_back(BA);
+            this.ab_flag.push_back(0);
+            //s.prev=s.tr;
+            cmd=this.tr;
+            this.cmd_queue.push_back(cmd);
+            this.BA_queue.push_back(BA);
+            this.ab_flag.push_back(0);
+            //s.last_rd_or_wr=$time;
+            delay(this.mrr_after_rd);//sending mrr after rd need to send CAS_RD
+            cmd=_CAS_RD;
+            this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+            cmd=_MRR;
+            this.cmd_queue.push_back(cmd);
+            this.BA_queue.push_back(BA);
+            this.ab_flag.push_back(0);
+            delay(this.mrr_after_mrr);//sending MRR after MRR
+            if (this.mrr_after_mrr*`period>`max_MRR_after_MRR) begin//you need to send CAS_RD
+           // $display("here1");
+                cmd=_CAS_RD;
+                this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+                cmd=_MRR;
+                this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+            end
+            else begin//you don't need to send CAS_RD
+            //$display("here2");
+                cmd=_MRR;
+                this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+            end
+            delay(this.rd_after_mrr);//sending rd after MRR need to send CAS_RD;
+            cmd=_CAS_RD;
+            this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+       this.ab_flag.push_back(0);
+            //s.prev=s.tr;
+            cmd=this.tr;
+            this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+            //s.last_rd_or_wr=$time;
+          end
+          else begin
+            cmd=_CAS_WR;
+            this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+            //s.prev=s.tr;
+            cmd=this.tr;
+            this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+            //s.last_rd_or_wr=$time;
+            delay(this.mrr_after_wr);
+             cmd=_CAS_RD;
+           this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+            cmd=_MRR;
+            this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+            delay(this.wr_after_mrr);
+            if (this.tr==_WR16)begin
+                if (this.wr_after_mrr*`period>`max_WR16orMWR_after_MRR) begin
+                    cmd=_CAS_WR;
+                    this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+                  this.ab_flag.push_back(0);
+                    //s.prev=s.tr;
+                    cmd=_MWR;
+                    this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+                end
+                else begin
+                    cmd=_MWR;
+                    this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+                end
+            end
+            else begin
+                if (this.wr_after_mrr*`period>`max_WR16orMWR_after_MRR) begin
+                    cmd=_CAS_WR;
+                    this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+                   this.ab_flag.push_back(0);
+                    //s.prev=s.tr;
+                    cmd=_WR16;
+                    this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+                end
+                else begin
+                    cmd=_WR16;
+                    this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+                end
+            end
+          end
+          if (this.tr==_RD16) begin
+            delay(`RU(this.tRDTOPRE_tb));
+              cmd=_PRE;
+             this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+              this.last_rd_or_wr=$time;
+          end
+          else begin
+            delay(`RU(this.tWRTOPRE_tb));
+              cmd=_PRE;
+             this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          end
+            cmd=_NOP;
+           this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          i++;
+        };
+        pre_all:{
+          delay(`RU(this.tRP_tb));
+          $display("at time=%0t i'm inside multi test num%0d",$time,i);
+          this.randomize();
+          this.old_address=this.address;
+          BA=this.address;
+          cmd=_ACT1;
+          this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+          
+          cmd=_ACT2;
+          this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+          this.last_act2=$time;
+          delay(`RU(this.tRCD_tb));
+          if (this.tr==_RD16) begin
+            cmd=_CAS_RD;
+            this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+            
+            this.prev=this.tr;
+            cmd=this.tr;
+            this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+             this.last_rd_or_wr=$time;
+          end
+          else begin
+            cmd=_CAS_WR;
+            this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+            
+            this.prev=this.tr;
+            cmd=this.tr;
+            this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+             this.last_rd_or_wr=$time;
+          end
+          for (int j=0;j<this.iterations;j++) begin
+            this.iterations.rand_mode(0);
+            this.randomize();
+            if (this.old_address!=this.address) begin//this means we need to send ACtivation commands but first precharge last BANK
+              if (this.prev==_RD16) begin
+                delay(`RU(this.tRDTOPRE_tb));
+                cmd=_PRE;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(1);
+              end
+              else begin
+                delay(`RU(this.tWRTOPRE_tb));
+                cmd=_PRE;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(1);
+              end
+              
+              BA=this.address;
+              cmd=_ACT1;
+              this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+              
+              cmd=_ACT2;
+              this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+              this.last_act2=$time;
+              this.temp=this.last_act2-this.last_rd_or_wr;
+              if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_WR16) && (this.wr_after_wr_ANB*`period+this.temp> `max_WR16orMWR_after_WR16orMWR_ANB)) begin //we need to send _CAS_WR first
+                delay(this.wr_after_wr_ANB+`RU(this.temp));
+                cmd=_CAS_WR;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                
+                this.prev=this.tr;
+                cmd=this.tr;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+              end
+              if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_MWR) && (this.wr_after_wr_ANB*`period+this.temp> `max_WR16orMWR_after_WR16orMWR_ANB)) begin //we need to send _CAS_WR first
+                delay(this.wr_after_wr_ANB+`RU(this.temp));
+                cmd=_CAS_WR;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                
+                this.prev=this.tr;
+                cmd=this.tr;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+              end
+              else if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_WR16) && (this.wr_after_wr_ANB*`period+this.temp<=`max_WR16orMWR_after_WR16orMWR_ANB) && (this.wr_after_wr_ANB*`period+this.temp>=`min_WR16_after_WR16orMWR_ANB)) begin//we don't need to send sync
+               delay(this.wr_after_wr_ANB+`RU(this.temp));
+                cmd=this.tr;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                this.prev=this.tr;
+              end
+              else if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_MWR) && (this.wr_after_wr_ANB*`period+this.temp<=`max_WR16orMWR_after_WR16orMWR_ANB) && (this.wr_after_wr_ANB*`period+this.temp>=`min_MWR_after_WR16orMWR_DB)) begin//we don't need to send sync
+               delay(this.wr_after_wr_ANB+`RU(this.temp));
+                cmd=this.tr;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                this.prev=this.tr;
+              end
+              else if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_RD16)&& (this.rd_after_wr*`period+this.temp>=`min_RD16_after_WR16orMWR_ANB)) begin//we don't need to send sync for just now but it should
+               delay(this.rd_after_wr+`RU(this.temp));
+                cmd=_CAS_RD;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                
+                cmd=this.tr;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                this.prev=this.tr;
+              end
+              else if((this.prev==_RD16) && (this.tr==_RD16 || this.tr==_MWR || this.tr==_WR16) &&( (this.rd_after_rd*`period+this.temp>`max_RD16orWR16orMWR_after_RD16_ANB) || (this.wr_after_rd*`period+this.temp>`max_RD16orWR16orMWR_after_RD16_ANB))) begin//we should send sync
+               if (this.tr==_RD16) begin                 
+                  delay(this.rd_after_rd+`RU(this.temp));
+                  cmd=_CAS_RD;
+                  this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                  
+                  this.prev=this.tr;
+                  cmd=_RD16;
+                  this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                end
+                else begin                
+                  delay(this.wr_after_rd+`RU(this.temp));
+                  cmd=_CAS_WR;
+                  this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                  
+                  this.prev=this.tr;
+                  cmd=this.tr;
+                  this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0); 
+                end
+              end
+              else if((this.prev==_RD16) && (this.tr==_MWR || this.tr==_WR16) && (this.wr_after_rd*`period+this.temp<=`max_RD16orWR16orMWR_after_RD16_ANB) && (this.wr_after_rd*`period+this.temp>=`min_WR16orMWR_after_RD16_ANB)) begin//we don't need to send sync              
+               delay(this.wr_after_rd+`RU(this.temp));
+                cmd=this.tr;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                this.prev=this.tr;
+              end
+              else if((this.prev==_RD16) && (this.tr==_RD16) && (this.rd_after_rd*`period+this.temp<=`max_RD16orWR16orMWR_after_RD16_ANB) && (this.rd_after_rd*`period+this.temp>=`min_RD16_after_RD16_ANB)) begin//we don't need to send sync            
+              delay(this.rd_after_rd+`RU(this.temp));
+                cmd=this.tr;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                this.prev=this.tr;
+              end
+            end
+            else begin//this means we don't need to send activation or precharge because we will deal with the same bank
+            
+              if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_WR16 /*|| this.tr==_MWR*/) && (this.wr_after_wr_ANB*`period> `max_WR16orMWR_after_WR16orMWR_ANB)) begin //we need to send _CAS_WR first
+                delay(this.wr_after_wr_ANB);
+                cmd=_CAS_WR;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                
+                this.prev=this.tr;
+                cmd=this.tr;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+              end
+              else if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_MWR)) begin
+                if (`max_MWR_after_WR16orMWR_SB>`min_MWR_after_WR16orMWR_SB) begin
+                  if (this.wr_after_wr_SB*`period>`max_MWR_after_WR16orMWR_SB) begin//we have to send sync
+                    delay(this.wr_after_wr_SB);
+                    cmd=_CAS_WR;
+                    this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                    
+                    this.prev=this.tr;
+                    cmd=this.tr;
+                    this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                  end
+                  else begin//we don't need to send sync
+                    delay(this.wr_after_wr_SB);
+                    this.prev=this.tr;
+                    cmd=this.tr;
+                    this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                  end
+                end
+                else begin // this means max is less than min so we have to send sync first
+                  delay(this.wr_after_wr_SB);
+                  cmd=_CAS_WR;
+                  this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                  
+                  this.prev=this.tr;
+                  cmd=this.tr;
+                  this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                end
+              end
+              else if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_WR16) && (this.wr_after_wr_ANB*`period<=`max_WR16orMWR_after_WR16orMWR_ANB) && (this.wr_after_wr_ANB*`period>=`min_WR16_after_WR16orMWR_ANB)) begin//we don't need to send sync
+                delay(this.wr_after_wr_ANB);
+                cmd=this.tr;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                this.prev=this.tr;
+              end            
+              else if((this.prev==_WR16 || this.prev==_MWR) && (this.tr==_RD16) && (this.rd_after_wr*`period>=`min_RD16_after_WR16orMWR_ANB)) begin//we don't need to send sync for just now but it should
+                delay(this.rd_after_wr);
+                cmd=_CAS_RD;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                
+                cmd=this.tr;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                this.prev=this.tr;
+              end
+              else if((this.prev==_RD16) && (this.tr==_RD16 || this.tr==_MWR || this.tr==_WR16) && ((this.rd_after_rd*`period>`max_RD16orWR16orMWR_after_RD16_ANB) || (this.wr_after_rd*`period>`max_RD16orWR16orMWR_after_RD16_ANB))) begin//we should send sync
+               if (this.tr==_RD16) begin             
+                delay(this.rd_after_rd);
+                  cmd=_CAS_RD;
+                  this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                  
+                  this.prev=this.tr;
+                  cmd=_RD16;
+                  this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                end
+                else begin              
+                delay(this.wr_after_rd);
+                  cmd=_CAS_WR;
+                  this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                  
+                  this.prev=this.tr;
+                  cmd=this.tr;
+                  this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0); 
+                end
+              end
+              else if((this.prev==_RD16) && (this.tr==_MWR || this.tr==_WR16) && (this.wr_after_rd*`period<=`max_RD16orWR16orMWR_after_RD16_ANB) && (this.wr_after_rd*`period>=`min_WR16orMWR_after_RD16_ANB)) begin//we don't need to send sync              
+                delay(this.wr_after_rd);
+                cmd=this.tr;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                this.prev=this.tr;
+              end
+              else if((this.prev==_RD16) && (this.tr==_RD16) && (this.rd_after_rd*`period<=`max_RD16orWR16orMWR_after_RD16_ANB) && (this.rd_after_rd*`period>=`min_RD16_after_RD16_ANB)) begin//we don't need to send sync
+                delay(this.rd_after_rd);
+                cmd=this.tr;
+                this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(0);
+                this.prev=this.tr;
+              end
+            end
+          end//at the end of transaction we should precharge the last bank we used
+         this.iterations.rand_mode(1);
+          BA=this.address;
+          if (this.prev==_RD16) begin
+            delay(`RU(this.tRDTOPRE_tb));
+              cmd=_PRE;
+              this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(1);
+          end
+          else begin
+            delay(`RU(this.tWRTOPRE_tb));
+              cmd=_PRE;
+              this.cmd_queue.push_back(cmd);
+this.BA_queue.push_back(BA);
+this.ab_flag.push_back(1);
+          end
+          this.i++;
+        };
+        ttr:{
+          $display("at time=%0t i'm inside TTR test num%0d",$time,i);
+          delay(`RU(this.tRP_tb));
+          cmd=_MRW1;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          cmd=_MRW2;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          cmd=_ACT1;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          cmd=_ACT2;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          delay(`RU(this.tRAS_tb));
+          cmd=_PRE;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          delay(`RU(this.tRP_tb));
+          cmd=_ACT1;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          cmd=_ACT2;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          delay(`RU(this.tRAS_tb));
+          cmd=_PRE;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          delay(`RU(this.tRP_tb));
+          cmd=_ACT1;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          cmd=_ACT2;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          delay(`RU(this.tRAS_tb));
+          cmd=_PRE;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          delay(1);
+        i++;
+        };
+        ppr:{
+          $display("at time=%0t i'm PPR test num%0d",$time,i);
+          delay(`RU(this.tRP_tb));
+          cmd=_MRW1;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          cmd=_MRW2;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          cmd=_ACT1;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          cmd=_ACT2;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          delay(`RU(this.tRAS_tb));
+          cmd=_PRE;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          cmd=_MRW1;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          cmd=_MRW2;
+          this.cmd_queue.push_back(cmd);
+          this.BA_queue.push_back(BA);
+          this.ab_flag.push_back(0);
+          delay(1);
+          i++;
         };
   endsequence
  end
